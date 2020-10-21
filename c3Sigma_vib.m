@@ -2,11 +2,10 @@ clear;
 
 c = constants();
 
-%% simulation parameters
-% Nx = 4000;
-% rmin = 6; 4.9;
-% rmax = 30;
+% calculates single-channel vibrational wavefunctions in the c3Sigma
+% potential with a specified energy range and plots the result 
 
+%% simulation parameters
 Nx = 2000;
 rmin = 5;
 rmax = 100;
@@ -42,6 +41,5 @@ for i = 1:size(psi,3)
     ylabel('\psi(R)')
 end
 xlabel('R (a_0)')
-
 
 % save('NaCs_scwfn_c3Sigma.mat','r','psi','E_out','nodes_out')

@@ -1,6 +1,9 @@
 clear;
 c = constants();
 
+% Coupled-channel calculation in ground state of NaCs. Configured to
+% find feshbach state and lowest 2 trap states.
+
 % simulation parameters
 Nx = 8000;
 rmin = 4.5;

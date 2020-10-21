@@ -35,7 +35,7 @@ basis.a.ops = struct();
 basis_change.b_a = operator_matrix(@case_b2a_element,{basis.a.qnums,basis.b.qnums},{'J','Omega','S','Sigma','N','Lambda'});
 f = fields(basis.b.ops);
 for i = 1:numel(f)
-    basis.a.ops.(f{i}) = basis_change.b_a'*basis.b.ops.(f{i})*basis_change.b_a;
+    basis.a.ops.(f{i}) = basis_change.b_a*basis.b.ops.(f{i})*basis_change.b_a';
 end
 
 % trap

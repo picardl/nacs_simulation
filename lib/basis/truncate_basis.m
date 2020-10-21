@@ -1,0 +1,27 @@
+function [basis,rc_keep,Nchn] = truncate_basis(basis,op_fun,value,tol)
+
+if nargin<4
+    tol = 1e-3;
+end
+
+f = fields(basis);
+
+Nstates = size(basis.(f{1}).qnums,1);
+[row,col] = ndgrid(1:Nstates,1:Nstates);
+
+for i = 1:numel(f)
+    i_keep = find(abs(diag(op_fun(basis.(f{i}).ops)) - value) < tol);
+    
+    Nchn.(f{i}) = numel(i_keep);
+    rc_keep.(f{i}) = find(ismember(row,i_keep) & ismember(col,i_keep));
+    
+    g = fields(basis.(f{i}).ops);
+    for j = 1:numel(g)
+        basis.(f{i}).ops.(g{j}) = reshape(basis.(f{i}).ops.(g{j})(rc_keep.(f{i})),Nchn.(f{i}),Nchn.(f{i}));
+    end
+    
+    basis.(f{i}).qnums = basis.(f{i}).qnums(i_keep,:);
+    
+end
+
+end

@@ -33,6 +33,10 @@ basis.SC.ops.H0 = basis.SC.ops.H_Na_hyperfine + basis.SC.ops.H_Cs_hyperfine ...
 basis.a.qnums = build_basis({'s_Na','s_Cs','i_Na','i_Cs','J','S','Lambda'},{c.s_Na,c.s_Cs,c.i_Na,c.i_Cs,0:1,0,0},[0 0 1 1 2 0 0],'a');
 basis.a.ops = struct();
 basis_change.b_a = operator_matrix(@case_b2a_element,{basis.a.qnums,basis.b.qnums},{'J','Omega','S','Sigma','N','Lambda'});
+f = fields(basis.b.ops);
+for i = 1:numel(f)
+    basis.a.ops.(f{i}) = basis_change.b_a'*basis.b.ops.(f{i})*basis_change.b_a;
+end
 
 % trap
 waist = 1064e-9; % meter

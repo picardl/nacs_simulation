@@ -1,4 +1,6 @@
 
+% Calculate rotational and hyperfine structure of c3Sigma state of NaCs
+
 clear;
 
 c = constants();

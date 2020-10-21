@@ -1,14 +1,7 @@
 function q = build_basis(fixed_qnum_names,fixed_qnum_values,m_boo,hunds_case)
 
-% fixed_qnum_names: cell array of strings
-% fixed_qnum_values: cell array of doubles or double arrays
-% m_boo: double array with values 0,1, or 2. 
-%           0: don't create projection quantum numbers for this fixed qnum
-%           1: do create projection quantum numbers (labeled m)
-%           2: molecule case -- hund's case a,b,c. Create mol frame
-%           projection quantum numbers with special names: Omega, Lambda,
-%           Sigma. 
-% hunds_case: specify the hund's case for a molecular basis
+% fixed_qnum_names: cell array
+% fixed_qnum_values: 
 
 % Example input:
 % build_basis({'Lambda','J','S','i_Na','i_Cs'},{c.c3Sigma.Lambda,c.c3Sigma.Omega:Jmax,c.c3Sigma.S,c.i_Na,c.i_Cs},[0 2 0 1 1],'a');

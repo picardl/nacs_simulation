@@ -100,16 +100,14 @@ xlabel('R (a_0)')
 % change basis to hund's case (a) for calculating electric dipole
 % transition matrix elements
 b_a = operator_matrix(@case_b2a_element,{basis.a.qnums,basis.b.qnums},{'J','Omega','S','Sigma','N','Lambda'});
-
 psi_a = zeros(size(basis.a.qnums,1),numel(r),size(basis.b.qnums,1));
 for i = 1:size(psi,3)
     psi_a(:,:,i) = b_a*psi(:,:,i);
 end
 
-
+% save data
 qnums = basis.a.qnums;
 r = r*c.abohr;
 psi = psi_a;
 E = E_out*c.hartree;
-
 save(['feshbach_state_' num2str(round(B*1e4)) 'G.mat'],'qnums','r','psi','E','B');

@@ -133,7 +133,9 @@ hold off;
 
 %% save data
 psi = basis.change.UC_a*psi;
+psi_r = psi_r./sqrt(const.abohr);
 qnums = basis.a.qnums;
 E = E + E_vib*const.hartree;
+r = r*const.abohr;
 
 save(['X1Sigma_state_' num2str(round(B*1e4)) 'G.mat'],'qnums','psi','psi_r','r','E','B');

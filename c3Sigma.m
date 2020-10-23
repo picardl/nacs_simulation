@@ -81,6 +81,8 @@ xlabel('R (a_0)')
 %% save data
 qnums = basis.aUC.qnums;
 psi = evecs;
+r = r*c.abohr;
+psi_r = psi_r/sqrt(c.abohr);
 E = evals + E_vib*c.hartree;
 save(['c3Sigma_state_' num2str(round(B*1e4)) 'G.mat'],'qnums','psi','psi_r','r','E','B');
 

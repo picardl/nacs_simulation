@@ -10,6 +10,7 @@ rmin = 4.5;
 rmax = 10000;
 mtot = 4; % total angular momentum to truncate basis
 B = (855)*1e-4; %/c.B_au; % number in parens is in gauss
+Erange_vs_threshold = [-50e6 0e6]*c.h/c.hartree;
 
 % uncoupled basis
 basis.UC = join_basis(atom_basis('Na'),atom_basis('Cs'));
@@ -68,7 +69,7 @@ Wtest = W(reshape(rtest,1,1,[]));
 [V,D] = eigenshuffle(Wtest);
 r_threshold = 300;
 [E_lowest_chan_threshold,ind] = min(D(:,abs(rtest-r_threshold)==min(abs(rtest-r_threshold))));
-Erange = E_lowest_chan_threshold + [-50e6 1.2e6]*c.h/c.hartree;
+Erange = E_lowest_chan_threshold + Erange_vs_threshold;
 
 figure(1);
 clf;
@@ -100,7 +101,7 @@ xlabel('R (a_0)')
 % change basis to hund's case (a) for calculating electric dipole
 % transition matrix elements
 b_a = operator_matrix(@case_b2a_element,{basis.a.qnums,basis.b.qnums},{'J','Omega','S','Sigma','N','Lambda'});
-psi_a = zeros(size(basis.a.qnums,1),numel(r),size(basis.b.qnums,1));
+psi_a = zeros(size(basis.a.qnums,1),numel(r),size(basis.b.qnums,3));
 for i = 1:size(psi,3)
     psi_a(:,:,i) = b_a*psi(:,:,i);
 end
@@ -108,6 +109,6 @@ end
 % save data
 qnums = basis.a.qnums;
 r = r*c.abohr;
-psi = psi_a;
+psi = psi_a./sqrt(c.abohr);
 E = E_out*c.hartree;
 save(['feshbach_state_' num2str(round(B*1e4)) 'G.mat'],'qnums','r','psi','E','B');

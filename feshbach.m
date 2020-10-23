@@ -35,9 +35,8 @@ basis.SC.ops.H0 = (basis.SC.ops.H_Na_hyperfine + basis.SC.ops.H_Cs_hyperfine ...
 % transformation to hund's case a
 basis.a.qnums = build_basis({'s_Na','s_Cs','i_Na','i_Cs','J','S','Lambda'},...
     {c.s_Na,c.s_Cs,c.i_Na,c.i_Cs,0:1,0:1,0},[0 0 1 1 0 0 0],'a');
-basis.a.qnums(basis.a.qnums.J==1 & basis.a.qnums.S==0,:) = [];
+basis.a.qnums((basis.a.qnums.J==1 & basis.a.qnums.S==0) | (basis.a.qnums.J==0 & basis.a.qnums.S==1),:) = [];
 basis.a.ops = build_operators(basis.a.qnums);
-b_a = operator_matrix(@case_b2a_element,{basis.a.qnums,basis.b.qnums},{'J','Omega','S','Sigma','N','Lambda'});
 
 % trap
 waist = 1064e-9; % meter
@@ -47,7 +46,8 @@ trap_depth = (c.apol_Cs*I0)/(2*c.eps0*c.c)/c.hartree;
 atrap = 2*((c.abohr)/waist).^2;
 Vtrap =@(r) trap_depth*(1-exp(-atrap*r.^2));
 
-% interaction
+% spin dipole-dipole interactions give rise to the FB resonance
+% include electron-electron spin and electron-nuclear spin
 basis.SC.ops.Vdd0 = (c.mu0*c.uB^2/(4*pi*c.hartree*c.abohr^3))*(...
     c.gs_Na*c.gs_Cs*dd_operator(basis.SC.ops,'s_Na','s_Cs') ...
     + c.gs_Na*c.gi_Cs*dd_operator(basis.SC.ops,'s_Na','i_Cs') ...
@@ -70,13 +70,14 @@ r_threshold = 300;
 [E_lowest_chan_threshold,ind] = min(D(:,abs(rtest-r_threshold)==min(abs(rtest-r_threshold))));
 Erange = E_lowest_chan_threshold + [-50e6 1.2e6]*c.h/c.hartree;
 
-figure(101);
+figure(1);
 clf;
 plot(rtest,D'*c.hartree/c.h*1e-9,'linewidth',2);
 ylim([-1 1]*20)
 set(gca,'xscale','log','fontsize',14);
 xlabel('R (a_0)');
 ylabel('E (GHz)');
+drawnow();
 
 % call the solver
 [E_out,nodes_out,err_est,psi,r] = cc_logderiv_adaptive_multi([rmin rmax],Nx,W,Erange,c.mu_nacs/c.me);
@@ -85,7 +86,8 @@ ylabel('E (GHz)');
 diff(E_out)*c.hartree/c.h * 1e-6
 errstr(E_out/c.wavenum2hartree*(29.9792458),err_est/c.wavenum2hartree*(29.9792458))
 
-figure();
+figure(2);
+clf;
 for i = 1:size(psi,3)
     subplot(size(psi,3),1,i)
     plot(r,psi(:,:,i),'linewidth',2),set(gca,'xscale','log');
@@ -94,3 +96,20 @@ for i = 1:size(psi,3)
     ylabel('\psi(R)')
 end
 xlabel('R (a_0)')
+
+% change basis to hund's case (a) for calculating electric dipole
+% transition matrix elements
+b_a = operator_matrix(@case_b2a_element,{basis.a.qnums,basis.b.qnums},{'J','Omega','S','Sigma','N','Lambda'});
+
+psi_a = zeros(size(basis.a.qnums,1),numel(r),size(basis.b.qnums,1));
+for i = 1:size(psi,3)
+    psi_a(:,:,i) = b_a*psi(:,:,i);
+end
+
+
+qnums = basis.a.qnums;
+r = r*c.abohr;
+psi = psi_a;
+E = E_out*c.hartree;
+
+save(['feshbach_state_' num2str(round(B*1e4)) 'G.mat'],'qnums','r','psi','E','B');

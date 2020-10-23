@@ -6,10 +6,10 @@ end
 
 f = fields(basis);
 
-Nstates = size(basis.(f{1}).qnums,1);
-[row,col] = ndgrid(1:Nstates,1:Nstates);
-
 for i = 1:numel(f)
+    Nstates = size(basis.(f{i}).qnums,1);
+    [row,col] = ndgrid(1:Nstates,1:Nstates);
+    
     i_keep = find(abs(diag(op_fun(basis.(f{i}).ops)) - value) < tol);
     
     Nchn.(f{i}) = numel(i_keep);

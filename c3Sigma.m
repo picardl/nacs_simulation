@@ -6,10 +6,10 @@ clear;
 c = constants();
 
 Jmax = 2;
-B = 855*1e-4;
+B = 865*1e-4;
 
-basis.aUC.qnums = build_basis({'Lambda','J','S','i_Na','i_Cs'},...
-    {c.c3Sigma.Lambda,c.c3Sigma.Omega:Jmax,c.c3Sigma.S,c.i_Na,c.i_Cs},[0 2 0 1 1],'a');
+basis.aUC.qnums = build_basis({'Lambda','Omega','J','S','i_Na','i_Cs'},...
+    {c.c3Sigma.Lambda,c.c3Sigma.Omega,c.c3Sigma.Omega:Jmax,c.c3Sigma.S,c.i_Na,c.i_Cs},[2 2 2 2 1 1],'a');
 basis.aUC.ops = build_operators(basis.aUC.qnums);
 
 %%

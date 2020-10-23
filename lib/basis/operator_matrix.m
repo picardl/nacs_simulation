@@ -19,6 +19,7 @@ exclude_row = qnums_row.Properties.VariableNames(~ismember(qnums_row.Properties.
 exclude_col = qnums_col.Properties.VariableNames(~ismember(qnums_col.Properties.VariableNames,include));
 
 [row_in_col,row_col_ind] = ismember(exclude_row,exclude_col);
+row_col_ind(row_col_ind==0) = [];
 if any(~row_in_col)
     warning('columns have spectator quantum numbers that do not appear in rows')
 end

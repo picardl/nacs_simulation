@@ -13,7 +13,7 @@ B = (855)*1e-4; %/c.B_au; % number in parens is in gauss
 
 % uncoupled basis
 basis.UC = join_basis(atom_basis('Na'),atom_basis('Cs'));
-basis_mol.qnums = build_basis({'Lambda','N'},{0,0},[0,1],'b');
+basis_mol.qnums = build_basis({'eta','Lambda','N'},{1,0,0},[0,60,1],'b');
 basis_mol.ops = build_operators(basis_mol.qnums);
 basis.UC = join_basis(basis.UC,basis_mol);
 
@@ -33,8 +33,8 @@ basis.SC.ops.H0 = (basis.SC.ops.H_Na_hyperfine + basis.SC.ops.H_Cs_hyperfine ...
 [basis.b,basis.SC,basis_change.SC_b] = couple_angmom(basis.SC,'N','S','J');
 
 % transformation to hund's case a
-basis.a.qnums = build_basis({'s_Na','s_Cs','i_Na','i_Cs','J','S','Lambda'},...
-    {c.s_Na,c.s_Cs,c.i_Na,c.i_Cs,0:1,0:1,0},[0 0 1 1 0 0 0],'a');
+basis.a.qnums = build_basis({'eta','s_Na','s_Cs','i_Na','i_Cs','J','S','Lambda'},...
+    {1,c.s_Na,c.s_Cs,c.i_Na,c.i_Cs,0:1,0:1,0},[0 0 0 1 1 0 0 0],'a');
 basis.a.qnums((basis.a.qnums.J==1 & basis.a.qnums.S==0) | (basis.a.qnums.J==0 & basis.a.qnums.S==1),:) = [];
 basis.a.ops = build_operators(basis.a.qnums);
 

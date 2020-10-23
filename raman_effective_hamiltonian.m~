@@ -1,0 +1,9 @@
+clear;
+
+c = constants();
+
+Xdata = load('X1Sigma_state_855G.mat');
+cdata = load('c3Sigma_state_855G.mat');
+fdata = load('feshbach_state_855G.mat');
+
+intersect(Xdata.qnums.Properties.VariableNames,cdata.qnums.Properties.VariableNames),fdata.qnums.Properties.VariableNames]);

@@ -5,6 +5,7 @@ if nargin<4
 end
 
 f = fields(basis);
+f(strcmp(f,'change')) = [];
 
 for i = 1:numel(f)
     Nstates = size(basis.(f{i}).qnums,1);
@@ -14,7 +15,6 @@ for i = 1:numel(f)
     for j = 1:numel(values)
         i_keep = cat(1,i_keep,find(abs(diag(op_fun(basis.(f{i}).ops)) - values(j)) < tol));
     end
-    
     
     Nchn.(f{i}) = numel(i_keep);
     rc_keep.(f{i}) = find(ismember(row,i_keep) & ismember(col,i_keep));
@@ -26,6 +26,18 @@ for i = 1:numel(f)
     
     basis.(f{i}).qnums = basis.(f{i}).qnums(i_keep,:);
     
+    if ismember('change',fields(basis))        
+        c = fields(basis.change);
+        fi_first = find(cellfun(@any,regexp(c,['^' f{i}],'match','once')))';
+        fi_last = find(cellfun(@any,regexp(c,[f{i} '$'],'match','once')))';
+        for j = fi_first
+            basis.change.(c{j}) = basis.change.(c{j})(i_keep,:);
+        end
+        for j = fi_last
+            basis.change.(c{j}) = basis.change.(c{j})(:,i_keep);
+        end
+        
+    end
 end
 
 end

@@ -10,8 +10,8 @@ mtot = [3 5];
 B = 855*1e-4;
 
 %% build basis
-basis.aUC.qnums = build_basis({'Lambda','Omega','J','S','i_Na','i_Cs'},...
-    {c.c3Sigma.Lambda,c.c3Sigma.Omega,c.c3Sigma.Omega:Jmax,c.c3Sigma.S,c.i_Na,c.i_Cs},[2 2 2 2 1 1],'a');
+basis.aUC.qnums = build_basis({'eta','Lambda','Omega','J','S','i_Na','i_Cs'},...
+    {2,c.c3Sigma.Lambda,c.c3Sigma.Omega,c.c3Sigma.Omega:Jmax,c.c3Sigma.S,c.i_Na,c.i_Cs},[0 2 2 2 2 1 1],'a');
 basis.aUC.ops = build_operators(basis.aUC.qnums);
 
 %% build hamiltonian
@@ -63,28 +63,25 @@ rmax = 100;
 
 Erange = 0.049415 + [-1 1]*1e-4; 
 
-% total hamiltonian
-W =@(r) NaCscPES(r);
-
 % call the solver
-[E_out,nodes_out,err_est,psi,r] = cc_logderiv_adaptive_multi([rmin rmax],Nx,W,Erange,c.mu_nacs/c.me,1,1);
+[E_vib,nodes_out,err_est,psi_r,r] = ...
+    cc_logderiv_adaptive_multi([rmin rmax],Nx,@NaCscPES,Erange,c.mu_nacs/c.me,1,1);
 
 figure(2);
 clf;
-for i = 1:size(psi,3)
-    subplot(size(psi,3),1,i)
-    plot(r,psi(:,:,i),'linewidth',2);
+for i = 1:size(psi_r,3)
+    subplot(size(psi_r,3),1,i)
+    plot(r,psi_r(:,:,i),'linewidth',2);
     set(gca,'xscale','log')
     xlim([min(r) max(r)])
     ylabel('\psi(R)')
 end
 xlabel('R (a_0)')
 
-
 %% save data
 qnums = basis.aUC.qnums;
 psi = evecs;
-E = evals;
-save(['c3Sigma_state_' num2str(round(B*1e4)) 'G.mat'],'qnums','psi','E');
+E = evals + E_vib*c.hartree;
+save(['c3Sigma_state_' num2str(round(B*1e4)) 'G.mat'],'qnums','psi','psi_r','r','E','B');
 
 

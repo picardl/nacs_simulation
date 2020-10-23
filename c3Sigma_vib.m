@@ -5,14 +5,14 @@ c = constants();
 % calculates single-channel vibrational wavefunctions in the c3Sigma
 % potential with a specified energy range and plots the result 
 
-%% simulation parameters
+% simulation parameters
 Nx = 2000;
 rmin = 5;
 rmax = 100;
 
 rtest = linspace(rmin,rmax,1e3);
 
-%% total hamiltonian
+% total hamiltonian
 W =@(r) NaCscPES(r);
 
 Wtest = W(rtest);
@@ -24,10 +24,10 @@ set(gca,'xscale','log')
 
 Erange = 0.049415 + [-1 1]*1e-4; %[0.043 0.053457];
 
-%% call the solver
+% call the solver
 [E_out,nodes_out,err_est,psi,r] = cc_logderiv_adaptive_multi([rmin rmax],Nx,W,Erange,c.mu_nacs/c.me,1,1);
 
-%% display results
+% display results
 diff(E_out)*c.hartree/c.h * 1e-6
 errstr(E_out/c.wavenum2hartree*(29.9792458),err_est/c.wavenum2hartree*(29.9792458))
 

@@ -55,6 +55,32 @@ hold off;
 xlabel('M_{tot}');
 ylabel('Energy (GHz)');
 
+%% solve the vibrational problem
+% simulation parameters
+Nx = 2000;
+rmin = 5;
+rmax = 100;
+
+Erange = 0.049415 + [-1 1]*1e-4; 
+
+% total hamiltonian
+W =@(r) NaCscPES(r);
+
+% call the solver
+[E_out,nodes_out,err_est,psi,r] = cc_logderiv_adaptive_multi([rmin rmax],Nx,W,Erange,c.mu_nacs/c.me,1,1);
+
+figure(2);
+clf;
+for i = 1:size(psi,3)
+    subplot(size(psi,3),1,i)
+    plot(r,psi(:,:,i),'linewidth',2);
+    set(gca,'xscale','log')
+    xlim([min(r) max(r)])
+    ylabel('\psi(R)')
+end
+xlabel('R (a_0)')
+
+
 %% save data
 qnums = basis.aUC.qnums;
 psi = evecs;

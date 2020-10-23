@@ -2,8 +2,34 @@ clear;
 
 c = constants();
 
-Xdata = load('X1Sigma_state_855G.mat');
-cdata = load('c3Sigma_state_855G.mat');
+%% load data
 fdata = load('feshbach_state_855G.mat');
+cdata = load('c3Sigma_state_855G.mat');
+Xdata = load('X1Sigma_state_855G.mat');
 
-intersect(Xdata.qnums.Properties.VariableNames,cdata.qnums.Properties.VariableNames),fdata.qnums.Properties.VariableNames]);
+%% ignore quantum numbers that are not common to all 3 states
+common_qnums = intersect(intersect(Xdata.qnums.Properties.VariableNames,...
+    cdata.qnums.Properties.VariableNames),fdata.qnums.Properties.VariableNames);
+
+fdata.qnums(:,~ismember(fdata.qnums.Properties.VariableNames,common_qnums)) = [];
+cdata.qnums(:,~ismember(cdata.qnums.Properties.VariableNames,common_qnums)) = [];
+Xdata.qnums(:,~ismember(Xdata.qnums.Properties.VariableNames,common_qnums)) = [];
+
+qnums_ignore = {'S','Sigma','Lambda'};
+fdata.qnums(:,qnums_ignore) = [];
+cdata.qnums(:,qnums_ignore) = [];
+Xdata.qnums(:,qnums_ignore) = [];
+
+%% transition dipole moments
+p = -1:1;
+
+pol922 = [1 -1i 0]/sqrt(2); % sigma+
+pol635 = [1 -1i 0]/sqrt(2); % sigma+
+
+T922 = sphten(pol922);
+T635 = sphten(pol635);
+
+TDM_c_f = operator_matrix(@transition_dipole_case_a,{cdata.qnums,fdata.qnums},{'eta','J','Omega','m_J'},p);
+TDM_X_c = operator_matrix(@transition_dipole_case_a,{Xdata.qnums,cdata.qnums},{'eta','J','Omega','m_J'},p);
+
+(-1).^p .* 

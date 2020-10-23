@@ -57,9 +57,9 @@ ylabel('Energy (GHz)');
 
 %% solve the vibrational problem
 % simulation parameters
-Nx = 2000;
+Nx = 1000;
 rmin = 5;
-rmax = 100;
+rmax = 20;
 
 Erange = 0.049415 + [-1 1]*1e-4; 
 

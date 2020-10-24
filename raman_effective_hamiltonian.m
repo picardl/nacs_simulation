@@ -3,14 +3,14 @@ clear;
 c = constants();
 
 power922 = 0.1; % W
-power635 = 0.002; % W
+power635 = 0.001; % W
 
 waist = 13e-6; % m
 
 % laser polarizations in cartesian coords
 % sigma+
-pol922 = [1 -1i 0]/sqrt(2); 
-pol635 = [1 -1i 0]/sqrt(2); 
+% pol922 = [1 -1i 0]/sqrt(2); 
+% pol635 = [1 -1i 0]/sqrt(2); 
 
 % sigma-
 % pol922 = [1 1i 0]/sqrt(2); 
@@ -21,8 +21,8 @@ pol635 = [1 -1i 0]/sqrt(2);
 % pol635 = [1 0 0];
 
 % sigma+/-
-% pol922 = [1 0 0]; 
-% pol635 = [1 0 0];
+pol922 = [1 0 0]; 
+pol635 = [1 0 0];
 
 %% laser stuff
 % electric fields
@@ -92,7 +92,7 @@ E_922 = 1e9*c.h*(325111 + linspace(0,30,1e3));
 response_922 = sum(sum(abs(cdata.psi'*H_TDM_c_f).^2,2)./(cdata.E-fdata.E(1)-E_922 - 1i*c.c3Sigma.Gamma),1);
 
 x = E_922*1e-9/c.h - 325111;
-plot(x,real(response_922),x,imag(response_922))
+plot(x,imag(response_922))
 xlim([min(x) max(x)])
 
 

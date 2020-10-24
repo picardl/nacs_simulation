@@ -1,5 +1,19 @@
 function out = operator_matrix(element_fun,qnums,include,varargin)
 
+% element_fun(r,c,varargin) - a function that takes two tables r and c
+% containing the quantum numbers of the rows and columns of the resulting
+% operator matrix
+
+% qnums - either in the format {qnums_row,qnums_col} or just a single table
+% if these are identical. class(qnums) = table. table of quantum numbers
+% representing the basis
+
+% include - quantum numbers involved in the matrix element calculation. all
+% others will be treated as "spectators" and subject to a kronecker delta
+
+% varargin - any other arguments to element_fun, such as a spherical tensor
+% index p = -1:1. 
+
 if isa(qnums,'cell')
     qnums_row = qnums{1};
     qnums_col = qnums{2};

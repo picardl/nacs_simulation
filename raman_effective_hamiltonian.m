@@ -2,6 +2,9 @@ clear;
 
 c = constants();
 
+% build an effective hamiltonian for the interaction between the feshbach
+% molecule state, c3sigma, and x1sigma. 
+
 power922 = 0.1; % W
 power635 = 0.001; % W
 

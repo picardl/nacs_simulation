@@ -1,4 +1,6 @@
 
+% testing out how many rotational states are needed for a full
+% representation of hund's case b state in case a, and vice versa
 
 a.qnums = build_basis({'J','S','Lambda'},{0:1,1,0},[1 1 1],'a');
 a.ops = build_operators(a.qnums);

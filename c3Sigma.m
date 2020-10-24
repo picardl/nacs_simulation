@@ -6,7 +6,7 @@ clear;
 c = constants();
 
 Jmax = 3;
-mtot = [3 5];
+mtot = [2 3 4 5];
 B = 855*1e-4;
 
 %% build basis
@@ -37,7 +37,7 @@ basis.aUC.ops.H = basis.aUC.ops.Hrot + basis.aUC.ops.Hsrot ...
     + basis.aUC.ops.HZ0elecspin.*B + basis.aUC.ops.Hhf_Na + basis.aUC.ops.Hhf_Cs + basis.aUC.ops.H_OmegaDoubling;
 
 %% truncate basis
-[basis,rc_keep,Nchn] = truncate_basis(basis,@(ops) ops.J_z+ops.i_Na_z+ops.i_Cs_z,mtot);
+% [basis,rc_keep,Nchn] = truncate_basis(basis,@(ops) ops.J_z+ops.i_Na_z+ops.i_Cs_z,mtot);
 
 %% diagonalize
 [evecs,evals] = eig(basis.aUC.ops.H);

@@ -1,5 +1,6 @@
 function [basis,rc_keep,Nchn] = truncate_basis(basis,op_fun,values,tol)
 
+
 if nargin<4
     tol = 1e-3;
 end
@@ -11,9 +12,21 @@ for i = 1:numel(f)
     Nstates = size(basis.(f{i}).qnums,1);
     [row,col] = ndgrid(1:Nstates,1:Nstates);
     
+    op_test = op_fun(basis.(f{i}).ops);
+    op_test_diag = diag(op_test);
+    op_test_offdiag = op_test - diag(op_test_diag);
+    
     i_keep = [];
     for j = 1:numel(values)
-        i_keep = cat(1,i_keep,find(abs(diag(op_fun(basis.(f{i}).ops)) - values(j)) < tol));
+        i_keep = cat(1,i_keep,find(abs(diag(op_test) - values(j)) < tol));
+    end
+    
+    nz_offdiag = find(abs(triu(op_test_offdiag))>tol);
+    [r_od,c_od] = ind2sub([Nstates Nstates],nz_offdiag);
+    
+    if mean(abs(diag(op_test_offdiag(r_od(~ismember(r_od,i_keep)),c_od(~ismember(r_od,i_keep))))))>tol
+        warning(['basis ' f{i} ' could not be truncated cleanly. skipping.']);
+        continue
     end
     
     Nchn.(f{i}) = numel(i_keep);

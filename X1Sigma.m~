@@ -14,7 +14,7 @@ rmin = 4; % abohr
 rmax = 15; % abohr
 Erange = -0.0224 + [-1 1]*1e-4;
 mtot = [2 4];
-save_basis = 'aIC';
+save_basis = 'aFC';
 
 B = 855e-4;
 
@@ -136,4 +136,4 @@ qnums = basis.(save_basis).qnums;
 E = E + E_vib*const.hartree;
 r = r*const.abohr;
 
-save(['X1Sigma_state_' num2str(round(B*1e4)) 'G_' save_basis '.mat'],'qnums','psi','psi_r','r','E','B');
+save(['X1Sigma_state_' num2str(round(B*1e4)) 'G_' .mat'],'qnums','psi','psi_r','r','E','B');

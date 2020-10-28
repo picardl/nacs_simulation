@@ -50,7 +50,7 @@ end
 
 %% truncate basis
 % basis = rmfield(basis,'aUC');
-[basis,rc_keep,Nchn] = truncate_basis(basis,@(ops) ops.F_z,mtot);
+% [basis,rc_keep,Nchn] = truncate_basis(basis,@(ops) ops.F_z,mtot);
 
 %% diagonalize
 [evecs,evals] = eig(basis.(save_basis).ops.H);

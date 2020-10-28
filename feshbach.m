@@ -64,8 +64,8 @@ basis.change.SC_aIC = basis.change.SC_b * (basis.change.aUC_b') * basis.change.a
 basis.change.SC_aUC = basis.change.SC_b * (basis.change.aUC_b');
 
 %% truncate basis to specific mtot (=4 for feshbach state)
-[basis,rc_keep,Nchn] = truncate_basis(basis,@(ops) ops.F_z,mtot);
-[basis,rc_keep,Nchn] = truncate_basis(basis,@(ops) ops.N_sq,0);
+basis = truncate_basis(basis,@(ops) ops.F_z,mtot);
+basis = truncate_basis(basis,@(ops) ops.N_sq,0);
 
 %% trap
 waist = 1064e-9; % meter

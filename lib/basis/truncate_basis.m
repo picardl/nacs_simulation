@@ -20,6 +20,7 @@ for i = 1:numel(f)
     for j = 1:numel(values)
         i_keep = cat(1,i_keep,find(abs(diag(op_test) - values(j)) < tol));
     end
+    i_keep = sort(i_keep);
     
     nz_offdiag = find(abs(triu(op_test_offdiag))>tol);
     [r_od,c_od] = ind2sub([Nstates Nstates],nz_offdiag);

@@ -5,7 +5,7 @@ c = constants();
 % build an effective hamiltonian for the interaction between the feshbach
 % molecule state, c3sigma, and x1sigma.
 
-basis = 'aUC';
+basis = 'aIC';
 
 power922 = 0.1; % W
 power635 = 0.001; % W
@@ -70,7 +70,7 @@ switch basis
             {cdata.qnums,fdata.qnums},{'eta','J','Omega','I','F','m_F'},p,T1q);
         rot_TDM_X_c_components = operator_matrix(@transition_dipole_case_aFC,...
             {Xdata.qnums,cdata.qnums},{'eta','J','Omega','I','F','m_F'},p,T1q);
-    case 'aUC'
+    case {'aUC','aIC'}
         rot_TDM_c_f_components = operator_matrix(@transition_dipole_case_a,...
             {cdata.qnums,fdata.qnums},{'eta','J','Omega','m_J'},p,T1q);
         rot_TDM_X_c_components = operator_matrix(@transition_dipole_case_a,...
@@ -114,19 +114,34 @@ plot(x,imag(response_922),'linewidth',2)
 xlim([min(x) max(x)])
 
 
-cfnz = find(rot_TDM_c_f);
-[r,c] = ind2sub(size(rot_TDM_c_f),cfnz);
+cfnz = find(H_TDM_c_f);
+[rnz,cnz] = ind2sub(size(H_TDM_c_f),cfnz);
+
+% for i = 1:numel(cfnz)
+%     H_TDM_c_f(cfnz(i));
+%     qnums_target = cdata.qnums(rnz(i),:);
+%     qnums_source = fdata.qnums(cnz(i),:);
+%     disp(qnums_source)
+%     disp(qnums_target)
+%     disp(H_TDM_c_f(cfnz(i))/c.h * 1e-6)
+% end
 
 switch basis
     case 'aUC'
-        qnums_source = fdata.qnums(c,:);
-        qnums_target = cdata.qnums(r,:);
+        qnums_source = fdata.qnums(cnz,:);
+        qnums_target = cdata.qnums(rnz,:);
         qnums_target.m_F = sum(qnums_target{:,{'m_i_Na','m_i_Cs','m_J'}},2);
         qnums_source
         qnums_target
     case 'aFC'
-        qnums_source = fdata.qnums(c,:);
-        qnums_target = cdata.qnums(r,:);
+        qnums_source = fdata.qnums(cnz,:);
+        qnums_target = cdata.qnums(rnz,:);
+        qnums_source
+        qnums_target
+    case 'aIC'
+        qnums_source = fdata.qnums(cnz,:);
+        qnums_target = cdata.qnums(rnz,:);
+        qnums_target.m_F = sum(qnums_target{:,{'m_I','m_J'}},2);
         qnums_source
         qnums_target
 end

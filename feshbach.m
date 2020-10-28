@@ -60,6 +60,7 @@ end
 [basis.aIC,basis.aUC,basis.change.aUC_aIC] = couple_angmom(basis.aUC,'i_Na','i_Cs','I');
 [basis.aFC,basis.aIC,basis.change.aIC_aFC] = couple_angmom(basis.aIC,'J','I','F');
 basis.change.SC_aFC = basis.change.SC_b * (basis.change.aUC_b') * basis.change.aUC_aIC * basis.change.aIC_aFC;
+basis.change.SC_aIC = basis.change.SC_b * (basis.change.aUC_b') * basis.change.aUC_aIC;
 basis.change.SC_aUC = basis.change.SC_b * (basis.change.aUC_b');
 
 %% truncate basis to specific mtot (=4 for feshbach state)

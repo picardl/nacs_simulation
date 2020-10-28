@@ -39,9 +39,9 @@ T922 = sphten(pol922);
 T635 = sphten(pol635);
 
 %% load data
-fdata = load(['feshbach_state_855G_' basis '.mat']);
-cdata = load(['c3Sigma_state_855G_' basis '.mat']);
-Xdata = load(['X1Sigma_state_855G_' basis '.mat']);
+fdata = load(['data/feshbach_state_855G_' basis '.mat']);
+cdata = load(['data/c3Sigma_state_855G_' basis '.mat']);
+Xdata = load(['data/X1Sigma_state_855G_' basis '.mat']);
 
 %% ignore quantum numbers that are not common to all 3 states
 common_qnums = intersect(intersect(Xdata.qnums.Properties.VariableNames,...
@@ -52,28 +52,29 @@ cdata.qnums(:,~ismember(cdata.qnums.Properties.VariableNames,common_qnums)) = []
 Xdata.qnums(:,~ismember(Xdata.qnums.Properties.VariableNames,common_qnums)) = [];
 
 % cut q nums we don't care about
-qnums_ignore = {'Sigma','Lambda'};
-fdata.qnums(:,qnums_ignore) = [];
-cdata.qnums(:,qnums_ignore) = [];
-Xdata.qnums(:,qnums_ignore) = [];
+qnums_ignore = {'S','Sigma','Lambda'};
+f_ignore = ismember(fdata.qnums.Properties.VariableNames,qnums_ignore);
+c_ignore = ismember(cdata.qnums.Properties.VariableNames,qnums_ignore);
+X_ignore = ismember(Xdata.qnums.Properties.VariableNames,qnums_ignore);
 
 %% transition dipole moments, angular momentum part
 p = -1:1; % spherical index
 
-T1q = sphten([1 0 0]);
+T1q_c_f = sphten([1 0 0]);
+T1q_X_c = sphten([1 0 0]);
 
 % transition dipole moments
 switch basis
     case 'aFC'
         rot_TDM_c_f_components = operator_matrix(@transition_dipole_case_aFC,...
-            {cdata.qnums,fdata.qnums},{'eta','J','Omega','I','F','m_F'},p,T1q);
+            {cdata.qnums(:,~c_ignore),fdata.qnums(:,~f_ignore)},{'eta','J','Omega','I','F','m_F'},p,T1q_c_f);
         rot_TDM_X_c_components = operator_matrix(@transition_dipole_case_aFC,...
-            {Xdata.qnums,cdata.qnums},{'eta','J','Omega','I','F','m_F'},p,T1q);
+            {Xdata.qnums(:,~X_ignore),cdata.qnums(:,~c_ignore)},{'eta','J','Omega','I','F','m_F'},p,T1q_X_c);
     case {'aUC','aIC'}
         rot_TDM_c_f_components = operator_matrix(@transition_dipole_case_a,...
-            {cdata.qnums,fdata.qnums},{'eta','J','Omega','m_J'},p,T1q);
+            {cdata.qnums(:,~c_ignore),fdata.qnums(:,~f_ignore)},{'eta','J','Omega','m_J'},p,T1q_c_f);
         rot_TDM_X_c_components = operator_matrix(@transition_dipole_case_a,...
-            {Xdata.qnums,cdata.qnums},{'eta','J','Omega','m_J'},p,T1q);
+            {Xdata.qnums(:,~X_ignore),cdata.qnums(:,~c_ignore)},{'eta','J','Omega','m_J'},p,T1q_X_c);
 end
 
 % off-diagonal Hamiltonian blocks
@@ -88,25 +89,35 @@ a3S_c3S_elecTDM = (sqrt(1-c.c3Sigma.singlet_fraction)*(fdata.qnums.S==1) ...
     + sqrt(c.c3Sigma.singlet_fraction)*(fdata.qnums.S==0))...
     .*interp1(a3S_c3S_elecTDM_data(:,1)*c.abohr,a3S_c3S_elecTDM_data(:,2)*c.e*c.abohr,cdata.r);
 a3S_c3S_elecTDM(isnan(a3S_c3S_elecTDM)) = 0;
-
 rovib_TDM_c_f = rot_TDM_c_f.*permute(a3S_c3S_elecTDM,[3 1 2]);
 
-%% laser effective hamiltonian matrix elements
-psi_feshbach_interp = permute(interp1(fdata.r,fdata.psi(:,:,1)',cdata.r,'spline')',[1 3 2]);
-psi_c_interp = cdata.psi.*permute(cdata.psi_r,[1 3 2]);
-TDM_R = mtimesx(conj(permute(psi_c_interp,[2 1 3])),mtimesx(rovib_TDM_c_f,psi_feshbach_interp));
-TDM = trapz(cdata.r,TDM_R,3);
+X1S_c3S_elecTDM = mean(interp1(X1S_B1P_elecTDM_data(:,1)*c.abohr,X1S_B1P_elecTDM_data(:,2)*c.e*c.abohr,Xdata.r,'spline'));
 
-H_922 = TDM*E922;
+%% laser effective hamiltonian matrix elements
+psi_c = cdata.psi.*permute(cdata.psi_r,[1 3 2]);
+
+psi_feshbach_interp = permute(interp1(fdata.r,fdata.psi(:,:,1)',cdata.r,'spline')',[1 3 2]);
+TDM_R_c_f = mtimesx(conj(permute(psi_c,[2 1 3])),mtimesx(rovib_TDM_c_f,psi_feshbach_interp));
+TDM_c_f = trapz(cdata.r,TDM_R_c_f,3);
+H_922 = TDM_c_f*E922;
+
+psi_c_interp = interp1(cdata.r,cdata.psi_r,Xdata.r,'spline');
+vib_TDM_X_c = trapz(Xdata.r,Xdata.psi_r.*psi_c_interp);
+
+H_635 = vib_TDM_X_c*X1S_c3S_elecTDM*E635 * (Xdata.psi'*rot_TDM_X_c*cdata.psi);
+
+H_635'
 
 %% let's plot some spectra
 E_922 = 1e9*c.h*(325111 + linspace(5,18,1e3));
 
-decay_rate = (c.c3Sigma.Gamma/(2*c.h)) * sum(2*abs(H_922).^2./(2*abs(H_922).^2 + 4*(cdata.E - fdata.E' - E_922).^2 + c.c3Sigma.Gamma^2),1);
+decay_rate = sum(2*abs(H_922).^2./(2*abs(H_922).^2 + 4*(cdata.E - fdata.E' - E_922).^2 + c.c3Sigma.Gamma^2),1);
 
-plot(E_922/c.h*1e-9 - 325000,decay_rate*1e-6);
+plot(E_922/c.h*1e-9 - 325000,decay_rate);
+set(gca,'fontsize',14)
+xlabel('up leg detuning - 325000 (GHz)')
+ylabel('scattering rate (MHz)');
+title(['P_{922nm} = ' num2str(power922*1e3) ' mW'])
 
-% ylim([0 450])
-
-
+%%
 

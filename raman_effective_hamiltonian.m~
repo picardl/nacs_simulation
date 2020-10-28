@@ -39,9 +39,9 @@ T922 = sphten(pol922);
 T635 = sphten(pol635);
 
 %% load data
-fdata = load(['feshbach_state_855G_' basis '.mat']);
-cdata = load(['c3Sigma_state_855G_' basis '.mat']);
-Xdata = load(['X1Sigma_state_855G_' basis '.mat']);
+fdata = load(['data/feshbach_state_855G_' basis '.mat']);
+cdata = load(['data/c3Sigma_state_855G_' basis '.mat']);
+Xdata = load(['data/X1Sigma_state_855G_' basis '.mat']);
 
 %% ignore quantum numbers that are not common to all 3 states
 common_qnums = intersect(intersect(Xdata.qnums.Properties.VariableNames,...
@@ -84,86 +84,40 @@ rot_TDM_X_c = sum((-1).^reshape(p,1,1,3) .* rot_TDM_X_c_components .* reshape(T6
 a3S_c3S_elecTDM_data = importdata('lib/rosario_potentials/DM_a3S_c3S_Full');
 X1S_B1P_elecTDM_data = importdata('lib/rosario_potentials/DM_X1S_B1P_Full');
 
-% r = cdata.r;
-% psi_feshbach_interp = interp1(fdata.r,fdata.psi(:,1,:)',r,'spline')';
-% % psi_X1Sigma_interp = interp1(Xdata.r,Xdata.psi_r,r,'spline');
-%
-% a3S_c3S_elecTDM = (sqrt(1-c.c3Sigma.singlet_fraction)*(fdata.qnums.S==1) ...
-%     + sqrt(c.c3Sigma.singlet_fraction)*(fdata.qnums.S==0))...
-%     .*interp1(a3S_c3S_elecTDM_data(:,1)*c.abohr,a3S_c3S_elecTDM_data(:,2)*c.e*c.abohr,r);
-% a3S_c3S_elecTDM(isnan(a3S_c3S_elecTDM)) = 0;
-
-% X1S_B1P_elecTDM = sqrt(c.c3Sigma.singlet_fraction).*...
-%     interp1(X1S_B1P_elecTDM_data(:,1)*c.abohr,X1S_B1P_elecTDM_data(:,2)*c.e*c.abohr,r);
-% X1S_B1P_elecTDM(isnan(X1S_B1P_elecTDM)) = 0;
-
-%%
-
 a3S_c3S_elecTDM = (sqrt(1-c.c3Sigma.singlet_fraction)*(fdata.qnums.S==1) ...
     + sqrt(c.c3Sigma.singlet_fraction)*(fdata.qnums.S==0))...
     .*interp1(a3S_c3S_elecTDM_data(:,1)*c.abohr,a3S_c3S_elecTDM_data(:,2)*c.e*c.abohr,cdata.r);
 a3S_c3S_elecTDM(isnan(a3S_c3S_elecTDM)) = 0;
 
+X1S_c3S_elecTDM = sqrt(c.c3Sigma.singlet_fraction).*interp1(X1S_B1P_elecTDM_data(:,1)*c.abohr,X1S_B1P_elecTDM_data(:,2)*c.e*c.abohr,cdata.r);
+X1S_c3S_elecTDM(isnan(X1S_c3S_elecTDM)) = 0;
+
 rovib_TDM_c_f = rot_TDM_c_f.*permute(a3S_c3S_elecTDM,[3 1 2]);
+rovib_TDM_X_c = rot_TDM_X_c.*permute(X1S_c3S_elecTDM,[3 1 2]);
 
-deltaE = cdata.E - fdata.E';
+%% laser effective hamiltonian matrix elements
+psi_c = cdata.psi.*permute(cdata.psi_r,[1 3 2]);
+
 psi_feshbach_interp = permute(interp1(fdata.r,fdata.psi(:,:,1)',cdata.r,'spline')',[1 3 2]);
-psi_c_interp = cdata.psi.*permute(cdata.psi_r,[1 3 2]);
-integrand = mtimesx(conj(permute(psi_c_interp,[2 1 3])),mtimesx(rovib_TDM_c_f,psi_feshbach_interp));
-tdm = trapz(cdata.r,integrand,3);
+TDM_R_c_f = mtimesx(conj(permute(psi_c,[2 1 3])),mtimesx(rovib_TDM_c_f,psi_feshbach_interp));
+TDM_c_f = trapz(cdata.r,TDM_R_c_f,3);
+H_922 = TDM_c_f*E922;
 
-H_922 = tdm*E922;
+vib_TDM_X_c = trapz(cdata.r,cdata.psi_r.*
+TDM_R_X_c = mtimesx(conj(permute(psi_c,[2 1 3])),mtimesx(rovib_TDM_X_c,psi_X));
+TDM = trapz(cdata.r,TDM_R_X_c,3);
+H_635 = TDM_X_c*E635;
 
-psi_nz = cdata.psi(:,abs(sum(tdm/(c.e*c.abohr),3))>1e-5);
-cdata.qnums(any(abs(psi_nz).^2>1e-3,2),:)
+%% let's plot some spectra
+E_922 = 1e9*c.h*(325111 + linspace(5,18,1e3));
+
+decay_rate = sum(2*abs(H_922).^2./(2*abs(H_922).^2 + 4*(cdata.E - fdata.E' - E_922).^2 + c.c3Sigma.Gamma^2),1);
+
+plot(E_922/c.h*1e-9 - 325000,decay_rate);
+set(gca,'fontsize',14)
+xlabel('up leg detuning - 325000 (GHz)')
+ylabel('scattering rate (MHz)');
+title(['P_{922nm} = ' num2str(power922*1e3) ' mW'])
 
 %%
-%
-% vibronic_TDM_c_f = trapz(r,cdata.psi_r.*a3S_c3S_elecTDM.*psi_feshbach_interp,2);
-% vibronic_TDM_X_c = trapz(r,cdata.psi_r.*X1S_B1P_elecTDM.*psi_X1Sigma_interp,2);
-%
-% H_TDM_c_f = rot_TDM_c_f.*vibronic_TDM_c_f' * E922;
-% H_TDM_X_c = rot_TDM_X_c.*vibronic_TDM_X_c' * E635;
-%
-% %% let's plot some spectra
-% E_922 = 1e9*c.h*(325111 + linspace(5,18,1e3));
-%
-% response_922 = sum(abs(cdata.psi'*H_TDM_c_f).^2,2)./(cdata.E-fdata.E(1)-E_922 - 1i*c.c3Sigma.Gamma);
-%
-% x = E_922*1e-9/c.h - 325111;
-% plot(x,imag(response_922)/c.h * 1e-6,'linewidth',2)
-% xlim([min(x) max(x)])
-%
-%
-% cfnz = find(H_TDM_c_f);
-% [rnz,cnz] = ind2sub(size(H_TDM_c_f),cfnz);
-%
-% % for i = 1:numel(cfnz)
-% %     H_TDM_c_f(cfnz(i));
-% %     qnums_target = cdata.qnums(rnz(i),:);
-% %     qnums_source = fdata.qnums(cnz(i),:);
-% %     disp(qnums_source)
-% %     disp(qnums_target)
-% %     disp(H_TDM_c_f(cfnz(i))/c.h * 1e-6)
-% % end
-%
-% switch basis
-%     case 'aUC'
-%         qnums_source = fdata.qnums(cnz,:);
-%         qnums_target = cdata.qnums(rnz,:);
-%         qnums_target.m_F = sum(qnums_target{:,{'m_i_Na','m_i_Cs','m_J'}},2);
-%         qnums_source
-%         qnums_target
-%     case 'aFC'
-%         qnums_source = fdata.qnums(cnz,:);
-%         qnums_target = cdata.qnums(rnz,:);
-%         qnums_source
-%         qnums_target
-%     case 'aIC'
-%         qnums_source = fdata.qnums(cnz,:);
-%         qnums_target = cdata.qnums(rnz,:);
-%         qnums_target.m_F = sum(qnums_target{:,{'m_I','m_J'}},2);
-%         qnums_source
-%         qnums_target
-% end
 

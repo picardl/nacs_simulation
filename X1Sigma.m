@@ -136,4 +136,4 @@ qnums = basis.(save_basis).qnums;
 E = E + E_vib*const.hartree;
 r = r*const.abohr;
 
-save(['X1Sigma_state_' num2str(round(B*1e4)) 'G_' save_basis '.mat'],'qnums','psi','psi_r','r','E','B');
+save(['data/X1Sigma_state_' num2str(round(B*1e4)) 'G_' save_basis '.mat'],'qnums','psi','psi_r','r','E','B');

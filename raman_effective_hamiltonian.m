@@ -162,12 +162,16 @@ NX = size(X.psi,2);
 
 Nstates = Nf + Nc + NX;
 
-H0 = diag(cat(1,0,c.E-E0_up-f.E-1i*const.c3Sigma.Gamma,X.E-(E0_up-E0_dn)-f.E));
-H_up = [zeros(Nf) H_up' zeros(Nf,NX); H_up zeros(Nc,Nc+NX); zeros(NX,Nstates)];
-H_dn = [zeros(Nf,Nstates); zeros(Nc,Nf+Nc) H_dn; zeros(NX,Nf) H_dn' zeros(NX)];
+ops.H0 = diag(cat(1,0,c.E-E0_up-f.E,X.E-(E0_up-E0_dn)-f.E));
+ops.H_up = [zeros(Nf) H_up' zeros(Nf,NX); H_up zeros(Nc,Nc+NX); zeros(NX,Nstates)];
+ops.H_dn = [zeros(Nf,Nstates); zeros(Nc,Nf+Nc) H_dn; zeros(NX,Nf) H_dn' zeros(NX)];
+
+ops.If = diag(cat(1,ones(Nf,1),zeros(Nc,1),zeros(NX,1)));
+ops.Ic = diag(cat(1,zeros(Nf,1),ones(Nc,1),zeros(NX,1)));
+ops.IX = diag(cat(1,zeros(Nf,1),zeros(Nc,1),ones(NX,1)));
 
 fname = ['data/transfer_Heff_' basis '_' pol_up '_' pol_dn '.mat'];
-save(fname,'H0','H_up','H_dn','Nf','Nc','c','X','f');
+save(fname,'ops','Nf','Nc','NX','c','X','f','Nstates');
 disp(['saved file ' fname])
 
 

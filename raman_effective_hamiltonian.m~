@@ -12,7 +12,7 @@ power_dn = 1; % W
 
 waist = 13e-6; % m
 
-pol_up = 'pi';
+pol_up = 'sigp';
 pol_dn = 'sigp';
 
 %% laser stuff
@@ -162,14 +162,14 @@ NX = size(X.psi,2);
 
 Nstates = Nf + Nc + NX;
 
-H0 = diag(cat(1,0,c.E-E0_up-f.E-1i*const.c3Sigma.Gamma,X.E-(E0_up-E0_dn)-f.E));
-H_up = [zeros(Nf) H_up' zeros(Nf,NX); H_up zeros(Nc,Nc+NX); zeros(NX,Nstates)];
-H_dn = [zeros(Nf,Nstates); zeros(Nc,Nf+Nc) H_dn; zeros(NX,Nf) H_dn' zeros(NX)];
+ops.H0 = diag(cat(1,0,c.E-E0_up-f.E-1i*const.c3Sigma.Gamma,X.E-(E0_up-E0_dn)-f.E));
+ops.H_up = [zeros(Nf) H_up' zeros(Nf,NX); H_up zeros(Nc,Nc+NX); zeros(NX,Nstates)];
+ops.H_dn = [zeros(Nf,Nstates); zeros(Nc,Nf+Nc) H_dn; zeros(NX,Nf) H_dn' zeros(NX)];
+
+ops.If = 
 
 fname = ['data/transfer_Heff_' basis '_' pol_up '_' pol_dn '.mat'];
 save(fname,'H0','H_up','H_dn','Nf','Nc','c','X','f');
 disp(['saved file ' fname])
-
-sqrt(abs(H_dn'*H_up))/const.h*1e-6
 
 

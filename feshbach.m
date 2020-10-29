@@ -127,4 +127,6 @@ qnums = basis.(save_basis).qnums;
 r = r*c.abohr;
 psi = psi_save./sqrt(c.abohr);
 E = E_out*c.hartree;
-save(['data/feshbach_state_' num2str(round(B*1e4)) 'G_' save_basis '.mat'],'qnums','r','psi','E','B');
+fname = ['data/feshbach_state_' num2str(round(B*1e4)) 'G_' save_basis '.mat'];
+save(fname,'qnums','r','psi','E','B');
+disp(['saved file ' fname])

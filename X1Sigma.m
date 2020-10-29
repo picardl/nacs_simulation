@@ -13,8 +13,8 @@ Nx = 500;
 rmin = 4; % abohr
 rmax = 15; % abohr
 Erange = -0.0224 + [-1 1]*1e-4;
-mtot = [2 4];
-save_basis = 'aIC';
+mtot = [2 3 4 5];
+save_basis = 'aFC';
 
 B = 855e-4;
 
@@ -91,16 +91,16 @@ basis = rmfield(basis,{'IC','FC','F1C','F2C','b'});
 [psi,E] = eigenshuffle(basis.(save_basis).ops.H);
 E = real(E);
 
-mF = diag(psi'*basis.(save_basis).ops.F_z*psi);
-figure(1);
-clf;
-hold on; box on;
-for i = 1:numel(E)
-    plot([-1 1]*0.4+mF(i),[1 1]*E(i)/const.h*1e-6,'-k');
-end
-hold off;
-xlabel('m_F');
-ylabel('E (MHz)');
+% mF = diag(psi'*basis.(save_basis).ops.F_z*psi);
+% figure(1);
+% clf;
+% hold on; box on;
+% for i = 1:numel(E)
+%     plot([-1 1]*0.4+mF(i),[1 1]*E(i)/const.h*1e-6,'-k');
+% end
+% hold off;
+% xlabel('m_F');
+% ylabel('E (MHz)');
 
 %% solve the vibrational problem
 rtest = linspace(rmin,rmax,1e3);
@@ -113,27 +113,28 @@ Wtest = W(rtest);
 [E_vib,nodes_out,err_est,psi_r,r] = ...
     cc_logderiv_adaptive_multi([rmin rmax],Nx,@NaCsXPES,Erange,const.mu_nacs/const.me,1,1);
 
-figure(2);
-clf;
-hold on;
-box on;
-for i = 1:size(psi_r,3)
-    subplot(size(psi_r,3),1,i)
-    plot(rtest,Wtest);
-    plot([rmin rmax],min(Erange)*[1 1],'-k');
-    plot([rmin rmax],max(Erange)*[1 1],'-k');
-    plot(r,psi_r(:,:,i)*0.1*peak2peak(Wtest) + E_vib,'linewidth',2);
-    set(gca,'xscale','log')
-    xlim([min(r) max(r)])
-    ylabel('\psi(R)')
-end
-xlabel('R (a_0)')
-hold off;
+% figure(2);
+% clf;
+% hold on;
+% box on;
+% for i = 1:size(psi_r,3)
+%     subplot(size(psi_r,3),1,i)
+%     plot(rtest,Wtest);
+%     plot([rmin rmax],min(Erange)*[1 1],'-k');
+%     plot([rmin rmax],max(Erange)*[1 1],'-k');
+%     plot(r,psi_r(:,:,i)*0.1*peak2peak(Wtest) + E_vib,'linewidth',2);
+%     set(gca,'xscale','log')
+%     xlim([min(r) max(r)])
+%     ylabel('\psi(R)')
+% end
+% xlabel('R (a_0)')
+% hold off;
 
 %% save data
 psi_r = psi_r./sqrt(const.abohr);
 qnums = basis.(save_basis).qnums;
 E = E + E_vib*const.hartree;
 r = r*const.abohr;
-
-save(['data/X1Sigma_state_' num2str(round(B*1e4)) 'G_' save_basis '.mat'],'qnums','psi','psi_r','r','E','B');
+fname = ['data/X1Sigma_state_' num2str(round(B*1e4)) 'G_' save_basis '.mat'];
+save(fname,'qnums','psi','psi_r','r','E','B');
+disp(['saved file ' fname])

@@ -5,7 +5,7 @@ clear;
 
 c = constants();
 
-Jmax = 2;
+Jmax = 3;
 mtot = [3 4 5];
 B = 855*1e-4;
 save_basis = 'aUC';
@@ -57,16 +57,16 @@ end
 evals = abs(diag(evals));
 
 %% plot
-mF_expect = real(diag(evecs'*basis.(save_basis).ops.F_z*evecs));
-figure(1);
-clf;
-hold on; box on;
-for i = 1:numel(evals)
-    plot(mF_expect(i) + [-0.4 0.4],[1 1]*evals(i)*1e-9/c.h,'-k')
-end
-hold off;
-xlabel('M_{tot}');
-ylabel('Energy (GHz)');
+% mF_expect = real(diag(evecs'*basis.(save_basis).ops.F_z*evecs));
+% figure(1);
+% clf;
+% hold on; box on;
+% for i = 1:numel(evals)
+%     plot(mF_expect(i) + [-0.4 0.4],[1 1]*evals(i)*1e-9/c.h,'-k')
+% end
+% hold off;
+% xlabel('M_{tot}');
+% ylabel('Energy (GHz)');
 
 %% solve the vibrational problem
 % simulation parameters
@@ -80,16 +80,16 @@ Erange = 0.049415 + [-1 1]*1e-4;
 [E_vib,nodes_out,err_est,psi_r,r] = ...
     cc_logderiv_adaptive_multi([rmin rmax],Nx,@NaCscPES,Erange,c.mu_nacs/c.me,1,1);
 
-figure(2);
-clf;
-for i = 1:size(psi_r,3)
-    subplot(size(psi_r,3),1,i)
-    plot(r,psi_r(:,:,i),'linewidth',2);
-    set(gca,'xscale','log')
-    xlim([min(r) max(r)])
-    ylabel('\psi(R)')
-end
-xlabel('R (a_0)')
+% figure(2);
+% clf;
+% for i = 1:size(psi_r,3)
+%     subplot(size(psi_r,3),1,i)
+%     plot(r,psi_r(:,:,i),'linewidth',2);
+%     set(gca,'xscale','log')
+%     xlim([min(r) max(r)])
+%     ylabel('\psi(R)')
+% end
+% xlabel('R (a_0)')
 
 %% save data
 qnums = basis.(save_basis).qnums;
@@ -98,4 +98,6 @@ psi = evecs;
 r = r*c.abohr;
 psi_r = psi_r/sqrt(c.abohr);
 E = evals + E_vib*c.hartree;
-save(['data/c3Sigma_state_' num2str(round(B*1e4)) 'G_' save_basis '.mat'],'qnums','ops','psi','psi_r','r','E','B');
+fname = ['data/c3Sigma_state_' num2str(round(B*1e4)) 'G_' save_basis '.mat'];
+save(fname,'qnums','ops','psi','psi_r','r','E','B');
+disp(['saved file ' fname])

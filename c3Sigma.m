@@ -5,10 +5,10 @@ clear;
 
 c = constants();
 
-Jmax = 3;
-mtot = [3 4 5];
+Jmax = 2;
+mtot = [3 4 5]; % [3 4 5];
 B = 855*1e-4;
-save_basis = 'aUC';
+save_basis = 'aIC';
 
 %% build bases
 basis.aUC.qnums = build_basis({'eta','Lambda','Omega','J','S','i_Na','i_Cs'},...

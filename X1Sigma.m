@@ -14,7 +14,7 @@ rmin = 4; % abohr
 rmax = 15; % abohr
 Erange = -0.0224 + [-1 1]*1e-4;
 mtot = [2 3 4 5];
-save_basis = 'aFC';
+save_basis = 'aUC';
 
 B = 855e-4;
 

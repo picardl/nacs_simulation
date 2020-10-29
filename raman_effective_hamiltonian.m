@@ -5,10 +5,10 @@ c = constants();
 % build an effective hamiltonian for the interaction between the feshbach
 % molecule state, c3sigma, and x1sigma.
 
-basis = 'aFC';
+basis = 'aIC';
 
 power_up = 50e-3; % W
-power_dn = 30e-6; % W
+power_dn = 80e-6; % W
 
 waist = 13e-6; % m
 
@@ -26,7 +26,7 @@ pol_dn = [1 -1i 0]/sqrt(2);
 
 % % sigma+/-
 % pol_up = [1 0 0];
-% pol_dn = [1 0 0];
+% pol_dn = [0 1 0];
 
 % pi
 % pol_up = [0 0 1];
@@ -34,8 +34,8 @@ pol_dn = [1 -1i 0]/sqrt(2);
 
 %% laser stuff
 % electric fields
-E_up = sqrt(4*c.eta0*power_up/(pi*waist^2)); % V/m
-E_dn = sqrt(4*c.eta0*power_dn/(pi*waist^2)); % V/m
+Efield_up = sqrt(4*c.eta0*power_up/(pi*waist^2)); % V/m
+Efield_dn = sqrt(4*c.eta0*power_dn/(pi*waist^2)); % V/m
 
 % laser spherical tensor operators
 T_up = sphten(pol_up);
@@ -60,20 +60,17 @@ f_ignore = ismember(fdata.qnums.Properties.VariableNames,qnums_ignore);
 c_ignore = ismember(cdata.qnums.Properties.VariableNames,qnums_ignore);
 X_ignore = ismember(Xdata.qnums.Properties.VariableNames,qnums_ignore);
 
-%% find energy of nuclear spin stretched m_J=0 state
+%% find energy reference point
 switch basis
-    case 'aUC'
-        [~,ind] = max(evec_ind({'J','m_J','m_i_Na','m_i_Cs'},[1,0,3/2,7/2],cdata,cdata.psi)==evec_leading_percentages(cdata.psi,1),[],2);
-    case 'aIC'
-        [~,ind] = max(evec_ind({'J','m_J','I','m_I'},[1,0,5,5],cdata,cdata.psi)==evec_leading_percentages(cdata.psi,1),[],2);
     case 'aFC'
-        [~,ind] = max(evec_ind({'J','I','F','m_F'},[1,5,5,5],cdata,cdata.psi)==evec_leading_percentages(cdata.psi,1),[],2);
+        [~,ind] = evec_ind({'J','I','F','m_F'},[1,5,6,5],cdata,cdata.psi);
+    case 'aUC'
+        [~,ind] = evec_ind({'J','m_J','m_i_Na','m_i_Cs'},[1,1,3/2,5/2],cdata,cdata.psi);
+    case 'aIC'
+        [~,ind] = evec_ind({'J','m_J','I','m_I'},[1,1,5,4],cdata,cdata.psi);
 end
 E0_up = mean(cdata.E(ind)-min(fdata.E));
 E0_dn = mean(cdata.E(ind)-mean(Xdata.E));
-
-E0_up/c.h*1e-9 - 325000;
-E0_dn/c.h*1e-9 - 472000;
 
 %% transition dipole moments, angular momentum part
 p = -1:1; % spherical index
@@ -109,22 +106,21 @@ a3S_c3S_elecTDM = (sqrt(1-c.c3Sigma.singlet_fraction)*(fdata.qnums.S==1) ...
 a3S_c3S_elecTDM(isnan(a3S_c3S_elecTDM)) = 0;
 rovib_TDM_c_f = rot_TDM_c_f.*permute(a3S_c3S_elecTDM,[3 1 2]);
 
-X1S_c3S_elecTDM = sqrt(c.c3Sigma.singlet_fraction)*mean(interp1(X1S_B1P_elecTDM_data(:,1)*c.abohr,X1S_B1P_elecTDM_data(:,2)*c.e*c.abohr,Xdata.r,'spline'));
+X1S_c3S_elecTDM_interp = interp1(X1S_B1P_elecTDM_data(:,1)*c.abohr,X1S_B1P_elecTDM_data(:,2)*c.e*c.abohr,Xdata.r,'spline');
 
-%% laser effective hamiltonian matrix elements
+%% laser hamiltonian matrix elements
 psi_c = cdata.psi.*permute(cdata.psi_r,[1 3 2]);
-
 psi_feshbach_interp = permute(interp1(fdata.r,fdata.psi(:,:,1)',cdata.r,'spline')',[1 3 2]);
 TDM_R_c_f = mtimesx(conj(permute(psi_c,[2 1 3])),mtimesx(rovib_TDM_c_f,psi_feshbach_interp));
 TDM_c_f = trapz(cdata.r,TDM_R_c_f,3);
-H_up = TDM_c_f*E_up;
+H_up = TDM_c_f*Efield_up;
 
 psi_c_interp = interp1(cdata.r,cdata.psi_r,Xdata.r,'spline');
-vib_TDM_X_c = trapz(Xdata.r,Xdata.psi_r.*psi_c_interp);
-H_dn = vib_TDM_X_c * X1S_c3S_elecTDM * E_dn * (cdata.psi'*rot_TDM_X_c*Xdata.psi);
+vibronic_TDM_X_c = sqrt(c.c3Sigma.singlet_fraction)*trapz(Xdata.r,Xdata.psi_r.*X1S_c3S_elecTDM_interp.*psi_c_interp);
+H_dn = vibronic_TDM_X_c * Efield_dn * (cdata.psi'*rot_TDM_X_c*Xdata.psi);
 
 %% plot scattering rates
-x = linspace(-25,-5,1e3);
+x = linspace(-10,10,1e3);
 E_up = E0_up + 1e9*c.h*x;
 E_dn = E0_dn + 1e9*c.h*x;
 
@@ -142,11 +138,56 @@ set(gca,'fontsize',14)
 xlabel('detuning (GHz)')
 ylabel('scattering rate (MHz)');
 xlim([min(x) max(x)])
-ylim([0 0.01])
+% ylim([0 0.01])
 
 %% rabi frequencies per sqrt(mW)
-[q_ind,v_ind] = evec_ind({'J','I','F','m_F'},[1,5,6,5],cdata,cdata.psi);
+switch basis
+    case 'aFC'
+        [q_ind,v_ind] = evec_ind({'J','I','F','m_F'},[1,5,6,5],cdata,cdata.psi);
+    case 'aUC'
+        [q_ind,v_ind] = evec_ind({'J','m_J','m_i_Na','m_i_Cs'},[1,1,3/2,5/2],cdata,cdata.psi);
+    case 'aIC'
+        [q_ind,v_ind] = evec_ind({'J','m_J','I','m_I'},[1,1,5,4],cdata,cdata.psi);
+end
 rabi_up_sqrt_mW = max(abs(H_up(v_ind)))/c.h*1e-6 *sqrt(1e-3/power_up);
+fprintf('up leg transition strength = %1.3g MHz/sqrt(mW)\n',rabi_up_sqrt_mW)
 
-[~,v_ind2] = evec_ind({'J','I','F','m_F'},[0,5,5,4],Xdata,Xdata.psi);
+switch basis
+    case 'aFC'
+        [~,v_ind2] = evec_ind({'J','I','F','m_F'},[0,5,5,4],Xdata,Xdata.psi);
+    case 'aIC'
+        [~,v_ind2] = evec_ind({'J','m_J','I','m_I'},[0,0,5,4],Xdata,Xdata.psi);
+    case 'aUC'
+        [~,v_ind2] = evec_ind({'J','m_J','m_i_Na','m_i_Cs'},[0,0,3/2,5/2],Xdata,Xdata.psi);
+end
 rabi_dn_sqrt_mW = max(abs(H_dn(v_ind,v_ind2)))/c.h*1e-6 *sqrt(1e-3/power_dn);
+fprintf('down leg transition strength = %1.3g MHz/sqrt(mW)\n',rabi_dn_sqrt_mW)
+
+%% cut states
+% cut X states that aren't accessed via raman
+X_cut = sqrt(abs(H_dn'*H_up))/c.h*1e-6 < 0.1;
+Xdata.E(X_cut) = [];
+Xdata.psi(:,X_cut) = [];
+H_dn(:,X_cut) = [];
+
+% cut c states that don't couple strongly to either ground state
+c_cut = (all(abs(H_dn) < 0.1*max(abs(H_dn(:))),2)) & (abs(H_up) < 0.1*max(abs(H_up)));
+cdata.psi(:,c_cut) = [];
+cdata.E(c_cut) = [];
+H_up(c_cut,:) = [];
+H_dn(c_cut,:) = [];
+
+%% build effective hamiltonian
+Nf = 1;
+Nc = size(cdata.psi,2);
+NX = size(Xdata.psi,2);
+
+Nstates = Nf + Nc + NX;
+
+H0 = diag(cat(1,0,cdata.E-E0_up-fdata.E-1i*c.c3Sigma.Gamma,Xdata.E-(E0_up-E0_dn)-fdata.E));
+H_up = [zeros(Nf) H_up' zeros(Nf,NX); H_up zeros(Nc,Nc+NX); zeros(NX,Nstates)];
+H_dn = [zeros(Nf,Nstates); zeros(Nc,Nf+Nc) H_dn; zeros(NX,Nf) H_dn' zeros(NX)];
+
+(H0+H_up+H_dn)/c.h * 1e-9
+
+sqrt(abs(H_dn'*H_up))/c.h*1e-6

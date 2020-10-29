@@ -13,8 +13,8 @@ Nx = 500;
 rmin = 4; % abohr
 rmax = 15; % abohr
 Erange = -0.0224 + [-1 1]*1e-4;
-mtot = [2 3 4 5];
-save_basis = 'aUC';
+mtot = [2 4];
+save_basis = 'aIC';
 
 B = 855e-4;
 

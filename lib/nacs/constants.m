@@ -46,7 +46,7 @@ c.c3Sigma.gS = 2.0023;
 c.c3Sigma.alpha1 = 0.340*1e9*c.h;
 c.c3Sigma.alpha2 = 0.095*1e9*c.h;
 c.c3Sigma.wef = c.h*5e6;
-c.c3Sigma.singlet_fraction = 0.4;
+c.c3Sigma.singlet_fraction = 0.5;
 c.c3Sigma.Gamma = c.h*90e6;
 
 c.X1Sigma.Bv = 1.7396e9*c.h; % rot const

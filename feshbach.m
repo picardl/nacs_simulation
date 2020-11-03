@@ -9,9 +9,9 @@ Nx = 8000;
 rmin = 4.5;
 rmax = 10000;
 mtot = 4; % total angular momentum to truncate basis
-B = (855)*1e-4; %/c.B_au; % number in parens is in gauss
-Erange_vs_threshold = [-50e6 0e6]*c.h/c.hartree;
-save_basis = 'aIC';
+B = (830)*1e-4; %/c.B_au; % number in parens is in gauss
+Erange_vs_threshold = [-100e6 0e6]*c.h/c.hartree;
+save_basis = 'aUC';
 
 %% uncoupled basis
 basis.UC = join_basis(atom_basis('Na'),atom_basis('Cs'));
@@ -101,8 +101,10 @@ drawnow();
 [E_out,nodes_out,err_est,psi,r] = cc_logderiv_adaptive_multi([rmin rmax],Nx,W,Erange,c.mu_nacs/c.me);
 
 %% display results
-diff(E_out)*c.hartree/c.h * 1e-6
-errstr(E_out/c.wavenum2hartree*(29.9792458),err_est/c.wavenum2hartree*(29.9792458))
+% diff(E_out)*c.hartree/c.h * 1e-6
+% errstr(E_out/c.wavenum2hartree*(29.9792458),err_est/c.wavenum2hartree*(29.9792458))
+
+disp(E_out/c.wavenum2hartree*(29.9792458))
 
 figure(2);
 clf;

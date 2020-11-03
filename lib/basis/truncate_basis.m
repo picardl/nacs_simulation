@@ -6,6 +6,17 @@ if nargin<4
 end
 
 f = fields(basis);
+
+if all(ismember(f,{'qnums','ops'}))
+    no_sub_bases_boo = 1;
+    b = basis;
+    basis = struct();
+    basis.temp = b;
+    f = fields(basis);
+else
+    no_sub_bases_boo = 0;
+end
+
 f(strcmp(f,'change')) = [];
 
 for i = 1:numel(f)
@@ -52,6 +63,10 @@ for i = 1:numel(f)
         end
         
     end
+end
+
+if no_sub_bases_boo
+    basis = basis.temp;
 end
 
 end

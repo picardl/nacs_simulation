@@ -14,9 +14,9 @@ rmin = 4; % abohr
 rmax = 15; % abohr
 Erange = -0.0224 + [-1 1]*1e-4;
 mtot = [2 3 4 5];
-save_basis = 'aUC';
+save_basis = 'UC';
 
-B = 855e-4;
+B = linspace(0,1000,1e3)*1e-4;
 
 %% build operators in uncoupled basis
 bases = {'UC','IC','FC','F1C','F2C'};
@@ -68,28 +68,34 @@ basis.UC.ops.Hz0 = -const.X1Sigma.gr*const.uN*( basis.UC.ops.N_z ) + ...
     -const.X1Sigma.g1*const.uN*(1-const.X1Sigma.sigma1)*( basis.UC.ops.i_Na_z ) + ...
     -const.X1Sigma.g2*const.uN*(1-const.X1Sigma.sigma2)*( basis.UC.ops.i_Cs_z );
 
-basis.UC.ops.H = basis.UC.ops.H0 + basis.UC.ops.Hz0.*B;
+basis.UC.ops.H = basis.UC.ops.H0 + basis.UC.ops.Hz0.*reshape(B,1,1,[]);
 
 %% transformation to hund's case a
-basis.aUC.qnums = build_basis({'eta','i_Na','i_Cs','J','S','Lambda'},{3,const.i_Na,const.i_Cs,0:Nmax,0,0},[0 1 1 2 0 0],'a');
-basis.aUC.ops = struct();
-basis.change.b_a = operator_matrix(@case_b2a_element,{basis.aUC.qnums,basis.b.qnums},{'J','Omega','S','Sigma','N','Lambda'});
-basis.change.UC_a = basis.change.UC_b * basis.change.b_a;
-f = fields(basis.UC.ops);
-for i = 1:numel(f)
-    basis.aUC.ops.(f{i}) = basis.change.UC_a'*basis.UC.ops.(f{i})*basis.change.UC_a;
-end
-
-[basis.aIC,basis.aUC,basis.change.a_aIC] = couple_angmom(basis.aUC,'i_Na','i_Cs','I');
-[basis.aFC,basis.aIC,basis.change.aIC_aFC] = couple_angmom(basis.aIC,'J','I','F');
+% basis.aUC.qnums = build_basis({'eta','i_Na','i_Cs','J','S','Lambda'},{3,const.i_Na,const.i_Cs,0:Nmax,0,0},[0 1 1 2 0 0],'a');
+% basis.aUC.ops = struct();
+% basis.change.b_a = operator_matrix(@case_b2a_element,{basis.aUC.qnums,basis.b.qnums},{'J','Omega','S','Sigma','N','Lambda'});
+% basis.change.UC_a = basis.change.UC_b * basis.change.b_a;
+% f = fields(basis.UC.ops);
+% for i = 1:numel(f)
+%     basis.aUC.ops.(f{i}) = basis.change.UC_a'*basis.UC.ops.(f{i})*basis.change.UC_a;
+% end
+% 
+% [basis.aIC,basis.aUC,basis.change.a_aIC] = couple_angmom(basis.aUC,'i_Na','i_Cs','I');
+% [basis.aFC,basis.aIC,basis.change.aIC_aFC] = couple_angmom(basis.aIC,'J','I','F');
 
 %% truncate basis
-basis = rmfield(basis,{'IC','FC','F1C','F2C','b'});
-[basis,rc_keep,Nchn] = truncate_basis(basis,@(ops) ops.F_z,mtot);
+% basis = rmfield(basis,{'IC','FC','F1C','F2C','b'});
+% [basis,rc_keep,Nchn] = truncate_basis(basis,@(ops) ops.F_z,mtot);
 
 
 [psi,E] = eigenshuffle(basis.(save_basis).ops.H);
 E = real(E);
+
+plot(B(2:end),diff(E/const.h,[],2)./diff(B),'-','markersize',15)
+
+dE_dB = diff(E/const.h,[],2)./diff(B);
+
+dE_dB(:,end)
 
 % mF = diag(psi'*basis.(save_basis).ops.F_z*psi);
 % figure(1);
@@ -135,6 +141,6 @@ psi_r = psi_r./sqrt(const.abohr);
 qnums = basis.(save_basis).qnums;
 E = E + E_vib*const.hartree;
 r = r*const.abohr;
-fname = ['data/X1Sigma_state_' num2str(round(B*1e4)) 'G_' save_basis '.mat'];
-save(fname,'qnums','psi','psi_r','r','E','B');
-disp(['saved file ' fname])
+% fname = ['data/X1Sigma_state_' num2str(round(B*1e4)) 'G_' save_basis '.mat'];
+% save(fname,'qnums','psi','psi_r','r','E','B');
+% disp(['saved file ' fname])

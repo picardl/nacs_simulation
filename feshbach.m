@@ -9,8 +9,8 @@ Nx = 8000;
 rmin = 4.5;
 rmax = 10000;
 mtot = 4; % total angular momentum to truncate basis
-B = (830)*1e-4; %/c.B_au; % number in parens is in gauss
-Erange_vs_threshold = [-100e6 0e6]*c.h/c.hartree;
+B = (800)*1e-4; %/c.B_au; % number in parens is in gauss
+Erange_vs_threshold = [-50e6 2e6]*c.h/c.hartree;
 save_basis = 'aUC';
 
 %% uncoupled basis

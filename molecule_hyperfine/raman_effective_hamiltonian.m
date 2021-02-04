@@ -192,7 +192,7 @@ b.ops.IX = diag(cat(1,zeros(Nf,1),zeros(Nc,1),ones(NX,1)));
 
 
 %% save effective hamiltonian
-fname = ['data/transfer_Heff_' basis '_' pol_up '_' pol_dn '.mat'];
+fname = ['../data/transfer_Heff_' basis '_' pol_up '_' pol_dn '.mat'];
 save(fname,'b');
 disp(['saved file ' fname])
 

@@ -16,6 +16,6 @@ basis.ops = build_operators(basis.qnums);
 basis.ops.(['H_' name '_hyperfine']) = c.(['zeta_hf_' name])*op_dot(basis.ops,i_name,s_name);
 
 % zeeman
-basis.ops.(['H0_' name '_zeeman']) = (c.(['gs_' name])*c.uB*basis.ops.([s_name '_z']) + c.(['gi_' name])*c.uB*basis.ops.([i_name '_z']));
+basis.ops.(['H0_' name '_zeeman']) = (c.(['gj_' name])*c.uB*basis.ops.([s_name '_z']) + c.(['gi_' name])*c.uB*basis.ops.([i_name '_z']));
 
 end

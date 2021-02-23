@@ -26,12 +26,14 @@ c.i_Cs = 7/2;
 c.s_Cs = 1/2;
 c.zeta_hf_Cs = c.h*2.2981579425e9; % Cs hyperfine constant, Joules
 c.gs_Cs = 2.0023193043737; % g_S, spin g-factor in Cs ground state, using steck definition
+c.gj_Cs = 2.00254032; % g_J, spin g-factor in Cs ground state, using steck definition
 c.gi_Cs = -0.00039885395; % g_I, nuclear spin g-factor in Cs ground state, using steck definition
 
 c.i_Na = 3/2;
 c.s_Na = 1/2;
 c.zeta_hf_Na = c.h*885.81306440e6;
 c.gs_Na = 2.0023193043622;
+c.gj_Na = 2.00229600;
 c.gi_Na = -0.00080461080;
 
 c.m_nacs = (133+23)*c.amu;

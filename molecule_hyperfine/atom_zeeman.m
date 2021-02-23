@@ -15,7 +15,7 @@ NaCs = join_basis(Na,Cs);
 
 % couple_angmom(Cs,'s_Cs','i_Cs','F');
 
-B1 = linspace(0.01e-4,866e-4,1e2);
+B1 = linspace(0.001e-4,863.7e-4,1e2);
 [V,D] = eigenshuffle(NaCs.ops.H_Na_hyperfine+NaCs.ops.H_Cs_hyperfine...
     +(NaCs.ops.H0_Cs_zeeman+NaCs.ops.H0_Na_zeeman).*reshape(B1,1,1,[]));
 % [~,D] = eigenshuffle(Na.ops.H_Na_hyperfine+(Na.ops.H0_Na_zeeman).*reshape(B1,1,1,[]));
@@ -30,10 +30,12 @@ set(gca,'fontsize',14);
 xlabel('B (Gauss)');
 ylabel('E (GHz)');
 
-[~,i1] = evec_ind({'f_Cs','m_f_Cs','f_Na','m_f_Na'},[3,3,1,1],NaCs,V(:,:,1))
-[~,i2] = evec_ind({'f_Cs','m_f_Cs','f_Na','m_f_Na'},[3,3,1,1],NaCs,V(:,:,end))
+[~,i1] = evec_ind({'f_Cs','m_f_Cs','f_Na','m_f_Na'},[3,3,1,1],NaCs,V(:,:,1));
+[~,i2] = evec_ind({'f_Cs','m_f_Cs','f_Na','m_f_Na'},[3,3,1,1],NaCs,V(:,:,end));
 
 (D(i2,end) - D(i1,1))/c.h*1e-9
+
+D(i1,1)/c.h*1e-9
 
 % [~,i1] = evec_ind({'f_Cs','m_f_Cs'},[4,4],Cs,V(:,:,1));
 % [~,i2] = evec_ind({'f_Cs','m_f_Cs'},[3,3],Cs,V(:,:,1));

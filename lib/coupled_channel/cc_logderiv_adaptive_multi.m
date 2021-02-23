@@ -2,7 +2,7 @@
 function [E_out,nodes_out,err_est,psi,x] = cc_logderiv_adaptive_multi(xrange,Nx,W,Erange,m,radial_boo,prop_wfn,verbose,plot_boo,richardson_extrap)
 
 if nargin<10
-    richardson_extrap = 0; % currently semi-broken
+    richardson_extrap = 1; % currently semi-broken
 end
 if nargin<9
     plot_boo = 0;

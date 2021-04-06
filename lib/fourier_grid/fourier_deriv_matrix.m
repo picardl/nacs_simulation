@@ -25,6 +25,6 @@ if numel(sz)>2 || sz_flag
 end
 
 D = ifft((k.^order).*fft(eye(N),[],dim),[],dim);
-D = (1i.^order) * (D + D')/2;
+D = (-1).^order * (1i.^order) * (D + D')/2;
 
 end

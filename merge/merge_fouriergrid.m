@@ -26,28 +26,20 @@ dt = t(2)-t(1);
 %%
 gaussian =@(x0,waist,x) exp(-(x-x0).^2/waist.^2);
 
-V0 = V1.*(-gaussian( x0,waist1,x ));
-Vf = - V2 * gaussian(x1,waist2,x);
-V = V1 * linramp(1,0,t1,t2,reshape(t,1,1,Nt)).*(-gaussian( minjerk(x0,x1,t0,t1,reshape(t,1,1,Nt)),waist1,x )) - V2 * gaussian(x1,waist2,x);
-% V = V1 * linramp(1,0,t1,t2,reshape(t,1,1,Nt)).*(-gaussian( linramp(x0,x1,t0,t1,reshape(t,1,1,Nt)),waist1,x )) - V2 * gaussian(x1,waist2,x);
-Vmat = V.*eye(Nx);
+V = - V1 * linramp(1,0,t1,t2,t).*(gaussian( minjerk(x0,x1,t0,t1,t),waist1,x ))...
+    - V2 * gaussian(x1,waist2,x);
+Vmat = reshape(V,[Nx,1,Nt]).*eye(Nx);
 
 d2_dx2 = fourier_deriv_matrix(x,2); % fourier-based derivative matrix
 T = -(hbar^2/(2*m))*d2_dx2; % kinetic energy operator
 
-H0 = T + diag(V0);
-H0 = (H0 + H0')/2;
-
-Hf = T + diag(Vf);
-Hf = (Hf + Hf')/2;
-
 H = T + Vmat;
 
 %%
-[vecs_init,vals_init] = eigenshuffle(H0);
+[vecs_init,vals_init] = eigenshuffle(H(:,:,1));
 vecs_init = fliplr(vecs_init);
 vals_init = flipud(vals_init);
-[vecs_fin,vals_fin] = eigenshuffle(Hf);
+[vecs_fin,vals_fin] = eigenshuffle(H(:,:,end));
 vecs_fin = fliplr(vecs_fin);
 vals_fin = flipud(vals_fin);
 if contains(version,'R2020b')
@@ -82,7 +74,7 @@ for i = 1:Nt
     clf;
     hold on;
     plot(x*1e6,abs(vecs_init(:,:,1)*psi(:,1,i)).^2)
-    plot(x*1e6,V(:,1,i)/abs(V1))
+    plot(x*1e6,V(:,i)/abs(V1))
     hold off;
     xlabel('x (micron)')
     ylabel('|\psi|^2');

@@ -5,13 +5,13 @@ if nargin<4
     waist(2) = 1.064e-6;
 end
 if nargin<3
-    separation = 3e-6;
+    separation = 5e-6;
 end
 if nargin<2
     power = [1.8e-3 6.8e-3];
 end
 if nargin<1
-    t_move_ramp = [1e-3 1e-3];
+    t_move_ramp = [0.04e-3 0.04e-3];
 end
 
 %% constants
@@ -38,8 +38,8 @@ end
 x0 = 0;
 x1 = separation;
 
-xmin = x0 - 5*waist(1);
-xmax = x1 + 5*waist(2);
+xmin = x0 - 3*waist(1);
+xmax = x1 + 3*waist(2);
 Nx = 400;
 x = linspace(xmin,xmax,Nx)';
 
@@ -94,11 +94,11 @@ for i = 1:2
     
     psi = psi./sum(abs(psi).^2,1);
     
-    psi_finbasis = mtimesx(vecs_fin'*vecs_init,psi);
+    psi_finbasis{i} = mtimesx(vecs_fin'*vecs_init,psi);
     
-    E = mtimesx(psi,'c',mtimesx(H,psi));
+    E{i} = mtimesx(psi,'c',mtimesx(H,psi));
     
-    Plost = sum(abs(psi_finbasis(vals_fin>0,1,end)).^2);
+    Plost(i) = sum(abs(psi_finbasis(vals_fin>0,1,end)).^2);
     
     
     figure(1);

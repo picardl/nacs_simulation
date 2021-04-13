@@ -1,10 +1,10 @@
 function [gs_overlap,E_out,params] = merge_fg_splitstep_2d_fun(align_err,waist,t_move_ramp,power)
 
 if nargin<4
-    power = [0.4*1.8e-3 6.8e-3];
+    power = [1.8e-3 6.8e-3];
 end
 if nargin<3
-    t_move_ramp = [0.15e-3 0.05e-3];
+    t_move_ramp = [1e-3 1e-3];
 end
 
 if nargin<2
@@ -13,10 +13,11 @@ if nargin<2
 end
 
 if nargin<1
-    align_err = [0.8e-6 0.8e-6];
+    align_err = [0.4e-6 0.8e-6];
 end
 
 save_gif = false;
+animate = 2;
 
 params.power = power;
 params.t_move_ramp = t_move_ramp;
@@ -47,62 +48,60 @@ end
 wl = [623e-9 1064e-9];
 
 x0 = 0e-6;
-x1 = 5e-6;
+x1 = 7e-6;
 x_err = align_err(1);
 z0 = 0;
 z1 = align_err(2);
 
-xmin = x0-waist(2);
-xmax = x_err+waist(2);
-Nx = 400;
 
-zmin = z0-waist(2);
-zmax = z1+waist(2);
-Nz = 401;
-
-x = linspace(xmin,xmax,Nx)';
-z = linspace(zmin,zmax,Nz)';
-[X,Z] = ndgrid(x,z);
+Nx = 100;
+Nz = 101;
 
 t0 = 0;
 t1 = t_move_ramp(1);
 t2 = t1 + t_move_ramp(2);
 
 dt = 5e-7;
-t = reshape(t0:dt:2*t2,1,1,[]);
-Nt = numel(t);
+t = t0:dt:t2;
+tt = reshape(t,1,1,[]);
+Nt = numel(tt);
 
-%%
-gaussbeam =@(r0,z0,wl,w0,r,z) exp(-2*(r-r0).^2/w0^2)./(1+((z-z0)*wl/(pi*w0^2)).^2);
-
-vel = -minjerk_deriv(x0,x1,t0,t1,t);
-
-V{1} = - depth(1,1) * linramp(1,0,t1,t2,t).*(gaussbeam(x0,z0,wl(1),waist(1),X,Z)) ...
-    - depth(1,2) * gaussbeam(x_err+minjerk(x1,x0,t0,t1,t),z1,wl(2),waist(2),X,Z);
-
-V{2} = - depth(2,1) * linramp(1,0,t1,t2,t).*(gaussbeam(x_err+minjerk(-x1,x0,t0,t1,t),-z1,wl(1),waist(1),X,Z)) ...
-    - depth(2,2) * gaussbeam(x0,z0,wl(2),waist(2),X,Z);
-
-V_prop{1} = exp(-1i*(V{1}*dt-m(1)*vel.*X-m(1)*vel.^2.*t)/hbar);
-V_prop{2} = exp(-1i*V{2}*dt/hbar);
-
-% figure(1);
-% clf;
-% for i = 1:10:Nt
-%     pcolor(Z*1e6,X*1e6,V{1}(:,:,i))
-%     shading flat
-%     drawnow();
-% end
+xmax = waist(2)/2;
+zmax = waist(2);
+x = linspace(-xmax,xmax,Nx)';
+z = linspace(-zmax,zmax,Nz)';
+[X0,Z0] = ndgrid(x,z);
 
 k_x = fourier_fvec(x,1);
 k_z = fourier_fvec(z,1);
-[K_X,K_Z] = ndgrid(k_x,k_z);
+[K_X0,K_Z0] = ndgrid(k_x,k_z);
 
-for i = 1:2
-    T{i} = (K_X.^2 + K_Z.^2)*hbar^2/(2*m(i));
-    T_prop{i} = exp(-1i*T{i}*dt/(2*hbar));
-end
+%% define tweezer trajectories
+tweezer{1}.x =@(t) minjerk(x0,x1,t0,t1,t);
+tweezer{1}.z =@(t) minjerk(z0,z0,t0,t1,t);
+tweezer{1}.I =@(t) linramp(1,0,t1,t2,t);
+% tweezer{1}.I =@(t) linramp(1,1,t1,t2,t);
 
+tweezer{2}.x =@(t) (x1+x_err)*ones(size(t));
+tweezer{2}.z =@(t) z1*ones(size(t));
+tweezer{2}.I =@(t) ones(size(t));
+
+atom{1}.x =@(t) minjerk(x0,x1,t0,t1,t) - x1 + minjerk(x1,x1+x_err,t1,t2,t);
+atom{1}.vx =@(t) minjerk_deriv(x0,x1,t0,t1,t) + minjerk_deriv(x1,x1+x_err,t1,t2,t);
+atom{1}.z =@(t) minjerk(z0,z1,t1,t2,t);
+atom{1}.vz =@(t) minjerk_deriv(z0,z1,t1,t2,t);
+
+atom{2}.x =@(t) (x1+x_err)*ones(size(t));
+atom{2}.z =@(t) z1*ones(size(t));
+atom{2}.vx =@(t) zeros(size(t));
+atom{2}.vz =@(t) zeros(size(t));
+
+gaussbeam =@(r0,z0,wl,w0,r,z) exp(-2*(r-r0).^2/w0^2)./(1+((z-z0)*wl/(pi*w0^2)).^2);
+
+% t = t(:);
+% plot(t,atom{1}.z(t));
+
+%%
 ind(1,:) = {[1,1],[1,2]};
 ind(2,:) = {[2,2],[2,2]};
 
@@ -112,9 +111,14 @@ wind(2,:) = [2 2];
 xoffs = [x0 x0+x_err; x0 x0];
 zoffs = [z0 z1; z0 z0];
 
-for j = 1:2
+for j = 1
     first_save = true;
-    for k = 1:2 % initial / final
+    
+    X = X0 + atom{j}.x(tt);
+    Z = Z0 + atom{j}.z(tt);
+    
+    V = zeros(Nx,Nz,Nt);
+    for k = 1:2 % initial / final tweezer
         v0 = depth(ind{j,k}(1),ind{j,k}(2));
         
         n = wind(j,k);
@@ -126,64 +130,113 @@ for j = 1:2
         aho_x(k) = sqrt(hbar/(m(j)*omega_x(j,k)));
         aho_z(k) = sqrt(hbar/(m(j)*omega_z(j,k)));
         
-        Xho{k} = (X-xoffs(j,k))/aho_x(k);
-        Zho{k} = (Z-zoffs(j,k))/aho_z(k);
+        Xho = X0/aho_x(k);
+        Zho = Z0/aho_z(k);
         
-        psi_gs(:,:,k) = exp(-Xho{k}.^2/2-Zho{k}.^2/2);
+        psi_gs(:,:,k) = exp(-Xho.^2/2-Zho.^2/2);
+        
+        %% potential
+        V = V - depth(j,k) * tweezer{k}.I(tt).*...
+            gaussbeam(tweezer{k}.x(tt), tweezer{k}.z(tt), ...
+            wl(k), waist(k), X, Z);
+        
     end
     psi_gs = psi_gs./sqrt(sum(sum(abs(psi_gs).^2,1),2));
+    
+%     s = m(j)/hbar*(atom{j}.vx(t).*X+atom{j}.vz(t).*Z);
+%     s = s - mean(mean(s,1),2);
+%     
+%     figure(1);
+%     clf;
+%     for k = 1:10:numel(t)
+%         subplot(1,2,1);
+%         contourf(Z(:,:,k),X(:,:,k),V(:,:,k)/depth(1,1))
+%         caxis([-1 0])
+%         colorbar
+%         
+%         subplot(1,2,2);
+%         contourf(Z(:,:,k),X(:,:,k),s(:,:,k),10);
+%         caxis([-1 1]*20)
+%         colorbar
+%         
+%         drawnow();
+%     end
+%     V_prop = exp(-1i/hbar*(V*dt + m(j)*(atom{j}.vx(t).*X+atom{j}.vz(t).*Z) ...
+%         + 0.5*m(j)*(atom{j}.vx(t).^2 + atom{j}.vz(t).^2).*t));
+
+%     V_prop = exp(-1i/hbar*(V*dt + m(j)*(atom{j}.vx(t).*X+atom{j}.vz(t).*Z)));
+
+    V_prop = exp(-1i/hbar*(V*dt));
+
+    % figure(1);
+    % clf;
+    % for i = 1:10:Nt
+    %     pcolor(Z*1e6,X*1e6,V{1}(:,:,i))
+    %     shading flat
+    %     drawnow();
+    % end
+    
+%     T = (K_X0.^2 + K_Z0.^2)*hbar^2/(2*m(j));
+    T = ((K_X0-m(j)*atom{j}.vx(tt)/hbar).^2 + (K_Z0-m(j)*atom{j}.vz(tt)/hbar).^2)*hbar^2/(2*m(j));
+    T_prop = exp(-1i*T*dt/(2*hbar));
     
     %%
     psi = zeros(Nx,Nz,Nt);
     psi(:,:,1) = psi_gs(:,:,1);
     
-    
-    
     E = zeros(Nt-1,1);
     for i = 1:Nt-1
         psi_k = fft(fft(psi(:,:,i),[],1),[],2);
-        psi(:,:,i+1) = ifft(ifft(T_prop{j}.*fft(fft(V_prop{j}(:,:,i).*...
-            ifft(ifft(T_prop{j}.*psi_k,[],1),[],2),[],1),[],2),[],1),[],2);
-        T_expect = sum(sum(conj(psi(:,:,i)).*ifft(ifft(T{j}.*psi_k,[],1),[],2),1),2);
-        V_expect = sum(sum(conj(psi(:,:,i)).*V{j}(:,:,i).*psi(:,:,i),1),2);
+        psi(:,:,i+1) = ifft(ifft(T_prop(:,:,i).*fft(fft(V_prop(:,:,i).*...
+            ifft(ifft(T_prop(:,:,i).*psi_k,[],1),[],2),[],1),[],2),[],1),[],2);
+        T_expect = sum(sum(conj(psi(:,:,i)).*ifft(ifft(T(:,:,i).*psi_k,[],1),[],2),1),2);
+%         psi(:,:,i+1) = ifft(ifft(T_prop.*fft(fft(V_prop(:,:,i).*...
+%             ifft(ifft(T_prop.*psi_k,[],1),[],2),[],1),[],2),[],1),[],2);
+%         T_expect = sum(sum(conj(psi(:,:,i)).*ifft(ifft(T.*psi_k,[],1),[],2),1),2);
+        V_expect = sum(sum(conj(psi(:,:,i)).*V(:,:,i).*psi(:,:,i),1),2);
         E(i) = real(T_expect + V_expect);
         
         if ~mod(i,5)
-%             figure(1);
-%             clf;
-%             subplot(2,1,2);
-%             hold on;
-%             box on;
-%             plot(z*1e6,sum(abs(psi(:,:,i)).^2,1)*10)
-%             plot(z*1e6,sum(V{j}(:,:,i),1)/depth(1,1)/Nx);
-%             hold off;
-%             ylim([-2 2])
-%             xlabel('z (um)');
-%             subplot(2,1,1);
-%             hold on;
-%             box on;
-%             plot(x*1e6,sum(abs(psi(:,:,i)).^2,2)*10)
-%             plot(x*1e6,sum(V{j}(:,:,i),2)/depth(1,1)/Nz);
-%             hold off;
-%             xlabel('x (um)');
-%             ylim([-2 2])
-%             drawnow();
-            
-            zdata = abs(psi(:,:,i)).^2;
-            zdata2 = V{j}(:,:,i)/depth(j,j);
-            figure(2);
-            clf;
-            hold on;
-            box on;
-            contourf(z*1e6,x*1e6,zdata2);
-            im = imagesc(z*1e6,x*1e6,zdata);
-            im.AlphaData = zdata/max(abs(zdata(:)));
-            hold off;
-            shading flat
-            xlabel('axial (um)')
-            ylabel('radial (um)')
-            axis image
-            drawnow();
+            if animate==1
+                figure(1);
+                clf;
+                subplot(2,1,2);
+                hold on;
+                box on;
+                plot(z*1e6,sum(abs(psi(:,:,i)).^2,1)*10)
+                plot(z*1e6,sum(V(:,:,i),1)/depth(1,1)/Nx);
+                hold off;
+                ylim([-2 2])
+                xlabel('z (um)');
+                subplot(2,1,1);
+                hold on;
+                box on;
+                plot(x*1e6,sum(abs(psi(:,:,i)).^2,2)*10)
+                plot(x*1e6,sum(V(:,:,i),2)/depth(1,1)/Nz);
+                hold off;
+                xlabel('x (um)');
+                ylim([-2 2])
+                drawnow();
+                
+            elseif animate==2
+                zdata = abs(psi(:,:,i)).^2;
+                zdata2 = V(:,:,i)/depth(j,j);
+                figure(2);
+                clf;
+                hold on;
+                box on;
+                contourf(z*1e6,x*1e6,zdata2);
+                im = imagesc(z*1e6,x*1e6,zdata);
+                im.AlphaData = zdata/max(abs(zdata(:)));
+%                 caxis([-1.5 0])
+                hold off;
+                shading flat
+                xlabel('axial (um)')
+                ylabel('radial (um)')
+                axis image
+                colormap gray
+                drawnow();
+            end
             
             if save_gif
                 h = gcf;
@@ -210,6 +263,9 @@ for j = 1:2
             
         end
     end
+    
+%     xcom = reshape(sum(x.*sum(abs(psi).^2,2),1)./sum(sum(abs(psi).^2,2),1),size(t));
+%     zcom = reshape(sum(z'.*sum(abs(psi).^2,1),2)./sum(sum(abs(psi).^2,1),2),size(t));
     
     E = (E(:)+depth(ind{j,2}(1),ind{j,2}(2)))/hbar/(omega_x(j,2)/2 + omega_z(j,2)/2);
     E_out(j) = E(end);

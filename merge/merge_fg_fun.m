@@ -100,7 +100,6 @@ for i = 1:2
     
     Plost(i) = sum(abs(psi_finbasis(vals_fin>0,1,end)).^2);
     
-    
     figure(1);
     for j = 1:Nt
         clf;

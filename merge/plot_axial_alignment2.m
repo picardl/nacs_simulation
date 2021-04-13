@@ -2,8 +2,8 @@ clear;
 
 % files = {'data_212112_220452.mat','data_210612_230455.mat'};
 % files = {'data_210413_101955.mat','data_210413_102017.mat'};
-% files = {'data_210413_105841.mat','data_210413_110007.mat'};
-files = {'data_210413_114936.mat','data_210413_115451.mat'};
+files = {'data_210413_105841.mat','data_210413_110007.mat'};
+% files = {'data_210413_114936.mat','data_210413_115451.mat'};
 
 
 for i = 1:2

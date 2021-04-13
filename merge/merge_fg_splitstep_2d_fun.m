@@ -4,7 +4,7 @@ if nargin<4
     power = [0.4*1.8e-3 6.8e-3];
 end
 if nargin<3
-    t_move_ramp = [0.1e-3 0.2e-3];
+    t_move_ramp = [0.15e-3 0.05e-3];
 end
 
 if nargin<2
@@ -13,8 +13,10 @@ if nargin<2
 end
 
 if nargin<1
-    align_err = [1e-6 0e-6];
+    align_err = [0.8e-6 0.8e-6];
 end
+
+save_gif = false;
 
 params.power = power;
 params.t_move_ramp = t_move_ramp;
@@ -50,13 +52,13 @@ x_err = align_err(1);
 z0 = 0;
 z1 = align_err(2);
 
-xmin = x0-waist(2)/2;
-xmax = x_err+waist(2)/2;
-Nx = 100;
+xmin = x0-waist(2);
+xmax = x_err+waist(2);
+Nx = 400;
 
 zmin = z0-waist(2);
 zmax = z1+waist(2);
-Nz = 101;
+Nz = 401;
 
 x = linspace(xmin,xmax,Nx)';
 z = linspace(zmin,zmax,Nz)';
@@ -67,7 +69,7 @@ t1 = t_move_ramp(1);
 t2 = t1 + t_move_ramp(2);
 
 dt = 5e-7;
-t = reshape(t0:dt:1.1*t2,1,1,[]);
+t = reshape(t0:dt:2*t2,1,1,[]);
 Nt = numel(t);
 
 %%
@@ -111,6 +113,7 @@ xoffs = [x0 x0+x_err; x0 x0];
 zoffs = [z0 z1; z0 z0];
 
 for j = 1:2
+    first_save = true;
     for k = 1:2 % initial / final
         v0 = depth(ind{j,k}(1),ind{j,k}(2));
         
@@ -134,8 +137,7 @@ for j = 1:2
     psi = zeros(Nx,Nz,Nt);
     psi(:,:,1) = psi_gs(:,:,1);
     
-    figure(1);
-    clf;
+    
     
     E = zeros(Nt-1,1);
     for i = 1:Nt-1
@@ -146,10 +148,66 @@ for j = 1:2
         V_expect = sum(sum(conj(psi(:,:,i)).*V{j}(:,:,i).*psi(:,:,i),1),2);
         E(i) = real(T_expect + V_expect);
         
-        if ~mod(i,100)
-            pcolor(Z,X,abs(psi(:,:,i)).^2);
+        if ~mod(i,5)
+%             figure(1);
+%             clf;
+%             subplot(2,1,2);
+%             hold on;
+%             box on;
+%             plot(z*1e6,sum(abs(psi(:,:,i)).^2,1)*10)
+%             plot(z*1e6,sum(V{j}(:,:,i),1)/depth(1,1)/Nx);
+%             hold off;
+%             ylim([-2 2])
+%             xlabel('z (um)');
+%             subplot(2,1,1);
+%             hold on;
+%             box on;
+%             plot(x*1e6,sum(abs(psi(:,:,i)).^2,2)*10)
+%             plot(x*1e6,sum(V{j}(:,:,i),2)/depth(1,1)/Nz);
+%             hold off;
+%             xlabel('x (um)');
+%             ylim([-2 2])
+%             drawnow();
+            
+            zdata = abs(psi(:,:,i)).^2;
+            zdata2 = V{j}(:,:,i)/depth(j,j);
+            figure(2);
+            clf;
+            hold on;
+            box on;
+            contourf(z*1e6,x*1e6,zdata2);
+            im = imagesc(z*1e6,x*1e6,zdata);
+            im.AlphaData = zdata/max(abs(zdata(:)));
+            hold off;
             shading flat
+            xlabel('axial (um)')
+            ylabel('radial (um)')
+            axis image
             drawnow();
+            
+            if save_gif
+                h = gcf;
+                axis tight manual % this ensures that getframe() returns a consistent size
+                %             for n = 1:0.5:5
+                % Draw plot for y = x.^n
+                %                 x = 0:0.01:1;
+                %                 y = x.^n;
+                %                 plot(x,y)
+                %                 drawnow
+                % Capture the plot as an image
+                frame = getframe(h);
+                im = frame2im(frame);
+                [imind,cm] = rgb2ind(im,256);
+                % Write to the GIF File
+                if first_save
+                    filename = ['merge' num2str(j) '_' datestr(now,'YYmmDD_HHMMSS') '.gif'];
+                    imwrite(imind,cm,filename,'gif', 'Loopcount',inf);
+                    first_save = false;
+                else
+                    imwrite(imind,cm,filename,'gif','WriteMode','append');
+                end
+            end
+            
         end
     end
     

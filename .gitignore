@@ -2,3 +2,4 @@ data/20200802/
 data/20200803/
 data/[0-9]*
 merge/data_*.mat
+*.gif

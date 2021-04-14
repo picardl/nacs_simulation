@@ -1,7 +1,7 @@
-function [gs_overlap,E_out,params] = merge_fg_splitstep_2d_fun(align_err,waist,t_move_ramp,power)
+function [gs_overlap,E_out,params] = merge_fg_splitstep_2d_fun_copy(align_err,waist,t_move_ramp,power)
 
 if nargin<4
-    power = [0.4*1.8e-3 6.8e-3];
+    power = [0.3*1.8e-3 6.8e-3];
 end
 if nargin<3
     t_move_ramp = [0.1e-3 0.1e-3];
@@ -13,11 +13,11 @@ if nargin<2
 end
 
 if nargin<1
-    align_err = [0e-6 e-6];
+    align_err = [0e-6 0e-6];
 end
 
 save_gif = false;
-animate = 0;
+animate = 2;
 
 params.power = power;
 params.t_move_ramp = t_move_ramp;
@@ -63,7 +63,7 @@ t1 = t_move_ramp(1);
 t2 = t1 + t_move_ramp(2);
 
 dt = 5e-7;
-t = t0:dt:t2;
+t = t0:dt:2*t2;
 tt = reshape(t,1,1,[]);
 Nt = numel(tt);
 
@@ -71,6 +71,7 @@ Nt = numel(tt);
 tweezer{1}.x =@(t) minjerk(x0,x1,t0,t1,t);
 tweezer{1}.z =@(t) minjerk(z0,z0,t0,t1,t);
 tweezer{1}.I =@(t) linramp(1,0,t1,t2,t);
+% tweezer{1}.I =@(t) linramp(1,1,t1,t2,t);
 
 tweezer{2}.x =@(t) (x1+x_err)*ones(size(t));
 tweezer{2}.z =@(t) z1*ones(size(t));
@@ -93,8 +94,13 @@ atom{2}.az =@(t) zeros(size(t));
 
 gaussbeam =@(r0,z0,wl,w0,r,z) exp(-2*(r-r0).^2/w0^2)./(1+((z-z0)*wl/(pi*w0^2)).^2);
 
+% figure(2);
+% clf;
 % t = t(:);
-% plot(t,atom{1}.z(t));
+% hold on
+% plot(t,DGradient(DGradient(atom{1}.x(t),t),t));
+% plot(t,atom{1}.ax(t),'--');
+% hold off
 
 %%
 ind(1,:) = {[1,1],[1,2]};
@@ -195,7 +201,7 @@ for j = 1:2
         V_expect = sum(sum(conj(psi(:,:,i)).*V(:,:,i).*psi(:,:,i),1),2);
         E(i) = real(T_expect + V_expect);
         
-        if ~mod(i,100)
+        if ~mod(i,10)
             if animate==1
                 figure(1);
                 clf;
@@ -253,10 +259,11 @@ for j = 1:2
                 % Write to the GIF File
                 if first_save
                     filename = ['merge' num2str(j) '_' datestr(now,'YYmmDD_HHMMSS') '.gif'];
-                    imwrite(imind,cm,filename,'gif', 'Loopcount',inf);
+                    imwrite(imind,cm,filename,'gif', 'Loopcount',inf,'DelayTime',0.05);
                     first_save = false;
+                    disp(filename);
                 else
-                    imwrite(imind,cm,filename,'gif','WriteMode','append');
+                    imwrite(imind,cm,filename,'gif','WriteMode','append','DelayTime',0.05);
                 end
             end
             
@@ -276,8 +283,8 @@ end
 function out = minjerk(x0,x1,t0,t1,t)
 trel = (t - t0)/(t1-t0);
 out = 0*t;
-out(trel<0) = x0;
-out(trel>1) = x1;
+out(trel<=0) = x0;
+out(trel>=1) = x1;
 ind = trel>=0 & trel<=1;
 out(ind) = x0 + (x1-x0)*(10*trel(ind).^3 - 15*trel(ind).^4 + 6*trel(ind).^5);
 end

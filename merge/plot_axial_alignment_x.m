@@ -7,7 +7,8 @@ clear;
 % files = {'data_210413_203856.mat','data_210413_203936.mat'};
 % files = {'data_210413_205454'};
 % files = {'data_210413_205656.mat'};
-files = {'data_210413_210043.mat'};
+% files = {'data_210413_210216.mat'};
+files = {'data_210413_210358.mat'};
 
 
 for i = 1:numel(files)
@@ -16,7 +17,7 @@ for i = 1:numel(files)
 %     x = data.x;
 %     x = reshape(data.params.align_err(:,1),10,10);
 %     z = reshape(data.params.align_err(:,2),10,10);
-    z = data.params.align_err(:,2);
+    x = data.params.align_err(:,1);
     waist = mean(data.params.waist(:,1)*1e9);
     gs_overlap = permute(data.gs_overlap,[1 3 2]);
     E_out = permute(data.E_out,[1 3 2]);
@@ -25,7 +26,7 @@ for i = 1:numel(files)
 %     clf;
     hold on; box on;
     for j = 1:2
-        plot(z*1e6,gs_overlap(:,:,j))
+        plot(x*1e6,gs_overlap(:,:,j))
     end
     hold off;
     xlabel('axial (um)')
@@ -45,7 +46,7 @@ for i = 1:numel(files)
 %     clf;
     hold on; box on;
     for j = 1:2
-        plot(z*1e6,E_out(:,:,j))
+        plot(x*1e6,E_out(:,:,j))
     end
     hold off;
     xlabel('axial (um)')

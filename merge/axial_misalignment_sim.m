@@ -1,20 +1,24 @@
 clear;
 
-Nx = 1;
-Nz = 40;
+Nx = 20;
+Nz = 20;
 
 waist = [623, 1064; 700, 1064]*1e-9;
+% waist = [700, 1064]*1e-9;
 
-t_move_ramp = [1e-3 0.1e-3];
+t_move_ramp = [0.3e-3 0.3e-3];
 
-x = 0; %linspace(0,1e-6,Nx);
+x = linspace(0,1e-6,Nx);
 z = linspace(0,3e-6,Nz);
+
+phi = [5*pi/180 0];
+power = [0.4*1.8e-3 6.8e-3];
 
 [X,Z] = ndgrid(x,z);
 xx = X(:);
 zz = Z(:);
 
-for j = 1:2
+for j = 1:size(waist,1)
     clear gs_overlap E_out params;
     
     start_time = now;
@@ -22,7 +26,7 @@ for j = 1:2
     for i = 1:numel(zz)
         disp([num2str(i) '/' num2str(numel(zz))])
         separation = [xx(i) zz(i)];
-        [gs_overlap(i,:),E_out(i,:),params(i)] = merge_fg_splitstep_2d_fun(separation,waist(j,:),t_move_ramp);
+        [gs_overlap(i,:),E_out(i,:),params(i)] = merge_fg_splitstep_2d_fun(separation,waist(j,:),t_move_ramp,power,phi);
     end
     params = struct2table(params);
     

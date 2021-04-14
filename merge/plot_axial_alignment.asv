@@ -33,13 +33,13 @@ for i = 1:numel(files)
     
     figure(100*i+2);
     subplot(1,2,1);
-    imagesc(x(1,:)'*1e6,z(:,1)*1e6,(E_out(:,:,1)-1)/2);
+    imagesc(x(1,:)'*1e6,z(:,1)*1e6,log10(2*(E_out(:,:,1)-1)));
     colorbar;
      title(['Na nbar, waists = ' num2str(waist(1)) ',' num2str(waist(2)) ' nm'])
      xlabel('axial (um)')
     ylabel('radial (um)')
     subplot(1,2,2);
-    imagesc(x(1,:)'*1e6,z(:,1)*1e6,(E_out(:,:,2)-1)/2);
+    imagesc(x(1,:)'*1e6,z(:,1)*1e6,log10(2*(E_out(:,:,2)-1));
     colorbar;
    title(['Cs nbar, waists = ' num2str(waist(1)) ',' num2str(waist(2)) ' nm'])
     xlabel('axial (um)')

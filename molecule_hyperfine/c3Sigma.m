@@ -98,6 +98,6 @@ psi = evecs;
 r = r*c.abohr;
 psi_r = psi_r/sqrt(c.abohr);
 E = evals + E_vib*c.hartree;
-fname = ['data/c3Sigma_state_' num2str(round(B*1e4)) 'G_' save_basis '.mat'];
+fname = ['../data/c3Sigma_state_' num2str(round(B*1e4)) 'G_' save_basis '.mat'];
 save(fname,'qnums','ops','psi','psi_r','r','E','B');
 disp(['saved file ' fname])

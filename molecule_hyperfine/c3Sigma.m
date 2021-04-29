@@ -6,7 +6,7 @@ clear;
 c = constants();
 
 Jmax = 3;
-mtot = [3 4 5]; % [3 4 5];
+mtot = [2 3 4 5]; % [3 4 5];
 B = 855*1e-4;
 save_basis = 'aUC';
 

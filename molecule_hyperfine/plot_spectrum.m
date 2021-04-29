@@ -4,9 +4,9 @@ c = constants();
 
 B = 855e-4;
 
-basis_data = load('../data/c3Sigma_state_855G_aUC.mat');
-% basis = basis_data.basis;
-ops = basis_data.ops;
+basis_data = load('../data/c3Sigma_basis.mat');
+basis = basis_data.basis;
+% ops = basis_data.ops;
 
 % laser hamiltonian matrix elements
 tdm_data = load(['../data/feshbach_c3Sigma_TDM_' num2str(B*1e4) 'G.mat']);
@@ -73,9 +73,9 @@ xlabel('Pump frequency 325XXX (GHz)','fontsize',8)
         yscale = b(4);
         yoff = b(5);
         
-        H = (Be)*ops.Hrot ...
-            + gS*ops.HZ0elecspin.*B*(863/855) + alpha_Na*ops.Hhf_Na ...
-            + alpha_Cs*ops.Hhf_Cs + wef*ops.H_OmegaDoubling;
+        H = (Be)*basis.aUC.ops.Hrot ...
+            + gS*basis.aUC.ops.HZ0elecspin.*B*(863/855) + alpha_Na*basis.aUC.ops.Hhf_Na ...
+            + alpha_Cs*basis.aUC.ops.Hhf_Cs + wef*basis.aUC.ops.H_OmegaDoubling;
         
         % diagonalize
         [psi,E] = eig(H);

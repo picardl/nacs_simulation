@@ -1,4 +1,8 @@
-function [gs_overlap,E_out,params] = merge_fg_splitstep_2d_fun(align_err,waist,t_move_ramp,power,phi)
+function [gs_overlap,E_out,params,P_lost] = merge_fg_splitstep_2d_fun(align_err,waist,t_move_ramp,power,phi,blast_boo)
+
+if nargin<6
+    blast_boo = 0;
+end
 
 if nargin<5
     phi = [0 0];
@@ -7,7 +11,7 @@ if nargin<4
     power = [0.4*1.8e-3 6.8e-3];
 end
 if nargin<3
-    t_move_ramp = [0.3e-3 0.3e-3];
+    t_move_ramp = [0.09e-3 0.2e-3];
 end
 
 if nargin<2
@@ -16,16 +20,17 @@ if nargin<2
 end
 
 if nargin<1
-    align_err = [0e-6 0e-6];
+    align_err = [0 0];
 end
 
 save_gif = 0;
-animate = 0;
+animate = 2;
 
 params.power = power;
 params.t_move_ramp = t_move_ramp;
 params.waist = waist;
 params.align_err = align_err;
+params.phi = phi;
 
 %% constants
 h = 6.626e-34;
@@ -56,24 +61,41 @@ x_err = align_err(1);
 z0 = 0;
 z1 = align_err(2);
 
-dx = waist(2)/60;
-dz = waist(2)/60;
-xmax = [sqrt((waist(2)/2)^2 + x_err^2) waist(2)/2];
-zmax = [sqrt(waist(2)^2 + z1^2) waist(2)];
+
+if blast_boo
+    dx = waist(2)/60;
+    dz = waist(2)/60;
+    xmax = [sqrt((waist(2)/2)^2 + (x_err)^2) waist(2)/2]*3;
+    zmax = [sqrt(waist(2)^2 + (z1)^2) waist(2)]*3;
+else
+    dx = waist(2)/60;
+    dz = waist(2)/60;
+    xmax = [sqrt((waist(2)/2)^2 + (x_err)^2) waist(2)/2];
+    zmax = [sqrt(waist(2)^2 + (z1)^2) waist(2)];
+end
+
 
 t0 = 0;
 t1 = t_move_ramp(1);
 t2 = t1 + t_move_ramp(2);
 
 dt = 5e-7;
-t = t0:dt:t2;
+if blast_boo
+    t = t1:dt:2*t2;
+else
+    t = t0:dt:t2;
+end
 tt = reshape(t,1,1,[]);
 Nt = numel(tt);
 
 %% define tweezer trajectories
 tweezer{1}.x =@(t) minjerk(x0,x1,t0,t1,t);
 tweezer{1}.z =@(t) minjerk(z0,z0,t0,t1,t);
-tweezer{1}.I =@(t) linramp(1,0,t1,t2,t);
+if blast_boo
+    tweezer{1}.I =@(t) linramp(0,1,t1,t2,t);
+else
+    tweezer{1}.I =@(t) linramp(1,0,t1,t2,t);
+end
 
 tweezer{2}.x =@(t) (x1+x_err)*ones(size(t));
 tweezer{2}.z =@(t) z1*ones(size(t));
@@ -119,7 +141,13 @@ wind(2,:) = [2 2];
 xoffs = [x0 x0+x_err; x0 x0];
 zoffs = [z0 z1; z0 z0];
 
-for j = 1:2
+if blast_boo
+    jrange = 2;
+else
+    jrange = 1:2;
+end
+
+for j = jrange
     
     x = -xmax(j):dx:xmax(j);
     z = -zmax(j):dz:zmax(j);
@@ -136,6 +164,9 @@ for j = 1:2
     
     X = X0 + atom{j}.x(tt);
     Z = Z0 + atom{j}.z(tt);
+    
+    dist2edge = min(cat(3,xmax(j)-X0,xmax(j)+X0,zmax(j)-Z0,zmax(j)+Z0),[],3);
+    loss_prop = exp(-hbar./(dx*m(j)*(dist2edge+eps))*dt);
     
     V = zeros(Nx,Nz,Nt);
     psi_gs = zeros(Nx,Nz,2);
@@ -168,6 +199,12 @@ for j = 1:2
     V_inert = m(j)*(atom{j}.ax(tt).*X+atom{j}.az(tt).*Z); 
     V_prop = exp(-1i*dt/hbar*(V+V_inert));
     
+%     loss = zeros(Nx,Nz);
+%     loss(1,:) = 1;
+%     loss(end,:) = 1;
+%     loss(:,1) = 1;
+%     loss(:,end) = 1;
+    
     T = (K_X0.^2 + K_Z0.^2)*hbar^2/(2*m(j));
     T_prop = exp(-1i*T*dt/(2*hbar));
     
@@ -192,23 +229,39 @@ for j = 1:2
     psi = zeros(Nx,Nz,Nt);
     psi(:,:,1) = psi_gs(:,:,1);
     
+    
     E = zeros(Nt-1,1);
     for i = 1:Nt-1
         psi_k = fft(fft(psi(:,:,i),[],1),[],2);
-%                 psi(:,:,i+1) = ifft(ifft(T_prop(:,:,i).*fft(fft(V_prop(:,:,i).*...
-%                     ifft(ifft(T_prop(:,:,i).*psi_k,[],1),[],2),[],1),[],2),[],1),[],2);
-%                 T_expect = sum(sum(conj(psi(:,:,i)).*ifft(ifft(T(:,:,i).*psi_k,[],1),[],2),1),2);
-                psi(:,:,i+1) = ifft(ifft(T_prop.*fft(fft(V_prop(:,:,i).*...
-                    ifft(ifft(T_prop.*psi_k,[],1),[],2),[],1),[],2),[],1),[],2);
-                T_expect = sum(sum(conj(psi(:,:,i)).*ifft(ifft(T.*psi_k,[],1),[],2),1),2);
-%         psi(:,:,i+1) = ifft(ifft(T_prop.*G_prop2(:,:,i).*fft(fft(G_prop1(:,:,i).*V_prop(:,:,i).*...
-%             ifft(ifft(T_prop.*psi_k,[],1),[],2),[],1),[],2),[],1),[],2);
-%         T_expect = sum(sum(conj(psi(:,:,i)).*ifft(ifft(T.*psi_k,[],1),[],2),1),2);
+        %                 psi(:,:,i+1) = ifft(ifft(T_prop(:,:,i).*fft(fft(V_prop(:,:,i).*...
+        %                     ifft(ifft(T_prop(:,:,i).*psi_k,[],1),[],2),[],1),[],2),[],1),[],2);
+        %                 T_expect = sum(sum(conj(psi(:,:,i)).*ifft(ifft(T(:,:,i).*psi_k,[],1),[],2),1),2);
+        psi(:,:,i+1) = ifft(ifft(T_prop.*fft(fft(V_prop(:,:,i).*...
+            ifft(ifft(T_prop.*psi_k,[],1),[],2),[],1),[],2),[],1),[],2);
+        T_dist = real(conj(psi(:,:,i)).*ifft(ifft(T.*psi_k,[],1),[],2));
+        T_expect = sum(sum(T_dist,1),2);
+        %         psi(:,:,i+1) = ifft(ifft(T_prop.*G_prop2(:,:,i).*fft(fft(G_prop1(:,:,i).*V_prop(:,:,i).*...
+        %             ifft(ifft(T_prop.*psi_k,[],1),[],2),[],1),[],2),[],1),[],2);
+        %         T_expect = sum(sum(conj(psi(:,:,i)).*ifft(ifft(T.*psi_k,[],1),[],2),1),2);
         
-        V_expect = sum(sum(conj(psi(:,:,i)).*V(:,:,i).*psi(:,:,i),1),2);
+        %         psi_lost = psi(:,:,i+1).*loss;
+        %         psi(:,:,i+1) = psi(:,:,i+1) - psi_lost;
+        
+        %         P_lost = P_lost + sum(sum(abs(psi_lost).^2,1),2);
+        V_dist = real(conj(psi(:,:,i)).*V(:,:,i).*psi(:,:,i));
+        E_dist = V_dist + T_dist;
+        V_expect = sum(sum(V_dist,1),2);
         E(i) = real(T_expect + V_expect);
         
-        if ~mod(i,100)
+        loss_prop_i = ones(Nx,Nz);
+%         lost = exp(-hbar./(2*dx*m(j)*abs(xmax(j)-X0))*dt);
+        loss_prop_i(E_dist/hbar >= 0) = loss_prop(E_dist/hbar >= 0);
+        psi(:,:,i+1) = psi(:,:,i+1).*loss_prop_i; % - psi_lost;
+%         psi_lost = psi(:,:,i+1).*lost;
+        
+%         disp(sum(sum(abs(psi(:,:,i+1)).^2)));
+        
+        if ~mod(i,20)
             if animate==1
                 figure(1);
                 clf;
@@ -248,6 +301,32 @@ for j = 1:2
                 axis image
                 colormap gray
                 drawnow();
+            elseif animate==3
+                
+                zdata = E_dist/hbar < -1e2;
+                kzp = fftshift(k_z);
+                kxp = fftshift(k_x);
+%                 Vpp = peak2peak(reshape(V(:,:,i),[],1));
+%                 zdata2 = fftshift(fftshift(hbar^2/(2*m(j))*(K_X0.^2 + K_Z0.^2),1),2);
+                figure(2);
+                clf;
+                hold on;
+                box on;
+%                 plot(t(1:i),E(1:i)/hbar);
+%                 histogram(E_dist(:)/hbar,linspace(-2e5,1e4,101));
+%                 xlim([-2e5 1e4])
+%                 ylim([0 1e4])
+%                 contourf(kzp,kxp,zdata2,10);
+                im = imagesc(z,x,zdata);
+%                 im.AlphaData = zdata/max(abs(zdata(:)));
+                hold off;
+%                 shading flat
+%                 xlabel('axial (um)')
+%                 ylabel('radial (um)')
+%                 colormap gray
+%                 axis image
+%                 colorbar
+                drawnow();
             end
             
             if save_gif
@@ -276,6 +355,8 @@ for j = 1:2
             
         end
     end
+    
+    P_lost(j) = 1-sum(sum(abs(psi(:,:,end)).^2));
     
 %     xcom = reshape(sum(x.*sum(abs(psi).^2,2),1)./sum(sum(abs(psi).^2,2),1),size(t));
 %     zcom = reshape(sum(z'.*sum(abs(psi).^2,1),2)./sum(sum(abs(psi).^2,1),2),size(t));

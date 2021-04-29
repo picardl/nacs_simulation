@@ -5,10 +5,10 @@ const = constants();
 % build an effective hamiltonian for the interaction between the feshbach
 % molecule state, c3sigma, and x1sigma.
 
-basis = 'aFC';
+basis = 'aUC';
 
-% power_up = 1; % W
-% power_dn = 1; % W
+power_up = 1; % W
+power_dn = 1; % W
 
 % waist = 13e-6; % m
 
@@ -120,28 +120,28 @@ psi_c_interp = interp1(c.r,c.psi_r,X.r,'spline');
 vibronic_TDM_X_c = trapz(X.r,X.psi_r.*X1S_c3S_elecTDM_interp.*psi_c_interp);
 H_dn = vibronic_TDM_X_c * Efield_dn * (c.psi'*rot_TDM_X_c*X.psi);
 
-%% rabi frequencies per sqrt(mW)
-% switch basis
-%     case 'aFC'
-%         [q_ind,v_ind] = evec_ind({'J','I','F','m_F'},[1,5,6,5],c,c.psi);
-%     case 'aUC'
-%         [q_ind,v_ind] = evec_ind({'J','m_J','m_i_Na','m_i_Cs'},[1,1,3/2,5/2],c,c.psi);
-%     case 'aIC'
-%         [q_ind,v_ind] = evec_ind({'J','m_J','I','m_I'},[1,1,5,4],c,c.psi);
-% end
-% rabi_up_sqrt_mW = max(abs(H_up(v_ind)))/const.h*1e-6 *sqrt(1e-3/power_up);
-% fprintf('up leg transition strength = %1.3g MHz/sqrt(mW)\n',rabi_up_sqrt_mW)
-% 
-% switch basis
-%     case 'aFC'
-%         [~,v_ind2] = evec_ind({'J','I','F','m_F'},[0,5,5,4],X,X.psi);
-%     case 'aIC'
-%         [~,v_ind2] = evec_ind({'J','m_J','I','m_I'},[0,0,5,4],X,X.psi);
-%     case 'aUC'
-%         [~,v_ind2] = evec_ind({'J','m_J','m_i_Na','m_i_Cs'},[0,0,3/2,5/2],X,X.psi);
-% end
-% rabi_dn_sqrt_mW = max(abs(H_dn(v_ind,v_ind2)))/const.h*1e-6 *sqrt(1e-3/power_dn);
-% fprintf('down leg transition strength = %1.3g MHz/sqrt(mW)\n',rabi_dn_sqrt_mW)
+% rabi frequencies per sqrt(mW)
+switch basis
+    case 'aFC'
+        [q_ind,v_ind] = evec_ind({'J','I','F','m_F'},[1,5,6,5],c,c.psi);
+    case 'aUC'
+        [q_ind,v_ind] = evec_ind({'J','m_J','m_i_Na','m_i_Cs'},[1,1,3/2,5/2],c,c.psi);
+    case 'aIC'
+        [q_ind,v_ind] = evec_ind({'J','m_J','I','m_I'},[1,1,5,4],c,c.psi);
+end
+rabi_up_sqrt_mW = max(abs(H_up(v_ind)))/const.h*1e-6 *sqrt(1e-3/power_up);
+fprintf('up leg transition strength = %1.3g MHz/sqrt(mW)\n',rabi_up_sqrt_mW)
+
+switch basis
+    case 'aFC'
+        [~,v_ind2] = evec_ind({'J','I','F','m_F'},[0,5,5,4],X,X.psi);
+    case 'aIC'
+        [~,v_ind2] = evec_ind({'J','m_J','I','m_I'},[0,0,5,4],X,X.psi);
+    case 'aUC'
+        [~,v_ind2] = evec_ind({'J','m_J','m_i_Na','m_i_Cs'},[0,0,3/2,5/2],X,X.psi);
+end
+rabi_dn_sqrt_mW = max(abs(H_dn(v_ind,v_ind2)))/const.h*1e-6 *sqrt(1e-3/power_dn);
+fprintf('down leg transition strength = %1.3g MHz/sqrt(mW)\n',rabi_dn_sqrt_mW)
 
 %% cut states that aren't coupled
 % cut X states that aren't accessed via raman
@@ -170,30 +170,30 @@ c.psi(c_qnums_cut,:) = [];
 c.psi = c.psi./sqrt(sum(abs(c.psi).^2,1));
 
 %% build effective hamiltonian
-Nf = 1;
-Nc = size(c.psi,2);
-NX = size(X.psi,2);
-
-Nstates = Nf + Nc + NX;
-
-b1.qnums = build_basis({'eta','i'},{1,1},[0,0]);
-b2.qnums = build_basis({'eta','i'},{2,1:size(c.psi,2)},[0,0]);
-b3.qnums = build_basis({'eta','i'},{3,1:size(X.psi,2)},[0,0]);
-b = join_basis(join_basis(b1,b2),b3);
-
-b.ops.H0 = diag(cat(1,0,c.E-E0_up-f.E,X.E-(E0_up-E0_dn)-f.E));
-b.ops.Hu = [zeros(Nf) H_up' zeros(Nf,NX); H_up zeros(Nc,Nc+NX); zeros(NX,Nstates)];
-b.ops.Hd = [zeros(Nf,Nstates); zeros(Nc,Nf+Nc) H_dn; zeros(NX,Nf) H_dn' zeros(NX)];
-
-b.ops.If = diag(cat(1,ones(Nf,1),zeros(Nc,1),zeros(NX,1)));
-b.ops.Ic = diag(cat(1,zeros(Nf,1),ones(Nc,1),zeros(NX,1)));
-b.ops.IX = diag(cat(1,zeros(Nf,1),zeros(Nc,1),ones(NX,1)));
+% Nf = 1;
+% Nc = size(c.psi,2);
+% NX = size(X.psi,2);
+% 
+% Nstates = Nf + Nc + NX;
+% 
+% b1.qnums = build_basis({'eta','i'},{1,1},[0,0]);
+% b2.qnums = build_basis({'eta','i'},{2,1:size(c.psi,2)},[0,0]);
+% b3.qnums = build_basis({'eta','i'},{3,1:size(X.psi,2)},[0,0]);
+% b = join_basis(join_basis(b1,b2),b3);
+% 
+% b.ops.H0 = diag(cat(1,0,c.E-E0_up-f.E,X.E-(E0_up-E0_dn)-f.E));
+% b.ops.Hu = [zeros(Nf) H_up' zeros(Nf,NX); H_up zeros(Nc,Nc+NX); zeros(NX,Nstates)];
+% b.ops.Hd = [zeros(Nf,Nstates); zeros(Nc,Nf+Nc) H_dn; zeros(NX,Nf) H_dn' zeros(NX)];
+% 
+% b.ops.If = diag(cat(1,ones(Nf,1),zeros(Nc,1),zeros(NX,1)));
+% b.ops.Ic = diag(cat(1,zeros(Nf,1),ones(Nc,1),zeros(NX,1)));
+% b.ops.IX = diag(cat(1,zeros(Nf,1),zeros(Nc,1),ones(NX,1)));
 
 
 
 %% save effective hamiltonian
-fname = ['../data/transfer_Heff_' basis '_' pol_up '_' pol_dn '.mat'];
-save(fname,'b');
-disp(['saved file ' fname])
+% fname = ['../data/transfer_Heff_' basis '_' pol_up '_' pol_dn '.mat'];
+% save(fname,'b');
+% disp(['saved file ' fname])
 
 

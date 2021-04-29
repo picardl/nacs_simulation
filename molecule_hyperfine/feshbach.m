@@ -1,4 +1,4 @@
-clear;
+clear basis;
 c = constants();
 
 % Coupled-channel calculation in ground state of NaCs. Configured to
@@ -9,9 +9,9 @@ Nx = 8000;
 rmin = 4.5;
 rmax = 10000;
 mtot = 4; % total angular momentum to truncate basis
-B = (855)*1e-4; %/c.B_au; % number in parens is in gauss
+% B = (858)*1e-4; %/c.B_au; % number in parens is in gauss
 Erange_vs_threshold = [-50e6 1e6]*c.h/c.hartree;
-save_basis = 'aFC';
+save_basis = 'aUC';
 
 %% uncoupled basis
 basis.UC = join_basis(atom_basis('Na'),atom_basis('Cs'));
@@ -124,11 +124,11 @@ for i = 1:size(psi,3)
     psi_save(:,:,i) = (basis.change.(['SC_' save_basis])')*psi(:,:,i);
 end
 
-%% save data
-% qnums = basis.(save_basis).qnums;
-% r = r*c.abohr;
-% psi = psi_save./sqrt(c.abohr);
-% E = E_out*c.hartree;
-% fname = ['data/feshbach_state_' num2str(round(B*1e4)) 'G_' save_basis '.mat'];
-% save(fname,'qnums','r','psi','E','B');
-% disp(['saved file ' fname])
+% save data
+qnums = basis.(save_basis).qnums;
+r = r*c.abohr;
+psi = psi_save./sqrt(c.abohr);
+E = E_out*c.hartree;
+fname = ['data/feshbach_state_' num2str(B*1e4) 'G_' save_basis '.mat'];
+save(fname,'qnums','r','psi','E','B');
+disp(['saved file ' fname])

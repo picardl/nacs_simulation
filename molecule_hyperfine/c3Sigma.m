@@ -1,13 +1,13 @@
 
 % Calculate rotational and hyperfine structure of c3Sigma state of NaCs
 
-clear;
+clear basis;
 
 c = constants();
 
 Jmax = 3;
 mtot = [3 4 5]; % [3 4 5];
-B = 855*1e-4;
+% B = 853*1e-4;
 save_basis = 'aUC';
 
 %% build bases
@@ -98,6 +98,6 @@ psi = evecs;
 r = r*c.abohr;
 psi_r = psi_r/sqrt(c.abohr);
 E = evals + E_vib*c.hartree;
-fname = ['data/c3Sigma_state_' num2str(round(B*1e4)) 'G_' save_basis '.mat'];
+fname = ['data/c3Sigma_state_' num2str(B*1e4) 'G_' save_basis '.mat'];
 save(fname,'qnums','ops','psi','psi_r','r','E','B');
 disp(['saved file ' fname])

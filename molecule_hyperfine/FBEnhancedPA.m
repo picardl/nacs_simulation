@@ -4,11 +4,14 @@ const = constants();
 
 % Determine tdm dependence on B field close to FB resonance
 
-basis = 'aFC';
+basis = 'aUC';
 %% load data
-BFields = [852:0.5:858];
+BFields = [852.5:0.5:858.5];
 tdmUp = zeros(size(BFields));
 tdmUpSum = zeros(size(BFields));
+tdmUpMax = zeros(size(BFields));
+rabi_up_sqrt_mW = zeros(size(BFields));
+
 fAll = {};
 cAll = {};
 for i = 1:length(BFields)
@@ -20,15 +23,15 @@ end
 power_up = 1; % W
 power_dn = 1; % W
 
-% waist = 13e-6; % m
+waist = 13e-6; % m
 
 pol_up = 'sigp';
 pol_dn = 'sigp';
 
 %% laser stuff
 % electric fields
-Efield_up = 1; %sqrt(4*const.eta0*power_up/(pi*waist^2)); % V/m
-Efield_dn = 1; %sqrt(4*const.eta0*power_dn/(pi*waist^2)); % V/m
+Efield_up = sqrt(4*const.eta0*power_up/(pi*waist^2)); % V/m
+Efield_dn = sqrt(4*const.eta0*power_dn/(pi*waist^2)); % V/m
 
 % laser spherical tensor operators
 switch pol_up
@@ -122,7 +125,7 @@ for i = 1:length(BFields)
     % rabi frequencies per sqrt(mW)
     switch basis
         case 'aFC'
-            [q_ind,v_ind] = evec_ind({'J','I','F','m_F'},[1,5,6,5],c,c.psi);
+            [q_ind,v_ind] = evec_ind({'J','I','F','m_F'},[1,5,6,4],c,c.psi);
             mj0Ind = find(12 < c.E*1e-9/const.h - 325100 & c.E*1e-9/const.h - 325100 < 13);
         case 'aUC'
             [q_ind,v_ind] = evec_ind({'J','m_J','m_i_Na','m_i_Cs'},[1,0,3/2,5/2],c,c.psi);
@@ -131,10 +134,12 @@ for i = 1:length(BFields)
             [q_ind,v_ind] = evec_ind({'J','m_J','I','m_I'},[1,1,5,4],c,c.psi);
     end
     tdmUp(i) = max(abs(H_up(v_ind)));
-    rabi_up_sqrt_mW = tdmUp(i)/const.h*1e-6 *sqrt(1e-3/power_up);
-    fprintf('up leg transition strength = %1.3g MHz/sqrt(mW)\n',rabi_up_sqrt_mW)
+
 
     tdmUpSum(i) = sqrt(sum(H_up(mj0Ind).^2));
+    tdmUpMax(i) = max(abs(H_up(mj0Ind)));
+    rabi_up_sqrt_mW(i) = tdmUpMax(i)*sqrt(1e-3/power_up);
+    fprintf('up leg transition strength = %1.3g Hz/sqrt(mW)\n',rabi_up_sqrt_mW)
     
 %     switch basis
 %         case 'aFC'
@@ -148,5 +153,30 @@ for i = 1:length(BFields)
 %     fprintf('down leg transition strength = %1.3g MHz/sqrt(mW)\n',rabi_dn_sqrt_mW)
 
 end
+
+sg = load('C:\NaCs1pt5_Data_temp\Data\20200724\data_20200724_182304.mat');
+surv = sg.Analysis.SurvivalProbability(3,:);
+
+Gamma = 100e6*const.h;
+pow = 3.7;
+rabi_up = rabi_up_sqrt_mW*sqrt(pow);
+t = 2e-4;
+Rscatter_atom = (Gamma/(2*const.hbar)) * 2*abs(rabi_up).^2./(2*abs(rabi_up).^2 + Gamma.^2);
+popn = 0.8*exp(-Rscatter_atom*t);
+
+fitResult = fminsearch(@(x) sum((x(2)*exp(-Rscatter_atom*x(1)) - surv).^2),[2e-4,0.8]);
+
+% figure(3)
+% plot(BFields,tdmUpSum)
+% hold on
+% 
+% legend({'Sum of squares of tdm','Leading term tdm'})
+% xlabel('B Field [G]')
+% ylabel('TDM')
+
+hold on
+popn = fitResult(2)*exp(-Rscatter_atom*fitResult(1));
+plot(BFields + 10.5, popn)
+
 
 

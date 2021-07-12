@@ -9,5 +9,6 @@ function out = case_b2a_element(r,c)
 % one more J in your case (a) basis than you have N in the case (b) basis
 
 out = (-1).^(c.N-r.S+r.Omega) .*sqrt(2*c.N+1) .* w3j(r.J,r.Omega,r.S,-r.Sigma,c.N,-c.Lambda) .* (r.J==c.J).*(r.S==c.S);
+% out = (-1).^(c.N-r.S+r.Omega) .*sqrt(2*c.N+1) .* w3j(r.J,r.Omega,r.S,-r.Sigma,c.N,-c.Lambda) .* (r.J==c.J);
 
 end

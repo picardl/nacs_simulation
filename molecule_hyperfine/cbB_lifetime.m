@@ -2,7 +2,7 @@ function cbB_lifetime
 
 const = constants();
 
-file = 'data/cbB_210701_235922.mat';
+file = '../data/cbB_210701_235922.mat';
 
 Eoffs = const.h*((4*351725718500813 + 2*335116048808294)/6)/const.hartree;
 

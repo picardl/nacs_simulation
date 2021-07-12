@@ -77,7 +77,11 @@ if ~back
     Xout = Xb; % log-derivative wavefunction at point b
     
     Zab_eig = eig(Zab);
-    node = sum(Zab_eig<0);
+%     node = sum(Zab_eig<0);
+    node = any(Zab_eig<0);
+%     if node
+%         node;
+%     end
 else
     Xb = Xin; % log-derivative wavefunction at point b
     Zab = Xb-Y4ab;
@@ -86,7 +90,11 @@ else
     Xout = Xa; % log-derivative wavefunction at point a
     
     Zab_eig = eig(Zab);
-    node = sum(Zab_eig>0);
+%     node = sum(Zab_eig>0);
+    node = any(Zab_eig>0);
+%     if node
+%         node;
+%     end
 end
 
 % return to original basis

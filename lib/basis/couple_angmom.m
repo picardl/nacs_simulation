@@ -1,6 +1,9 @@
 
 function [basis_cpl,basis_unc,basis_change_matrix] = couple_angmom(basis_unc,j1_name,j2_name,j3_name)
 
+% couple angular momenta j1 and j2 to make new angular momentum j3=j1+j2,
+% and change basis to one where j3^2 and j3z are diagonal.
+
 qnums_unc = basis_unc.qnums;
 
 basis_cpl = struct();
@@ -22,12 +25,18 @@ row = row(:);
 col = col(:);
 
 % create x,y,z,sq operators for coupled angular momentum in uncoupled basis
+for Q = {'_x','_y','_z','_p','_m'}
+    q = [Q{:}];
+    basis_unc.ops.([j3_name q]) = basis_unc.ops.([j1_name q]) + basis_unc.ops.([j2_name q]);
+end
+
 basis_unc.ops.([j3_name '_sq']) = zeros(Nstates);
 for Q = {'_x','_y','_z'}
     q = [Q{:}];
-    basis_unc.ops.([j3_name q]) = basis_unc.ops.([j1_name q]) + basis_unc.ops.([j2_name q]);
     basis_unc.ops.([j3_name '_sq']) = basis_unc.ops.([j3_name '_sq']) + basis_unc.ops.([j3_name q])^2;
 end
+
+
 
 % change basis to coupled one
 basis_change_matrix = reshape(...
@@ -39,7 +48,7 @@ basis_change_matrix = reshape(...
 
 op_names = fields(basis_unc.ops);
 for i = 1:numel(op_names)
-    basis_cpl.ops.(op_names{i}) = basis_change_matrix'*(basis_unc.ops.(op_names{i})*basis_change_matrix);
+    basis_cpl.ops.(op_names{i}) = pagemtimes(basis_change_matrix,'ctranspose',pagemtimes(basis_unc.ops.(op_names{i}),basis_change_matrix),'none');
 end
 
 end

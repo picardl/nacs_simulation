@@ -5,7 +5,7 @@ const = constants();
 %% work out energy offset
 Eoffs_guess = -0.331957;
 
-new_data = readtable(['lib/korek/NaCs1'],'NumHeaderLines',1);
+new_data = readtable(['../lib/korek/NaCs1'],'NumHeaderLines',1);
 
 R = new_data{:,1};
 V = new_data{:,2};
@@ -21,7 +21,7 @@ plot(R,V,R,Vlr+Eoffs_guess);
 states_count = 0;
 
 for i = 1:6
-    new_data = readtable(['lib/korek/NaCs' num2str(i)],'NumHeaderLines',1);
+    new_data = readtable(['../lib/korek/NaCs' num2str(i)],'NumHeaderLines',1);
     
     colnames = cellfun(@(x) ['var' num2str(x)],num2cell((states_count+1):(states_count+size(new_data,2)-1)),'un',false);
     colnames = ['R' colnames];
@@ -34,7 +34,7 @@ for i = 1:6
         save_data.R = new_data.R;
         save_data.V = new_data{:,j};
         
-        writetable(save_data,['lib/korek/state' num2str(states_count+j-1) '.xlsx']);
+        writetable(save_data,['../lib/korek/state' num2str(states_count+j-1) '.xlsx']);
     end
     
     states_count = states_count + size(new_data,2)-1;
@@ -49,7 +49,7 @@ end
 
 % so_files = {'SO0-','SO0+','SO1','SO2','SO3'};
 % for i = 1:numel(so_files)
-%     data = readtable(['lib/korek/' so_files{i}],'NumHeaderLines',1);
+%     data = readtable(['../lib/korek/' so_files{i}],'NumHeaderLines',1);
 %     hold on;
 %     for j = 2:size(data,2)
 %         plot(data{:,1},data{:,j},'-')

@@ -13,17 +13,17 @@ end
 % find feshbach state and lowest 2 trap states.
 
 if nargin<3
-    recompute = 2;
+    recompute = 0;
 end
 
 %% check for file at this B field with this basis
-files = dir('data');
+files = dir('../data');
 file_ind = contains({files.name},['fb_' strrep(num2str(B*1e4),'.','p') 'G_' save_basis]);
 if any(file_ind) && ~(recompute>1)
     disp('found FB file for this B field and basis')
     fnames = {files(file_ind).name};
     times = datenum(regexp(fnames,'\d{6}_\d{6}','match','once'),'YYmmDD_HHMMSS');
-    data = load(['data/' fnames{times==max(times)}]);
+    data = load(['../data/' fnames{times==max(times)}]);
     out = data.out;
     return 
 end
@@ -122,7 +122,7 @@ for i = 1:size(psi,3)
     out.psi(:,:,i) = (basis.change.(['SC_' save_basis])')*psi(:,:,i);
 end
 
-% fn = ['data/fb_' [strrep(num2str(B*1e4),'.','p') 'G'] '_' save_basis '_' datestr(now,'YYmmDD_HHMMSS') '.mat'];
-% save(fn,'out')
-% disp(fn)
+fn = ['../data/fb_' [strrep(num2str(B*1e4),'.','p') 'G'] '_' save_basis '_' datestr(now,'YYmmDD_HHMMSS') '.mat'];
+save(fn,'out')
+disp(fn)
 end

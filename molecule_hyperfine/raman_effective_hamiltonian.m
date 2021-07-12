@@ -8,20 +8,20 @@ const = constants();
 basis = 'aFC';
 
 if nargin<1
-    B = 852e-4;
+    B = 853e-4;
 end
 if nargin<2
     recompute = 0;
 end
 
 %% check for file at this B field 
-files = dir('data');
+files = dir('../data');
 file_ind = contains({files.name},['raman_' strrep(num2str(B*1e4),'.','p') 'G' '_' basis]);
 if any(file_ind) && ~(recompute>0)
     disp('found raman hamiltonian file for this B field and basis')
     fnames = {files(file_ind).name};
     times = datenum(regexp(fnames,'\d{6}_\d{6}','match','once'),'YYmmDD_HHMMSS');
-    data = load(['data/' fnames{times==max(times)}]);
+    data = load(['../data/' fnames{times==max(times)}]);
     out = data.out;
     return 
 end
@@ -130,8 +130,8 @@ out.H_up = H_up;
 out.H_dn = H_dn;
 out.B = B;
 
-fn = ['data/raman_' [strrep(num2str(B*1e4),'.','p') 'G'] '_' basis '_' datestr(now,'YYmmDD_HHMMSS') '.mat'];
-% fn = ['data/raman_' datestr(now,'YYmmDD_HHMMSS') '.mat'];
+fn = ['../data/raman_' [strrep(num2str(B*1e4),'.','p') 'G'] '_' basis '_' datestr(now,'YYmmDD_HHMMSS') '.mat'];
+% fn = ['../data/raman_' datestr(now,'YYmmDD_HHMMSS') '.mat'];
 save(fn,'out');
 disp(fn);
 

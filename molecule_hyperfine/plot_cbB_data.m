@@ -4,18 +4,18 @@ const = constants();
 
 Eoffs = const.h*((4*351725718500813 + 2*335116048808294)/6)/const.hartree;
 
-% cbB_file = 'data/cbB_210701_235922.mat';
-% cbB_file = 'data/cbB_210703_014725.mat';
-% cbB_file = 'data/cbB_210705_120344.mat';
-% cbB_file = 'data/cbB_210705_125650.mat';
-% cbB_file = 'data/cbB_210705_141528.mat';
-% cbB_file = 'data/cbB_210706_154204.mat';
-cbB_file = 'data/cbB_210708_103752.mat';
+% cbB_file = '../data/cbB_210701_235922.mat';
+% cbB_file = '../data/cbB_210703_014725.mat';
+% cbB_file = '../data/cbB_210705_120344.mat';
+% cbB_file = '../data/cbB_210705_125650.mat';
+% cbB_file = '../data/cbB_210705_141528.mat';
+% cbB_file = '../data/cbB_210706_154204.mat';
+cbB_file = '../data/cbB_210708_103752.mat';
 
-fb_file = 'data/fb_852G_aFC_210706_113524.mat';
-X_file = 'data/X_vib_210706_163735.mat';
-a_file = 'data/a_210706_160129.mat';
-c_file = 'data/c_vib_210706_162602.mat';
+fb_file = '../data/fb_852G_aFC_210706_113524.mat';
+X_file = '../data/X_vib_210706_163735.mat';
+a_file = '../data/a_210706_160129.mat';
+c_file = '../data/c_vib_210706_162602.mat';
 
 cbB_data = load(cbB_file);
 

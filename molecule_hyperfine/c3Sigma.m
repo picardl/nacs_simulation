@@ -8,7 +8,7 @@ if nargin<1
     B = 10*1e-4;
 end
 if nargin<3
-    recompute = 0;
+    recompute = 2;
 end
 if nargin<2
     save_basis = 'aFC';
@@ -21,13 +21,13 @@ if nargin<5
 end
 
 %% check for file at this B field with this basis
-files = dir('data');
+files = dir('../data');
 file_ind = contains({files.name},['c_' strrep(num2str(B*1e4),'.','p') 'G_' save_basis]);
 if any(file_ind) && ~(recompute > 1)
     disp('found c3Sigma file for this B field and basis')
     fnames = {files(file_ind).name};
     times = datenum(regexp(fnames,'\d{6}_\d{6}','match','once'),'YYmmDD_HHMMSS');
-    data = load(['data/' fnames{times==max(times)}]);
+    data = load(['../data/' fnames{times==max(times)}]);
     out = data.out;
     return 
 end
@@ -69,7 +69,6 @@ f = setdiff(fields(basis.aFC.ops),fields(basis.aUC.ops));
 for i = 1:numel(f)
     basis.aUC.ops.(f{i}) = basis.change.aUC_FC*basis.aFC.ops.(f{i})*basis.change.aUC_FC';
 end
-% max(reshape(abs(basis.aUC.ops.J_z + basis.aUC.ops.i_Na_z + basis.aUC.ops.i_Cs_z - basis.aUC.ops.F_z),[],1))
 
 %% truncate basis
 % basis = rmfield(basis,'aUC');
@@ -80,19 +79,19 @@ end
 evals = real(diag(evals));
 
 %% plot
-% mF_expect = real(diag(evecs'*basis.(save_basis).ops.F_z*evecs));
-% figure(1);
-% clf;
-% hold on; box on;
-% for i = 1:numel(evals)
-%     plot(mF_expect(i) + [-0.4 0.4],[1 1]*evals(i)*1e-9/c.h,'-k')
-% end
-% hold off;
-% xlabel('M_{tot}');
-% ylabel('Energy (GHz)');
+mF_expect = real(diag(evecs'*basis.(save_basis).ops.F_z*evecs));
+figure(1);
+clf;
+hold on; box on;
+for i = 1:numel(evals)
+    plot(mF_expect(i) + [-0.4 0.4],[1 1]*evals(i)*1e-9/c.h,'-k')
+end
+hold off;
+xlabel('M_{tot}');
+ylabel('Energy (GHz)');
 
 %% load solution to deperturbed vib problem
-vib_data = load('data/cbB_210705_125650.mat');
+vib_data = load('../data/cbB_210705_125650.mat');
 E_vib = vib_data.out.E*c.hartree + c.Cs_D12_weighted;
 
 freq = 325233e9;
@@ -113,9 +112,8 @@ out.psi_vib = psi_vib;
 out.qnums_vib = qnums_vib;
 out.E = evals + E_vib(ind);
 
-% fn = ['data/c_' [strrep(num2str(B*1e4),'.','p') 'G'] '_' save_basis '_' datestr(now,'YYmmDD_HHMMSS') '.mat'];
-% % fn = ['data/c_' datestr(now,'YYmmDD_HHMMSS') '.mat'];
-% save(fn,'out')
-% disp(fn);
+fn = ['../data/c_' [strrep(num2str(B*1e4),'.','p') 'G'] '_' save_basis '_' datestr(now,'YYmmDD_HHMMSS') '.mat'];
+save(fn,'out')
+disp(fn);
 
 end

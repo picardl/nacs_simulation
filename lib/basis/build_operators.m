@@ -12,10 +12,10 @@ m_names = qnum_names(b(a));
 for i = 1:numel(j_names)
     J = j_names{i};
     mJ = m_names{i};
-    s1p = operator_matrix(@spher_op,basis,{J,mJ},1,J,mJ);
-    s1m = operator_matrix(@spher_op,basis,{J,mJ},-1,J,mJ);
-    ops.([J '_x']) = (s1m-s1p)/sqrt(2);
-    ops.([J '_y']) = -(s1m+s1p)/(sqrt(2)*1i);
+    ops.([J '_p']) = operator_matrix(@spher_op,basis,{J,mJ},1,J,mJ);
+    ops.([J '_m']) = operator_matrix(@spher_op,basis,{J,mJ},-1,J,mJ);
+    ops.([J '_x']) = (ops.([J '_m'])-ops.([J '_p']))/sqrt(2);
+    ops.([J '_y']) = -(ops.([J '_m'])+ops.([J '_p']))/(sqrt(2)*1i);
     ops.([J '_z']) = operator_matrix(@spher_op,basis,{J,mJ},0,J,mJ);
     ops.([J '_sq']) = ops.([J '_x'])^2 + ops.([J '_y'])^2 + ops.([J '_z'])^2;
 end

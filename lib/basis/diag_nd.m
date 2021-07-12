@@ -1,7 +1,9 @@
 function out = diag_nd(A)
 
 sz = size(A);
-if numel(sz)<3
+if sum(sz>1)==1
+    out = A(:)';
+elseif numel(sz)<3
     out = diag(A);
 else
     if sz(1)~=sz(2)

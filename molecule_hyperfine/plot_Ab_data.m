@@ -4,9 +4,9 @@ const = constants();
 
 Eoffs = const.h*((4*351725718500813 + 2*335116048808294)/6)/const.hartree;
 
-Ab_file = 'data/Ab_210702_034846.mat';
-fb_file = 'data/feshbach_210701_210331.mat';
-X_file = 'data/X_210701_222231.mat';
+Ab_file = '../data/Ab_210702_034846.mat';
+fb_file = '../data/feshbach_210701_210331.mat';
+X_file = '../data/X_210701_222231.mat';
 
 Ab_data = load(Ab_file);
 

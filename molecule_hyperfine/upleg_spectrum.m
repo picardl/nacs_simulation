@@ -3,7 +3,7 @@ function upleg_spectrum(B)
 const = constants;
 
 if nargin<1
-    B = 800e-4;
+    B = 845e-4;
 end
 
 basis = 'aFC';

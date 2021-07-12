@@ -9,8 +9,8 @@ if nargin<1
     Erange = [-0.03 -0.002];
 end
 if nargin<2
-%     depdata_file = 'data/deperturbation_210705_150222.mat';
-    depdata_file = 'data/deperturbation_210708_101418.mat';
+%     depdata_file = '../data/deperturbation_210705_150222.mat';
+    depdata_file = '../data/deperturbation_210708_101418.mat';
 end
 
 %% simulation parameters
@@ -114,7 +114,7 @@ zeta3 = (((strcmp(terms(r),'c3S') & strcmp(terms(c),'B1P')) ...
 Wint = Wint - zeta1 - zeta2 - zeta3 - V0Pi + xi1/sqrt(2);
 
 %% deperturbation data
-% depdata = load('data/deperturbation_210703_150318.mat');
+% depdata = load('../data/deperturbation_210703_150318.mat');
 depdata = load(depdata_file);
 Wpert_int = depdata.Wpert(R,depdata.X(:)',depdata.X_chn);
 % Wpert_int = depdata.Wpert(R,depdata.X(:)');
@@ -156,6 +156,6 @@ out.W = W(reshape(r,1,1,[]));
 out.qnums = basis.qnums;
 out.ops = basis.ops;
 out.psi = psi;
-save(['data/cbB_' datestr(now,'YYmmDD_HHMMSS') '.mat'],'out')
+save(['../data/cbB_' datestr(now,'YYmmDD_HHMMSS') '.mat'],'out')
 
 end

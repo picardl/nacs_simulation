@@ -250,7 +250,7 @@ iter = 0;
 % data = load('../data/deperturbation_210705_140759.mat');
 % data = load('../data/deperturbation_210706_150901.mat');
 % data = load('../data/deperturbation_210705_150222.mat');
-data = load('../data/deperturbation_210707_155801.mat');
+data = load('../data/deperturbation_210712_141340.mat');
 
 X = reshape(data.X,4,[]);
 X_chn = data.X_chn;
@@ -264,23 +264,14 @@ X_chn = data.X_chn;
 
 % c r0 rpow epow
 
-% X = [
-%     1.1373   -0.0016   -0.0260   -0.0019    -0.0005
-%     5.5869   12.6540    3.9061   10.4273    11.7963
-%    -4.1806   -0.0655    0.4623    7.5344      4.7992
-%     6.8021   31.5948    1.7134   12.0965     7.7181
-%     ];
-% 
-% X_chn = [1 3 2 1 2];
+X = cat(2,X,[
+    1e-3 1e-3
+    7.2  7.2
+    10  10
+    10  10
+    ]);
 
-% X = [
-%     1.1373   -0.0016   -0.0260   -0.0019    -0.0005   0.0008        -8e-4   1e-3  1e-3    1e-3
-%     5.5869   12.6540    3.9061   10.4273    11.7963    16.0984      12.81   6       6     6
-%    -4.1806   -0.0655    0.4623    7.5344      4.7992     4.1416     20      1      2      3
-%     6.8021   31.5948    1.7134   12.0965     7.7181      3.9808     20      2     2        2
-%     ];
-% 
-% X_chn = [1 3 2 1 2 5 6 1 1 1];
+X_chn = cat(2,X_chn,[4 1]);
 
 lb = ones(size(X))*-inf;
 ub = ones(size(X))*inf;
@@ -294,7 +285,7 @@ Nterms = size(X,2);
 
 % ssrfun(X(:)');
 X = fminsearchbnd(@ssrfun,X(:)',lb(:)',ub(:)')
-
+% 
 fn = ['../data/deperturbation_' datestr(now,'YYmmDD_HHMMSS') '.mat'];
 save(fn,'X','X_chn','Wpert')
 disp(fn)

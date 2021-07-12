@@ -1,45 +1,34 @@
-clear;
+function out = c3Sigma_vib
 
-c = constants();
+const = constants();
 
-% calculates single-channel vibrational wavefunctions in the c3Sigma
-% potential with a specified energy range and plots the result 
+% vibrational solver parameters
+Nx = 2e3;
+rmin = 4.5; % abohr
+rmax = 1e3; % abohr
+% Erange = -0.0224 + [-1 1]*1e-4; % energy range to search, atomic units
+Erange = [-1e-2 -1e-4] + NaCscPES(rmax);
 
-% simulation parameters
-Nx = 2000;
-rmin = 5;
-rmax = 100;
+%% trap
+waist = 1064e-9; % meter
+Power = 10e-3; % watt
+I0 = 2*Power/(pi*waist^2); % W/m^2
+trap_depth = (const.apol_Cs*I0)/(2*const.eps0*const.c)/const.hartree;
+atrap = 2*((const.abohr)/waist).^2;
+Vtrap =@(r) trap_depth*(1-exp(-atrap*r.^2));
 
-rtest = linspace(rmin,rmax,1e3);
+%% solve for vibrational energy
+W =@(x) NaCscPES(x) + Vtrap(x);
+[E_vib,nodes_out,psi_r,r] = ...
+    cc_logderiv_adaptive_multi([rmin rmax],Nx,W,Erange,const.mu_nacs/const.me,1,1);
 
-% total hamiltonian
-W =@(r) NaCscPES(r);
+%% output
+out.r = r;
+out.psi = psi_r;
+out.nodes = nodes_out;
+out.E = E_vib;
+fn = ['data/c_vib_' datestr(now,'YYmmDD_HHMMSS') '.mat'];
+save(fn,'out')
+disp(fn)
 
-Wtest = W(rtest);
-
-figure(1);
-clf;
-plot(rtest,Wtest);
-set(gca,'xscale','log')
-
-Erange = 0.049415 + [-1 1]*1e-4; %[0.043 0.053457];
-
-% call the solver
-[E_out,nodes_out,err_est,psi,r] = cc_logderiv_adaptive_multi([rmin rmax],Nx,W,Erange,c.mu_nacs/c.me,1,1);
-
-% display results
-diff(E_out)*c.hartree/c.h * 1e-6
-errstr(E_out/c.wavenum2hartree*(29.9792458),err_est/c.wavenum2hartree*(29.9792458))
-
-figure(2);
-clf;
-for i = 1:size(psi,3)
-    subplot(size(psi,3),1,i)
-    plot(r,psi(:,:,i),'linewidth',2);
-    set(gca,'xscale','log')
-    xlim([min(r) max(r)])
-    ylabel('\psi(R)')
 end
-xlabel('R (a_0)')
-
-% save('NaCs_scwfn_c3Sigma.mat','r','psi','E_out','nodes_out')

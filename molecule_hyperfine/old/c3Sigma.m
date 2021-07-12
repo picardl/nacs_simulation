@@ -1,36 +1,14 @@
-function out = c3Sigma(B,save_basis,recompute,Jmax,mtot)
 
 % Calculate rotational and hyperfine structure of c3Sigma state of NaCs
 
+clear basis;
+
 c = constants();
 
-if nargin<1
-    B = 10*1e-4;
-end
-if nargin<3
-    recompute = 0;
-end
-if nargin<2
-    save_basis = 'aFC';
-end
-if nargin<4
-    Jmax = 3;
-end
-if nargin<5
-    mtot = [3 4 5]; 
-end
-
-%% check for file at this B field with this basis
-files = dir('data');
-file_ind = contains({files.name},['c_' strrep(num2str(B*1e4),'.','p') 'G_' save_basis]);
-if any(file_ind) && ~(recompute > 1)
-    disp('found c3Sigma file for this B field and basis')
-    fnames = {files(file_ind).name};
-    times = datenum(regexp(fnames,'\d{6}_\d{6}','match','once'),'YYmmDD_HHMMSS');
-    data = load(['data/' fnames{times==max(times)}]);
-    out = data.out;
-    return 
-end
+Jmax = 3;
+mtot = [2 3 4 5]; % [3 4 5];
+% B = 853*1e-4;
+save_basis = 'aUC';
 
 %% build bases
 basis.aUC.qnums = build_basis({'eta','Lambda','Omega','J','S','i_Na','i_Cs'},...
@@ -42,7 +20,7 @@ basis.aUC.ops.Hrot = c.c3Sigma.Be*basis.aUC.ops.J_sq;
 
 basis.aUC.ops.H_OmegaDoubling = c.c3Sigma.wef*operator_matrix(@c3Sigma_omegadoubling_element,basis.aUC.qnums,{'J','Omega','Lambda','Sigma'});
 
-% basis.aUC.ops.Hsrot = (c.c3Sigma.gamma-2*c.c3Sigma.Be).*operator_matrix(@spin_rotation_element,basis.aUC.qnums,{'J','Omega','m_J','S'});
+basis.aUC.ops.Hsrot = (c.c3Sigma.gamma-2*c.c3Sigma.Be).*operator_matrix(@spin_rotation_element,basis.aUC.qnums,{'J','Omega','m_J','S'});
 
 basis.aUC.ops.HZ0elecspin = c.c3Sigma.gS*c.uB*operator_matrix(@Sz_case_a_element,basis.aUC.qnums,{'J','Omega','m_J','S'});
 
@@ -55,9 +33,8 @@ basis.aUC.ops.S_z = operator_matrix(@Sp_case_a_element,basis.aUC.qnums,{'J','Ome
 basis.aUC.ops.Hhf_Na = c.c3Sigma.alpha1*op_dot(basis.aUC.ops,'i_Na','S');
 basis.aUC.ops.Hhf_Cs = c.c3Sigma.alpha2*op_dot(basis.aUC.ops,'i_Cs','S');
 
-basis.aUC.ops.H = basis.aUC.ops.Hrot ...
-    + basis.aUC.ops.HZ0elecspin.*B + basis.aUC.ops.Hhf_Na ...
-    + basis.aUC.ops.Hhf_Cs + basis.aUC.ops.H_OmegaDoubling;
+basis.aUC.ops.H = basis.aUC.ops.Hrot + basis.aUC.ops.Hsrot ...
+    + basis.aUC.ops.HZ0elecspin.*B + basis.aUC.ops.Hhf_Na + basis.aUC.ops.Hhf_Cs + basis.aUC.ops.H_OmegaDoubling;
 
 %% go to fully coupled basis
 [basis.aIC,basis.aUC,basis.change.aUC_IC] = couple_angmom(basis.aUC,'i_Na','i_Cs','I');
@@ -77,7 +54,7 @@ end
 
 %% diagonalize
 [evecs,evals] = eig(basis.(save_basis).ops.H);
-evals = real(diag(evals));
+evals = abs(diag(evals));
 
 %% plot
 % mF_expect = real(diag(evecs'*basis.(save_basis).ops.F_z*evecs));
@@ -91,31 +68,36 @@ evals = real(diag(evals));
 % xlabel('M_{tot}');
 % ylabel('Energy (GHz)');
 
-%% load solution to deperturbed vib problem
-vib_data = load('data/cbB_210705_125650.mat');
-E_vib = vib_data.out.E*c.hartree + c.Cs_D12_weighted;
+%% solve the vibrational problem
+% simulation parameters
+Nx = 1000;
+rmin = 5;
+rmax = 20;
 
-freq = 325233e9;
+Erange = 0.049415 + [-1 1]*1e-4; 
 
-ind = find(abs(E_vib-freq*c.h) == min(abs(E_vib-freq*c.h)));
+% call the solver
+[E_vib,nodes_out,err_est,psi_r,r] = ...
+    cc_logderiv_adaptive_multi([rmin rmax],Nx,@NaCscPES,Erange,c.mu_nacs/c.me,1,1);
 
-psi_vib = vib_data.out.psi(:,:,ind);
-qnums_vib = vib_data.out.qnums;
+% figure(2);
+% clf;
+% for i = 1:size(psi_r,3)
+%     subplot(size(psi_r,3),1,i)
+%     plot(r,psi_r(:,:,i),'linewidth',2);
+%     set(gca,'xscale','log')
+%     xlim([min(r) max(r)])
+%     ylabel('\psi(R)')
+% end
+% xlabel('R (a_0)')
 
 %% save data
-out.B = B;
-out.qnums = basis.(save_basis).qnums;
-out.ops = basis.(save_basis).ops;
-out.psi = evecs;
-out.r = vib_data.out.r;
-out.nodes = vib_data.out.nodes(ind);
-out.psi_vib = psi_vib;
-out.qnums_vib = qnums_vib;
-out.E = evals + E_vib(ind);
-
-% fn = ['data/c_' [strrep(num2str(B*1e4),'.','p') 'G'] '_' save_basis '_' datestr(now,'YYmmDD_HHMMSS') '.mat'];
-% % fn = ['data/c_' datestr(now,'YYmmDD_HHMMSS') '.mat'];
-% save(fn,'out')
-% disp(fn);
-
-end
+qnums = basis.(save_basis).qnums;
+ops = basis.(save_basis).ops;
+psi = evecs;
+r = r*c.abohr;
+psi_r = psi_r/sqrt(c.abohr);
+E = evals + E_vib*c.hartree;
+fname = ['data/c3Sigma_state_' num2str(B*1e4) 'G_' save_basis '.mat'];
+save(fname,'qnums','ops','psi','psi_r','r','E','B');
+disp(['saved file ' fname])

@@ -1,46 +1,30 @@
-function out = X1Sigma(B,save_basis,recompute,Nmax,mtot)
+
+clear;
+
 
 const = constants();
 
-if nargin<1
-    B = 10e-4;
-end
-if nargin<2
-    recompute = 0;
-end
-if nargin<3
-    save_basis = 'aFC';
-end
-if nargin<4
-    Nmax = 2;
-end
-if nargin<5
-    mtot = [2 3 4 5];
-end
+eta = 3; % electronic state tag
+Nmax = 0;
+gamma_pol = 0;
 
-% vibrational solver parameters
-Nx = 1e3;
+% simulation parameters
+Nx = 500;
 rmin = 4; % abohr
-rmax = 50; % abohr
-Erange = -0.0224 + [-1 1]*1e-4; % energy range to search, atomic units
-% Erange = [-0.0225 0];
+rmax = 15; % abohr
+Erange = -0.0224 + [-1 1]*1e-4;
+mtot = [2 3 4 5];
+save_basis = 'UC';
 
-%% check for file at this B field with this basis
-files = dir('data');
-file_ind = contains({files.name},['X_' strrep(num2str(B*1e4),'.','p') 'G_' save_basis]);
-if any(file_ind) && ~(recompute > 1)
-    disp('found X1Sigma file for this B field and basis')
-    fnames = {files(file_ind).name};
-    times = datenum(regexp(fnames,'\d{6}_\d{6}','match','once'),'YYmmDD_HHMMSS');
-    data = load(['data/' fnames{times==max(times)}]);
-    out = data.out;
-    return 
-end
+B = linspace(0,1000,1e3)*1e-4;
 
 %% build operators in uncoupled basis
+bases = {'UC','IC','FC','F1C','F2C'};
+
 basis.UC.qnums = build_basis({'eta','s_Na','s_Cs','Lambda','i_Na','i_Cs','N','S'},...
     {3,const.s_Na,const.s_Cs,0,const.i_Na,const.i_Cs,0:Nmax,0},[0 0 0 0 1 1 1 1]);
 basis.UC.ops = build_operators(basis.UC.qnums);
+Nstates = size(basis.UC.qnums,1);
 
 %% successively couple angular momenta to form coupled bases
 [basis.IC,basis.UC,basis.change.UC_IC] = couple_angmom(basis.UC,'i_Na','i_Cs','I');
@@ -87,53 +71,76 @@ basis.UC.ops.Hz0 = -const.X1Sigma.gr*const.uN*( basis.UC.ops.N_z ) + ...
 basis.UC.ops.H = basis.UC.ops.H0 + basis.UC.ops.Hz0.*reshape(B,1,1,[]);
 
 %% transformation to hund's case a
-basis.aUC.qnums = build_basis({'eta','i_Na','i_Cs','J','S','Lambda'},{3,const.i_Na,const.i_Cs,0:Nmax,0,0},[0 1 1 2 0 0],'a');
-basis.aUC.ops = struct();
-basis.change.b_a = operator_matrix(@case_b2a_element,{basis.aUC.qnums,basis.b.qnums},{'J','Omega','S','Sigma','N','Lambda'});
-basis.change.UC_a = basis.change.UC_b * basis.change.b_a;
-f = fields(basis.UC.ops);
-for i = 1:numel(f)
-    basis.aUC.ops.(f{i}) = basis.change.UC_a'*basis.UC.ops.(f{i})*basis.change.UC_a;
-end
-
-[basis.aIC,basis.aUC,basis.change.a_aIC] = couple_angmom(basis.aUC,'i_Na','i_Cs','I');
-[basis.aFC,basis.aIC,basis.change.aIC_aFC] = couple_angmom(basis.aIC,'J','I','F');
+% basis.aUC.qnums = build_basis({'eta','i_Na','i_Cs','J','S','Lambda'},{3,const.i_Na,const.i_Cs,0:Nmax,0,0},[0 1 1 2 0 0],'a');
+% basis.aUC.ops = struct();
+% basis.change.b_a = operator_matrix(@case_b2a_element,{basis.aUC.qnums,basis.b.qnums},{'J','Omega','S','Sigma','N','Lambda'});
+% basis.change.UC_a = basis.change.UC_b * basis.change.b_a;
+% f = fields(basis.UC.ops);
+% for i = 1:numel(f)
+%     basis.aUC.ops.(f{i}) = basis.change.UC_a'*basis.UC.ops.(f{i})*basis.change.UC_a;
+% end
+% 
+% [basis.aIC,basis.aUC,basis.change.a_aIC] = couple_angmom(basis.aUC,'i_Na','i_Cs','I');
+% [basis.aFC,basis.aIC,basis.change.aIC_aFC] = couple_angmom(basis.aIC,'J','I','F');
 
 %% truncate basis
-basis = rmfield(basis,{'IC','FC','F1C','F2C','b'});
-[basis,~,~] = truncate_basis(basis,@(ops) ops.F_z,mtot);
+% basis = rmfield(basis,{'IC','FC','F1C','F2C','b'});
+% [basis,rc_keep,Nchn] = truncate_basis(basis,@(ops) ops.F_z,mtot);
 
-%% solve for rotational/hyperfine energies
-[psi_rot,E_rot] = eigenshuffle(basis.(save_basis).ops.H);
-E_rot = real(E_rot);
 
-% mF = diag(psi_rot'*basis.(save_basis).ops.F_z*psi_rot);
+[psi,E] = eigenshuffle(basis.(save_basis).ops.H);
+E = real(E);
+
+plot(B(2:end),diff(E/const.h,[],2)./diff(B),'-','markersize',15)
+
+dE_dB = diff(E/const.h,[],2)./diff(B);
+
+dE_dB(:,end)
+
+% mF = diag(psi'*basis.(save_basis).ops.F_z*psi);
 % figure(1);
 % clf;
 % hold on; box on;
-% for i = 1:numel(E_rot)
-%     plot([-1 1]*0.4+mF(i),[1 1]*E_rot(i)/const.h*1e-6,'-k');
+% for i = 1:numel(E)
+%     plot([-1 1]*0.4+mF(i),[1 1]*E(i)/const.h*1e-6,'-k');
 % end
 % hold off;
 % xlabel('m_F');
 % ylabel('E (MHz)');
 
-%% solve for vibrational energy
-[E_vib,nodes_out,psi_r,r] = ...
+%% solve the vibrational problem
+rtest = linspace(rmin,rmax,1e3);
+
+% total hamiltonian
+W =@(r) NaCsXPES(r);
+Wtest = W(rtest);
+
+% call the solver
+[E_vib,nodes_out,err_est,psi_r,r] = ...
     cc_logderiv_adaptive_multi([rmin rmax],Nx,@NaCsXPES,Erange,const.mu_nacs/const.me,1,1);
 
-%% output
-out.B = B;
-out.r = r;
-out.psi_r = psi_r;
-out.nodes = nodes_out;
-out.E = E_rot + E_vib*const.hartree;
-out.psi = psi_rot;
-out.qnums = basis.(save_basis).qnums;
-out.ops = basis.(save_basis).ops;
+% figure(2);
+% clf;
+% hold on;
+% box on;
+% for i = 1:size(psi_r,3)
+%     subplot(size(psi_r,3),1,i)
+%     plot(rtest,Wtest);
+%     plot([rmin rmax],min(Erange)*[1 1],'-k');
+%     plot([rmin rmax],max(Erange)*[1 1],'-k');
+%     plot(r,psi_r(:,:,i)*0.1*peak2peak(Wtest) + E_vib,'linewidth',2);
+%     set(gca,'xscale','log')
+%     xlim([min(r) max(r)])
+%     ylabel('\psi(R)')
+% end
+% xlabel('R (a_0)')
+% hold off;
 
-fn = ['data/X_' [strrep(num2str(B*1e4),'.','p') 'G'] '_' save_basis '_' datestr(now,'YYmmDD_HHMMSS') '.mat'];
-save(fn,'out')
-disp(fn)
-
-end
+%% save data
+psi_r = psi_r./sqrt(const.abohr);
+qnums = basis.(save_basis).qnums;
+E = E + E_vib*const.hartree;
+r = r*const.abohr;
+% fname = ['data/X1Sigma_state_' num2str(round(B*1e4)) 'G_' save_basis '.mat'];
+% save(fname,'qnums','psi','psi_r','r','E','B');
+% disp(['saved file ' fname])

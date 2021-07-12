@@ -47,20 +47,20 @@ Nstates = size(basis.qnums,1);
 
 term_ind =@(s) find(contains(terms,s));
 
-data = load(['lib/rosario_potentials/A1S_FINAL_D']);
+data = load(['../lib/rosario_potentials/A1S_FINAL_D']);
 R = round(data(:,1),5);
 R = R(:)';
 
 Wint = zeros(Nstates,Nstates,numel(R));
 for i = 1:numel(uterms)
-    data = load(['lib/rosario_potentials/' uterms{i} '_FINAL_D']);
+    data = load(['../lib/rosario_potentials/' uterms{i} '_FINAL_D']);
     term_ind_i = term_ind(uterms{i});
     for j = 1:numel(term_ind_i)
         Wint(term_ind_i(j),term_ind_i(j),:) = reshape(data(:,2),1,1,[]);
     end
 end
 
-NAC_A1S_B1P = load('lib/rosario_potentials/NAC_A1S_B1P_Full');
+NAC_A1S_B1P = load('../lib/rosario_potentials/NAC_A1S_B1P_Full');
 
 [row,c] = ndgrid(1:Nstates,1:Nstates);
 Omega = basis.qnums.Omega;
@@ -73,31 +73,31 @@ Lambda = basis.qnums.Lambda;
         out = reshape(out,1,1,numel(R));
     end
 
-SOC_b3P_A1S = load('lib/rosario_potentials/SOC_b3P_A1S_Full');
+SOC_b3P_A1S = load('../lib/rosario_potentials/SOC_b3P_A1S_Full');
 xi1 = (((strcmp(terms(row),'b3P') & strcmp(terms(c),'A1S'))...
     | (strcmp(terms(c),'b3P') & strcmp(terms(row),'A1S')))...
     & (Omega(row)==Omega(c)) & (abs(Omega(row))==0)) ...
     .* socpad(SOC_b3P_A1S);
 
-SOC_b3P_b3P = load('lib/rosario_potentials/SOC_b3P_b3P_Full');
+SOC_b3P_b3P = load('../lib/rosario_potentials/SOC_b3P_b3P_Full');
 V0Pi = ((strcmp(terms(row),'b3P') & strcmp(terms(c),'b3P')) ...
     & (Omega(row)==-Omega(c)) & (Lambda(row)==-Lambda(c))...
      & (Omega(row)==0))  ...
     .* socpad(SOC_b3P_b3P);
 
-SOC_b3P_B1P = load('lib/rosario_potentials/SOC_b3P_B1P_Full');
+SOC_b3P_B1P = load('../lib/rosario_potentials/SOC_b3P_B1P_Full');
 zeta1 = (((strcmp(terms(row),'b3P') & strcmp(terms(c),'B1P')) ...
     | (strcmp(terms(c),'b3P') & strcmp(terms(row),'B1P'))) ...
     & (Omega(row)==Omega(c)) & (abs(Omega(row))==1)) ...
     .* socpad(SOC_b3P_B1P);
 
-SOC_b3P_c3S = load('lib/rosario_potentials/SOC_b3P_c3S_Full');
+SOC_b3P_c3S = load('../lib/rosario_potentials/SOC_b3P_c3S_Full');
 zeta2 = (((strcmp(terms(row),'b3P') & strcmp(terms(c),'c3S')) ...
     | (strcmp(terms(c),'b3P') & strcmp(terms(row),'c3S'))) ...
     & (Omega(row)==Omega(c)) & (abs(Omega(row))==1)) ...
     .* socpad(SOC_b3P_c3S);
 
-SOC_c3S_B1P = load('lib/rosario_potentials/SOC_c3S_B1P_Full');
+SOC_c3S_B1P = load('../lib/rosario_potentials/SOC_c3S_B1P_Full');
 zeta3 = (((strcmp(terms(row),'c3S') & strcmp(terms(c),'B1P')) ...
     | (strcmp(terms(c),'c3S') & strcmp(terms(row),'B1P'))) ...
     & ((Omega(row)==Omega(c)) & (abs(Omega(row))==1))) ...
@@ -245,12 +245,12 @@ iter = 0;
     end
 
 
-% data = load('data/deperturbation_210705_142800.mat');
-% data = load('data/deperturbation_210706_145339.mat');
-% data = load('data/deperturbation_210705_140759.mat');
-% data = load('data/deperturbation_210706_150901.mat');
-% data = load('data/deperturbation_210705_150222.mat');
-data = load('data/deperturbation_210707_155801.mat');
+% data = load('../data/deperturbation_210705_142800.mat');
+% data = load('../data/deperturbation_210706_145339.mat');
+% data = load('../data/deperturbation_210705_140759.mat');
+% data = load('../data/deperturbation_210706_150901.mat');
+% data = load('../data/deperturbation_210705_150222.mat');
+data = load('../data/deperturbation_210707_155801.mat');
 
 X = reshape(data.X,4,[]);
 X_chn = data.X_chn;
@@ -295,7 +295,7 @@ Nterms = size(X,2);
 % ssrfun(X(:)');
 X = fminsearchbnd(@ssrfun,X(:)',lb(:)',ub(:)')
 
-fn = ['data/deperturbation_' datestr(now,'YYmmDD_HHMMSS') '.mat'];
+fn = ['../data/deperturbation_' datestr(now,'YYmmDD_HHMMSS') '.mat'];
 save(fn,'X','X_chn','Wpert')
 disp(fn)
 

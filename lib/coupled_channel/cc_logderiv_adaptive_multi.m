@@ -2,7 +2,7 @@
 function [E_out,nodes_out,psi,x] = cc_logderiv_adaptive_multi(xrange,Nx,W,Erange,m,radial_boo,prop_wfn,verbose,plot_boo)
 
 if nargin<9
-    plot_boo = 1;
+    plot_boo = 0;
 end
 if nargin<8
     verbose = 0;
@@ -40,6 +40,33 @@ Wabc(:,:,1:2:end) = Wb;
 if plot_boo
     Wplot = plot_W();
 end
+
+%% plot node counting and Ymatch
+% 
+% Nsamp = 400;
+% Esamp = linspace(Erange(1),Erange(2),Nsamp);
+% 
+% nodes = zeros(1,Nsamp);
+% evals = zeros(Nchn,Nsamp);
+% 
+% for i = 1:Nsamp
+%     [~,~,~,nodes(i),evals(:,i)] = get_Ymatch_eval(Esamp(i));
+% end
+% 
+% const = constants();
+% 
+% figure(101);
+% clf;
+% subplot(2,1,1);
+% plot(Esamp*const.hartree/const.h*1e-12,evals,'.-');
+% ylabel('eig(Ymatch)')
+% 
+% subplot(2,1,2);
+% plot(Esamp*const.hartree/const.h*1e-12,nodes,'.-');
+% xlabel('E (THz)')
+% ylabel('nodes')
+% 
+% Esamp;
 
 %%
     function [Ymatch,Mu,Md,nodes,evals] = get_Ymatch_eval(E)

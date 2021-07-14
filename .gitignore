@@ -3,3 +3,7 @@ data/20200803/
 data/[0-9]*
 merge/data_*.mat
 *.gif
+data/X_*.mat
+data/fb_*.mat
+data/raman_*.mat
+data/c_*.mat

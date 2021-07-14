@@ -238,6 +238,8 @@ iter = 0;
             drawnow();
             
             disp(ssr)
+            
+            ssr;
         end
         
         
@@ -264,14 +266,14 @@ X_chn = data.X_chn;
 
 % c r0 rpow epow
 
-X = cat(2,X,[
-    1e-3 1e-3
-    7.2  7.2
-    10  10
-    10  10
-    ]);
-
-X_chn = cat(2,X_chn,[4 1]);
+% X = cat(2,X,[
+%     1e-3 1e-3
+%     7.2  7.2
+%     10  10
+%     10  10
+%     ]);
+% 
+% X_chn = cat(2,X_chn,[4 1]);
 
 lb = ones(size(X))*-inf;
 ub = ones(size(X))*inf;

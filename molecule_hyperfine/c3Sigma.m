@@ -5,10 +5,10 @@ function out = c3Sigma(B,save_basis,recompute,Jmax,mtot)
 c = constants();
 
 if nargin<1
-    B = 10*1e-4;
+    B = 800*1e-4;
 end
 if nargin<3
-    recompute = 2;
+    recompute = 0;
 end
 if nargin<2
     save_basis = 'aFC';
@@ -112,8 +112,8 @@ out.psi_vib = psi_vib;
 out.qnums_vib = qnums_vib;
 out.E = evals + E_vib(ind);
 
-fn = ['../data/c_' [strrep(num2str(B*1e4),'.','p') 'G'] '_' save_basis '_' datestr(now,'YYmmDD_HHMMSS') '.mat'];
-save(fn,'out')
-disp(fn);
+% fn = ['../data/c_' [strrep(num2str(B*1e4),'.','p') 'G'] '_' save_basis '_' datestr(now,'YYmmDD_HHMMSS') '.mat'];
+% save(fn,'out')
+% disp(fn);
 
 end

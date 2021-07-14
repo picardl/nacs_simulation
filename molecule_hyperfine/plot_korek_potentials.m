@@ -3,19 +3,19 @@ function plot_korek_potentials
 const = constants();
 
 %% work out energy offset
-Eoffs_guess = -0.331957;
-
-new_data = readtable(['../lib/korek/NaCs1'],'NumHeaderLines',1);
-
-R = new_data{:,1};
-V = new_data{:,2};
-
-C6 = 1.8353;
-C8 = 3.7927;
-
-Vlr = - C6.*(R*const.abohr*1e10).^-6 - C8.*(R*const.abohr*1e10).^-8;
-
-plot(R,V,R,Vlr+Eoffs_guess);
+% Eoffs_guess = -0.331957;
+% 
+% new_data = readtable(['../lib/korek/NaCs1'],'NumHeaderLines',1);
+% 
+% R = new_data{:,1};
+% V = new_data{:,2};
+% 
+% C6 = 1.8353;
+% C8 = 3.7927;
+% 
+% Vlr = - C6.*(R*const.abohr*1e10).^-6 - C8.*(R*const.abohr*1e10).^-8;
+% 
+% plot(R,V,R,Vlr+Eoffs_guess);
 
 %% re-save data in individual files
 % states_count = 0;
@@ -46,15 +46,33 @@ plot(R,V,R,Vlr+Eoffs_guess);
 % plot(R,B_R/const.hartree)
 % hold off
 
+figure(1);
+clf;
+so_files = {'SO0-','SO0+','SO2','SO3','SO1'};
+for i = 1:numel(so_files)
+    data = readtable(['../lib/korek/' so_files{i}],'NumHeaderLines',1);
+    hold on;
+    for j = 2:size(data,2)
+        plot(data{:,1},data{:,j},'-')
+    end
+    hold off;
+end
 
-% so_files = {'SO0-','SO0+','SO1','SO2','SO3'};
-% for i = 1:numel(so_files)
-%     data = readtable(['../lib/korek/' so_files{i}],'NumHeaderLines',1);
-%     hold on;
-%     for j = 2:size(data,2)
-%         plot(data{:,1},data{:,j},'-')
-%     end
-%     hold off;
-% end
+r = data{:,1};
+V = data{:,2};
+
+rfit = 5.3;
+
+Vfun =@(b,r) 1./r + b(1)./r.^4 + b(2);
+
+b = nlinfit(r(r<rfit),V(r<rfit),Vfun,[1 1]);
+
+hold on;
+plot(r,V,'-k',r,Vfun(b,r),'--k');
+hold off;
+
+% ylim([-0.36 -0.26])
+
+b
 
 end

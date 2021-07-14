@@ -3,7 +3,7 @@ function out = feshbach(B,save_basis,recompute)
 const = constants();
 
 if nargin<1
-    B = 852e-4;
+    B = 852.5e-4;
 end
 if nargin<2
     save_basis = 'aFC';
@@ -34,7 +34,7 @@ rmin = 4.5;
 rmax = 10000;
 N_tot = 0; % rotational quantum number
 mtot = 4; % total angular momentum to truncate basis
-Erange_vs_threshold = [-5e6 1e6]*const.h/const.hartree;
+Erange_vs_threshold = [-4e6 1e6]*const.h/const.hartree;
 
 %% uncoupled basis
 Nmin = 0;

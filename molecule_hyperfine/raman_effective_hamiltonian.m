@@ -5,16 +5,17 @@ const = constants();
 % build an effective hamiltonian for the interaction between the feshbach
 % molecule state, c3sigma, and x1sigma.
 
-basis = 'aFC';
-
 if nargin<1
     B = 853e-4;
 end
 if nargin<2
+    basis = 'aFC';
+end
+if nargin<3
     recompute = 0;
 end
 
-%% check for file at this B field 
+%% check for file at this B field
 files = dir('../data');
 file_ind = contains({files.name},['raman_' strrep(num2str(B*1e4),'.','p') 'G' '_' basis]);
 if any(file_ind) && ~(recompute>0)
@@ -23,7 +24,7 @@ if any(file_ind) && ~(recompute>0)
     times = datenum(regexp(fnames,'\d{6}_\d{6}','match','once'),'YYmmDD_HHMMSS');
     data = load(['../data/' fnames{times==max(times)}]);
     out = data.out;
-    return 
+    return
 end
 
 %% load data
@@ -90,7 +91,7 @@ X1S_B1P_elecTDM_data = importdata('lib/rosario_potentials/DM_X1S_B1P_Full');
 X1S_B1P_elecTDM_interp = interp1(X1S_B1P_elecTDM_data(:,1)*const.abohr,X1S_B1P_elecTDM_data(:,2)*const.e*const.abohr,X.r,'spline');
 X1S_B1P_elecTDM_interp2 = interp1(X1S_B1P_elecTDM_data(:,1)*const.abohr,X1S_B1P_elecTDM_data(:,2)*const.e*const.abohr,c.r,'spline');
 a3S_c3S_elecTDM_interp = interp1(a3S_c3S_elecTDM_data(:,1)*const.abohr,a3S_c3S_elecTDM_data(:,2)*const.e*const.abohr,c.r,'spline');
-a3S_b3P_elecTDM_interp = interp1(a3S_b3P_elecTDM_data(:,1)*const.abohr,a3S_b3P_elecTDM_data(:,2)*const.e*const.abohr,c.r,'spline'); 
+a3S_b3P_elecTDM_interp = interp1(a3S_b3P_elecTDM_data(:,1)*const.abohr,a3S_b3P_elecTDM_data(:,2)*const.e*const.abohr,c.r,'spline');
 
 %% laser hamiltonian matrix elements
 

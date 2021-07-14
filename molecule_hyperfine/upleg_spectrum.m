@@ -3,12 +3,12 @@ function upleg_spectrum(B)
 const = constants;
 
 if nargin<1
-    B = 845e-4;
+    B = 800e-4;
 end
 
 basis = 'aFC';
 
-recompute = 0;
+recompute = 2;
 
 raman_data = raman_effective_hamiltonian(B,basis,recompute);
 
@@ -20,7 +20,7 @@ psi_init(1) = 1;
 power = 100e-3;
 waist = 50e-6;
 pol = sphten([1 0 0]);
-t = 1e-3;
+t = 10e-3;
 
 Efield = sqrt(4*const.eta0*power/(pi*waist^2));
 

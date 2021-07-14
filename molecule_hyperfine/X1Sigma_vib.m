@@ -7,7 +7,7 @@ Nx = 2e3;
 rmin = 4.5; % abohr
 rmax = 1e2; % abohr
 % Erange = -0.0224 + [-1 1]*1e-4; % energy range to search, atomic units
-Erange = [-0.0225 -1e-4];
+Erange = [-0.0225 10e6*const.h/const.hartree];
 
 %% trap
 waist = 1064e-9; % meter
@@ -27,8 +27,9 @@ out.r = r;
 out.psi = psi_r;
 out.nodes = nodes_out;
 out.E = E_vib;
-fn = ['data/X_vib_' datestr(now,'YYmmDD_HHMMSS') '.mat'];
-save(fn,'out')
-disp(fn)
+
+% fn = ['data/X_vib_' datestr(now,'YYmmDD_HHMMSS') '.mat'];
+% save(fn,'out')
+% disp(fn)
 
 end

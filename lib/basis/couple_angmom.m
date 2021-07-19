@@ -8,7 +8,11 @@ qnums_unc = basis_unc.qnums;
 
 basis_cpl = struct();
 basis_cpl.qnums = couple_qnums(qnums_unc,j1_name,j2_name,j3_name);
-basis_cpl.ops = struct();
+
+ops_boo = ismember('ops',fields(basis_unc));
+if ops_boo
+    basis_cpl.ops = struct();
+end
 
 m1_name = ['m_' j1_name];
 m2_name = ['m_' j2_name];
@@ -24,19 +28,19 @@ Nstates = size(basis_unc.qnums,1);
 row = row(:);
 col = col(:);
 
-% create x,y,z,sq operators for coupled angular momentum in uncoupled basis
-for Q = {'_x','_y','_z','_p','_m'}
-    q = [Q{:}];
-    basis_unc.ops.([j3_name q]) = basis_unc.ops.([j1_name q]) + basis_unc.ops.([j2_name q]);
+if ops_boo
+    % create x,y,z,sq operators for coupled angular momentum in uncoupled basis
+    for Q = {'_x','_y','_z','_p','_m'}
+        q = [Q{:}];
+        basis_unc.ops.([j3_name q]) = basis_unc.ops.([j1_name q]) + basis_unc.ops.([j2_name q]);
+    end
+    
+    basis_unc.ops.([j3_name '_sq']) = zeros(Nstates);
+    for Q = {'_x','_y','_z'}
+        q = [Q{:}];
+        basis_unc.ops.([j3_name '_sq']) = basis_unc.ops.([j3_name '_sq']) + basis_unc.ops.([j3_name q])^2;
+    end
 end
-
-basis_unc.ops.([j3_name '_sq']) = zeros(Nstates);
-for Q = {'_x','_y','_z'}
-    q = [Q{:}];
-    basis_unc.ops.([j3_name '_sq']) = basis_unc.ops.([j3_name '_sq']) + basis_unc.ops.([j3_name q])^2;
-end
-
-
 
 % change basis to coupled one
 basis_change_matrix = reshape(...
@@ -46,9 +50,16 @@ basis_change_matrix = reshape(...
     all(basis_unc.qnums{row,[j1_name j2_name spec_qnum_names]}==basis_cpl.qnums{col,[j1_name j2_name spec_qnum_names]},2),...
     [Nstates Nstates]);
 
-op_names = fields(basis_unc.ops);
-for i = 1:numel(op_names)
-    basis_cpl.ops.(op_names{i}) = pagemtimes(basis_change_matrix,'ctranspose',pagemtimes(basis_unc.ops.(op_names{i}),basis_change_matrix),'none');
+if ops_boo
+    op_names = fields(basis_unc.ops);
+    for i = 1:numel(op_names)
+        basis_cpl.ops.(op_names{i}) = pagemtimes(basis_change_matrix,'ctranspose',pagemtimes(basis_unc.ops.(op_names{i}),basis_change_matrix),'none');
+    end
+    
+    op_names = setdiff(fields(basis_cpl.ops),fields(basis_unc.ops));
+    for i = 1:numel(op_names)
+        basis_unc.ops.(op_names{i}) = pagemtimes(basis_change_matrix,pagemtimes( basis_cpl.ops.(op_names{i}),'none' , basis_change_matrix,'ctranspose'));
+    end
 end
 
 end

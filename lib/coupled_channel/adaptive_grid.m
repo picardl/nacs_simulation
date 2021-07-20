@@ -1,4 +1,4 @@
-function x = adaptive_grid(W,m,xrange,Nx,radial_boo)
+function x = adaptive_grid(W,m,Erange,xrange,Nx,radial_boo)
 
 if nargin<5
     radial_boo = 1;
@@ -17,7 +17,9 @@ for i = 1:Nchn
     Emin_chn(i) = mat_el_nd(W(xe_chn(i)),i,i);
 end
 Emin = Emin_chn(Emin_chn==min(Emin_chn));
+Emin = Emin(1);
 xe = xe_chn(Emin_chn==min(Emin_chn));
+xe = xe(1);
 
 if radial_boo
     Wenv =@(x) Wmindiag1(x).*(x>=xe) + Emin.*(x<xe);
@@ -26,7 +28,7 @@ else
     Wenv =@(x) Wmindiag1(x);
     Emax = Wmaxdiag1(fminbnd(@(x) -Wmaxdiag1(x),xmin,xmax));
 end
-Emax = Emax + 1e-6*(Emax-Emin);
+Emax = Emax + 1e-3*(Emax-Emin);
 
 %% define adaptive grid
 if radial_boo
@@ -35,7 +37,10 @@ else
     xtemp = linspace(xmin,xmax,1e4);
 end
 
+Emax = max([Erange Emax]);
+
 psq_loc_max =@(x) 2*m*(Emax-Wenv(x));
+% pmax = sqrt(2*m*(Emax-Emin));
 pmax = sqrt(2*m*(Emax-Emin));
 
 % grid mapping jacobian

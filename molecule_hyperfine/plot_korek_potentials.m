@@ -77,38 +77,100 @@ const = constants();
 
 %%
 
-col = distinguishable_colors(6);
+% col = distinguishable_colors(6);
+% 
+% R = linspace(4.5,20,1e2);
+% 
+% terms = {'1S','3S','1P','3P','1D','3D'};
+% 
+% figure(1);
+% clf;
+% for i = 1:numel(terms)
+%     j = 1;
+%     while true
+%         try
+%             V = korek_potential(R,terms(i),j);
+%             hold on; box on;
+%             p = plot(R,V,'color',col(i,:));
+%             hold off;
+%             if j==1
+%                 pp(i) = p;
+%                 leg(i) = terms(i);
+%             end
+%             j = j+1;
+%         catch
+%             break
+%         end
+%     end
+%     %     data = readtable(['../lib/korek/state' num2str(i) '.xlsx']);
+%     
+% end
+% legend(pp,leg);
 
-R = linspace(4.5,20,1e2);
 
+%%
+Rtest = 7.2;
 terms = {'1S','3S','1P','3P','1D','3D'};
-
-figure(1);
-clf;
-for i = 1:numel(terms)
-    j = 1;
-    while true
-        try
-            V = korek_potential(R,terms(i),j);
-            hold on; box on;
-            p = plot(R,V,'color',col(i,:));
-            hold off;
-            if j==1
-                pp(i) = p;
-                leg(i) = terms(i);
-            end
-            j = j+1;
-        catch
-            break
-        end
-    end
-    %     data = readtable(['../lib/korek/state' num2str(i) '.xlsx']);
+for i = 1:6
+    new_data = readtable(['../lib/korek/NaCs' terms{i} '.csv'],'headerlines',1);
+    cols = size(new_data,2);
+    col_names = strcat(terms(i),'_',arrayfun(@num2str,1:(cols-1),'un',0));
+    new_data.Properties.VariableNames = ['R',col_names];
     
+    
+    if i==1
+        data = new_data;
+    else
+        for j = 2:size(new_data,2)
+            x = new_data{:,1};
+            y = new_data{:,j};
+            if ~(numel(unique(x))==numel(x))
+                ux = unique(x);
+                [~,subs] = ismember(x,ux);
+                uy = accumarray(subs,y,[],@mean);
+                x = ux;
+                y = uy;
+            end
+            cut = isnan(y);
+            x(cut) = [];
+            y(cut) = [];
+            [x,order] = sort(x);
+            y = y(order);
+            data{:,col_names{j-1}} = interp1(x,y,data.R);
+        end
+%         data = outerjoin(data,new_data,'mergekeys',true);
+    end
 end
-legend(pp,leg);
+[~,order] = sort(data{data.R==Rtest,2:end});
+data = data(:,[1 order+1]);
 
+alphX = 'XABCDEFGHIJKLMNOPQRSTUVWYZ';
+alph = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
+colnames = data.Properties.VariableNames(2:end);
+colnames = cellfun(@(x) x(1:end-2),colnames,'un',0);
 
+singlet = cellfun(@(x) str2double(x(1))==1,data.Properties.VariableNames(2:end));
+triplet = cellfun(@(x) str2double(x(1))==3,data.Properties.VariableNames(2:end));
+
+singlet_labels = cellstr(alphX(1:numel(colnames(singlet)))');
+triplet_labels = cellstr(lower(alph(1:numel(colnames(triplet))))');
+
+colnames(singlet) = strcat(singlet_labels',colnames(singlet));
+colnames(triplet) = strcat(triplet_labels',colnames(triplet));
+
+data.Properties.VariableNames = ['R',colnames];
+
+% figure(1);
+% clf
+% hold on
+% for i = 2:size(data,2)
+%     plot(data.R,data{:,i})
+% end
+% hold off
+% legend(data.Properties.VariableNames(2:end))
+
+writetable(data,'../lib/korek/korek_data.xlsx');
 
 
 end

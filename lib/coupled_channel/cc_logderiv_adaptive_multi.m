@@ -1,11 +1,11 @@
 
-function [E_out,nodes_out,psi,x] = cc_logderiv_adaptive_multi(xrange,Nx,W,Erange,m,radial_boo,prop_wfn,verbose,plot_boo)
+function [E_out,nodes_out,psi,x] = cc_logderiv_adaptive_multi(xrange,Nx,W_in,Erange,m,radial_boo,prop_wfn,verbose,plot_boo)
 
 if nargin<9
-    plot_boo = 0;
+    plot_boo = 1;
 end
 if nargin<8
-    verbose = 0;
+    verbose = 1;
 end
 if nargin<7
     prop_wfn = 1;
@@ -14,10 +14,26 @@ if nargin<6
     radial_boo = 1;
 end
 
-Wtest = W(xrange(1));
-Nchn = size(Wtest,1);
+Wtest1 = W_in(xrange(1));
+Wtest2 = W_in(xrange(2));
+Nchn = size(Wtest2,1);
 
-x = adaptive_grid(W,m,xrange,Nx,radial_boo);
+x = adaptive_grid(W_in,m,Erange,xrange,Nx,radial_boo);
+
+%% put a wall for open channels
+E_last = diag(Wtest2);
+open_chn = (E_last-Erange(2))<0;
+xwall = round(numel(x)/100);
+
+    function out = W(r)
+        out = W_in(r);
+        dim = size(out)==numel(r);
+        sz = ones(1,5);
+        sz(dim) = numel(r);
+        r_boo = reshape(r>=x(end-xwall),sz);
+        out = out + r_boo.*diag(open_chn).*(Wtest1-Wtest2)*100;
+    end
+
 
 %% upwards and downwards propagation initialization
 xc = (x(2:end)+x(1:end-1))/2;
@@ -86,24 +102,36 @@ end
         Ediff = E-diag_nd(Wabc(:,:,1:2:end));
         chns_allowed = any(Ediff > 0,2);
         
+%         for j = 1:(Nu-1)
         j = 1;
         stop = false;
         while ~stop
-            [Y(:,:,Nx+1-j),M(:,:,Nx+1-j),~] = modlogderiv_propagator_v4(Y(:,:,Nx-j+2),...
-                Wabc(:,:,2*Nx - 2*j + (-1:1)),Vabc(:,:,Nx-j),h(Nx-j),E,m,1);
-            if (any(eig(Y(:,:,Nx+1-j))>0) && all((Ediff(:,Nx+1-j)>0) == chns_allowed)) || j==Nx-1
+            [Y(:,:,j+1),M(:,:,j+1),node_boo(j)] = modlogderiv_propagator_v4(Y(:,:,j),...
+                Wabc(:,:,2*j + (-1:1)),Vabc(:,:,j),h(j),E,m,0);
+            if (any(eig(Y(:,:,j))<0) && all((Ediff(:,j)>0) == chns_allowed)) || j==Nx-1
                 stop = true;
             end
             j = j+1;
         end
-        Nd = j;
-        Nu = Nx-Nd+1;
-        
-        for j = 1:(Nu-1)
-            [Y(:,:,j+1),M(:,:,j+1),node_boo(j)] = modlogderiv_propagator_v4(Y(:,:,j),...
-                Wabc(:,:,2*j + (-1:1)),Vabc(:,:,j),h(j),E,m,0);
-        end
         Ycopy = Y;
+        Nu = j;
+        Nd = Nx-Nu+1;
+        
+        for j = 1:(Nd-1)
+            [Y(:,:,Nx+1-j),M(:,:,Nx+1-j),~] = modlogderiv_propagator_v4(Y(:,:,Nx-j+2),...
+                Wabc(:,:,2*Nx - 2*j + (-1:1)),Vabc(:,:,Nx-j),h(Nx-j),E,m,1);
+        end
+        
+        %         j = 1;
+%         stop = false;
+%         while ~stop
+%             [Y(:,:,Nx+1-j),M(:,:,Nx+1-j),~] = modlogderiv_propagator_v4(Y(:,:,Nx-j+2),...
+%                 Wabc(:,:,2*Nx - 2*j + (-1:1)),Vabc(:,:,Nx-j),h(Nx-j),E,m,1);
+%             if (any(eig(Y(:,:,Nx+1-j))>0) && all((Ediff(:,Nx+1-j)>0) == chns_allowed)) || j==Nx-1
+%                 stop = true;
+%             end
+%             j = j+1;
+%         end
         
         for j = Nu:(Nx-1)
             [Ycopy(:,:,j+1),~,node_boo(j)] = modlogderiv_propagator_v4(Ycopy(:,:,j),...
@@ -162,7 +190,7 @@ if verbose
 end
 
 itermax = 100;
-tol = 1e-4;
+tol = 1e-9;
 E_out = [];
 nodes_out = [];
 evals_out = [];
@@ -184,7 +212,9 @@ for i = 1:numel(unodes)-1
         
         [Ym,Mu,Md,nodes_mid,evals_mid] = get_Ymatch_eval(Emid);
         
-        if (min(abs(evals_mid)) < tol)
+%         fprintf('evals min = %d\n',min(abs(evals_mid)))
+%         if (min(abs(evals_mid)) < tol)
+        if (Eupper-Elower) < tol
             E_out = cat(2,E_out,Emid);
             nodes_out = cat(2,nodes_out,nodes_mid);
             evals_out = cat(2,evals_out,evals_mid);
@@ -226,7 +256,7 @@ for i = 1:numel(unodes)-1
             
             break;
         elseif iter>itermax
-            print('failed to converge on eval %d\n',unodes(i))
+            fprintf('failed to converge on eval %d\n',unodes(i))
             break;
         end
         

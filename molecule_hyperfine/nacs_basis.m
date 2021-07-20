@@ -12,6 +12,8 @@ Nmin = 0;
 Nmax = Ntot+1;
 
 basis.atom.qnums = build_basis({'s1','s2','l1','l2'},{1/2,1/2,0,0:1},[1 1 1 1]);
+basis.atom.ops = build_operators(basis.atom.qnums);
+
 [basis.LC,basis.atom,basis.change.atom_LC] = couple_angmom(basis.atom,'l1','l2','L');
 
 basis.LC.qnums.Lambda = basis.LC.qnums.m_L;
@@ -46,7 +48,7 @@ basis.aUC.qnums.label(basis.aUC.qnums.S==1 & basis.aUC.qnums.Lambda==0 & basis.a
 
 term_letters = 'SPDF';
 basis.aUC.qnums.term = strcat(basis.aUC.qnums.label,num2str(2*basis.aUC.qnums.S+1),...
-    term_letters(abs(basis.aUC.qnums.Lambda)+1)',num2str(abs(basis.aUC.qnums.Omega)));
+    term_letters(abs(basis.aUC.qnums.Lambda)+1)');
 
 basis = truncate_basis(basis,@(ops) ops.J_sq,[0,Jmax*(Jmax+1)],0.1);
 

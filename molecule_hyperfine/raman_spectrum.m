@@ -15,7 +15,7 @@ power_dn = 1e-3;
 
 waist = 10e-6;
 
-pol_up = sphten([1 -1i 0]/sqrt(2));
+pol_up = sphten([1 1i 0]/sqrt(2));
 pol_dn = sphten([1 -1i 0]/sqrt(2));
 
 Efield_up = sqrt(4*const.eta0*power_up/(pi*waist^2));

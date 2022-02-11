@@ -7,7 +7,7 @@ const = constants();
 
 basis = 'aUC';
 %% load data
-BFields = [852.5:0.5:858.5];
+BFields = [850:1:860];
 tdmUp = zeros(size(BFields));
 tdmUpSum = zeros(size(BFields));
 tdmUpMax = zeros(size(BFields));
@@ -16,8 +16,8 @@ rabi_up_sqrt_mW = zeros(size(BFields));
 fAll = {};
 cAll = {};
 for i = 1:length(BFields)
-    fAll{i} = load(['data/feshbach_state_', num2str(BFields(i)), 'G_', basis, '.mat']);
-    cAll{i} = load(['data/c3Sigma_state_', num2str(BFields(i)), 'G_', basis, '.mat']);
+    fAll{i} = load(['data/fb_', num2str(BFields(i)), 'G_', basis, '_220124.mat']);
+    cAll{i} = load(['../data/c_' [strrep(num2str(BFields(i)),'.','p') 'G'] '_vib325THz_' basis '_220124.mat']);
 end
 
 
@@ -59,8 +59,8 @@ T_dn = sphten(p_dn);
 
 for i = 1:length(BFields)
     %% ignore quantum numbers that are not common to all 3 states
-    f = fAll{i};
-    c = cAll{i};
+    f = fAll{i}.out;
+    c = cAll{i}.out;
     common_qnums = intersect(c.qnums.Properties.VariableNames,f.qnums.Properties.VariableNames);
 
     f.qnums(:,~ismember(f.qnums.Properties.VariableNames,common_qnums)) = [];
@@ -115,7 +115,7 @@ for i = 1:length(BFields)
 %         *interp1(X1S_B1P_elecTDM_data(:,1)*const.abohr,X1S_B1P_elecTDM_data(:,2)*const.e*const.abohr,X.r,'spline');
 
     %% laser hamiltonian matrix elements
-    psi_c = c.psi.*permute(c.psi_r,[1 3 2]);
+    psi_c = c.psi.*permute(c.r,[1 3 2]);
     psi_feshbach_interp = permute(interp1(f.r,f.psi(:,:,1)',c.r,'spline')',[1 3 2]);
     TDM_R_c_f = mtimesx(conj(permute(psi_c,[2 1 3])),mtimesx(rovib_TDM_c_f,psi_feshbach_interp));
     TDM_c_f = trapz(c.r,TDM_R_c_f,3);
@@ -140,7 +140,7 @@ for i = 1:length(BFields)
 
 
     tdmUpSum(i) = sqrt(sum(H_up(mj0Ind).^2));
-    tdmUpMax(i) = max(abs(H_up(mj0Ind)));
+    tdmUpMax(i) = max(max(abs(H_up(mj0Ind))));
     rabi_up_sqrt_mW(i) = tdmUpMax(i)*sqrt(1e-3/power_up);
     fprintf('up leg transition strength = %1.3g Hz/sqrt(mW)\n',rabi_up_sqrt_mW)
     
@@ -173,19 +173,19 @@ popn = 0.8*exp(-Rscatter_atom*t);
 fitResult = fminsearch(@(x) sum((x(2)*exp(-Rscatter_atom*x(1)) - surv).^2),[2e-4,0.8]);
 
 
-dataObj = NaCsData(20200724,182304);
-[allChnsSurvival, allChnsSurvivalErr,allScanParams,plotted] = plotSurvivalAvg(dataObj,0,{[1,2]}, {[3,4]},0,0);
-set(plotted{1},'LineStyle','None')
-set(plotted{1},'MarkerSize',6)
-set(plotted{1},'MarkerFaceColor',[0.00,0.58,0.96])
-set(plotted{1},'XData',[-3:0.5:3])
-ax = gca();
-set(ax,'Title',[])
-ylabel('Na + Cs Survival')
-xlabel('B - B_{FR} [G]', 'Interpreter','tex')
-grid off
+% dataObj = NaCsData(20200724,182304);
+% [allChnsSurvival, allChnsSurvivalErr,allScanParams,plotted] = plotSurvivalAvg(dataObj,0,{[1,2]}, {[3,4]},0,0);
+% set(plotted{1},'LineStyle','None')
+% set(plotted{1},'MarkerSize',6)
+% set(plotted{1},'MarkerFaceColor',[0.00,0.58,0.96])
+% set(plotted{1},'XData',[-3:0.5:3])
+% ax = gca();
+% set(ax,'Title',[])
+% ylabel('Na + Cs Survival')
+% xlabel('B - B_{FR} [G]', 'Interpreter','tex')
+% grid off
 
-hold on
+% hold on
 popn = fitResult(2)*exp(-Rscatter_atom*fitResult(1));
 simDat = plot(BFields + 10.5 - 866, popn);
 set(simDat,'LineStyle','--')

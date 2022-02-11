@@ -1,4 +1,4 @@
-function out = raman_effective_hamiltonian(B,basis,recompute)
+function out = raman_effective_hamiltonian(B,basis,recompute,Jmax,mtot,f_vib)
 
 const = constants();
 
@@ -13,6 +13,15 @@ if nargin<2
 end
 if nargin<3
     recompute = 0;
+end
+if nargin<4
+    Jmax = 3;
+end
+if nargin<5
+    mtot = [3 4 5]; 
+end
+if nargin<6
+    f_vib = 325300e9; %Frequency closest to target v level, default v=26
 end
 
 %% check for file at this B field
@@ -29,7 +38,7 @@ end
 
 %% load data
 f = feshbach(B,basis,recompute);
-c = c3Sigma(B,basis,recompute);
+c = c3Sigma(B,basis,recompute,Jmax,mtot,f_vib);
 X = X1Sigma(B,basis,recompute);
 
 %% ignore quantum numbers that are not common to all 3 states

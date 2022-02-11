@@ -36,7 +36,7 @@ Efield_up = sqrt(4*c.eta0*power_up/(pi*waist^2)); % V/m
 Gamma = c.h*120e6;
 wef = 1e6*c.h;
 % Be = 0.952 * 1e9 * c.h;
-T_up = sphten([1 0 0]);
+T_up = sphten([0 0 1]/sqrt(2));
 gS = 2.0023;
 
 H_up_mol = sum((-1).^(-1:1).*feshbach_TDM.*T_up,2)*Efield_up;

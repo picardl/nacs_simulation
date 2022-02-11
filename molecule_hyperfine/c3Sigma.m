@@ -1,11 +1,11 @@
-function out = c3Sigma(B,save_basis,recompute,Jmax,mtot)
+function out = c3Sigma(B,save_basis,recompute,Jmax,mtot,f_vib)
 
 % Calculate rotational and hyperfine structure of c3Sigma state of NaCs
 
 c = constants();
 
 if nargin<1
-    B = 800*1e-4;
+    B = 800*1e-4; %B field in Tesla
 end
 if nargin<3
     recompute = 0;
@@ -18,6 +18,9 @@ if nargin<4
 end
 if nargin<5
     mtot = [3 4 5]; 
+end
+if nargin<5
+    f_vib = 325233e9; %Target vibrational frequency in Hz
 end
 
 %% check for file at this B field with this basis
@@ -72,7 +75,7 @@ end
 
 %% truncate basis
 % basis = rmfield(basis,'aUC');
-[basis,rc_keep,Nchn] = truncate_basis(basis,@(ops) ops.F_z,mtot);
+% [basis,rc_keep,Nchn] = truncate_basis(basis,@(ops) ops.F_z,mtot);
 
 %% diagonalize
 [evecs,evals] = eig(basis.(save_basis).ops.H);
@@ -94,9 +97,7 @@ ylabel('Energy (GHz)');
 vib_data = load('../data/cbB_210705_125650.mat');
 E_vib = vib_data.out.E*c.hartree + c.Cs_D12_weighted;
 
-freq = 325233e9;
-
-ind = find(abs(E_vib-freq*c.h) == min(abs(E_vib-freq*c.h)));
+ind = find(abs(E_vib-f_vib*c.h) == min(abs(E_vib-f_vib*c.h)));
 
 psi_vib = vib_data.out.psi(:,:,ind);
 qnums_vib = vib_data.out.qnums;
@@ -112,8 +113,8 @@ out.psi_vib = psi_vib;
 out.qnums_vib = qnums_vib;
 out.E = evals + E_vib(ind);
 
-% fn = ['../data/c_' [strrep(num2str(B*1e4),'.','p') 'G'] '_' save_basis '_' datestr(now,'YYmmDD_HHMMSS') '.mat'];
-% save(fn,'out')
-% disp(fn);
+fn = ['../data/c_' [strrep(num2str(B*1e4),'.','p') 'G'] '_vib' num2str(round(f_vib/1e12)) 'THz_' save_basis '_' datestr(now,'YYmmDD_HHMMSS') '.mat'];
+save(fn,'out')
+disp(fn);
 
 end

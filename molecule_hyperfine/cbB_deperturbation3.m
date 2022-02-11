@@ -122,6 +122,7 @@ wweight = [
 weight = interp1(rweight,wweight,r,'linear','extrap')';
 
 %%
+%Generate perturbation matrix from array of coefficients X
 Wpert =@W_pert;
     function out = W_pert(r,X,chn)
         X = reshape(X,4,[]);
@@ -162,6 +163,8 @@ W_adiab_exp = diag_nd(W_exp);
 
 iter = 0;
     function ssr = ssrfun(X)
+        %Compute integral of residual between perturbed and experimental
+        %potential for a given perturbation defined by X
         
         scale_offs = X(end-5:end);
         
@@ -246,6 +249,7 @@ iter = 0;
         iter = iter+1;
     end
 
+%Starting perturbation X
 data = load('data/deperturbation_210703_011507.mat');
 X = reshape(data.X,4,[]);
 X_chn = data.X_chn;
@@ -271,6 +275,7 @@ X = cat(2,X,[1 1 1 0 0 0]);
 lb = cat(2,lb,ones(1,6)*-inf);
 ub = cat(2,ub,ones(1,6)*inf);
 
+%Optimize perturbation to match experimental potential
 % ssrfun(X(:)');
 X = fminsearchbnd(@ssrfun,X(:)',lb(:)',ub(:)')
 

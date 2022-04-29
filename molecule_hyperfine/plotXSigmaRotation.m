@@ -14,7 +14,7 @@ Erange = -0.0224 + [-1 1]*1e-4;
 mtot = [2 3 4 5];
 save_basis = 'UC';
 
-B = 100e-4;0.01*1e-4;%linspace(0,1000,1e3)*1e-4;
+B = 860e-4;0.01*1e-4;%linspace(0,1000,1e3)*1e-4;
 
 %% build operators in uncoupled basis
 bases = {'UC','IC','FC','F1C','F2C'};
@@ -87,9 +87,10 @@ finalstate = find(round(2*mNa)/2 == 1.5 & round(2*mCs)/2 == 2.5 & ((round(mF) ==
 Eref = E(initstate);
 E = E - Eref;
 
-% mF = basis.UC.qnums.m_i_Na + basis.UC.qnums.m_i_Cs;
-% mN = basis.UC.qnums.m_N;
+mF = basis.UC.qnums.m_i_Na + basis.UC.qnums.m_i_Cs;
+mN = basis.UC.qnums.m_N;
 figure(1)
+clear
 subplot(2,2,[1,3])
 scatter(mF,E/const.h/1e9 + Eref,100,'Marker','_','MarkerEdgeColor','black','Linewidth',1);
 hold on
@@ -107,7 +108,7 @@ subplot(2,2,4)
 scatter(mF,E/const.h/1e6,100,'Marker','_','MarkerEdgeColor','black','Linewidth',1);
 hold on
 scatter(mF(initstate),E(initstate)/const.h/1e6,100,'Marker','_','MarkerEdgeColor','red','Linewidth',2);
-ylim([-3.5,3.5])
+% ylim([-3.5,3.5])
 ylabel("Energy [MHz]")
 xlabel('m_F')
 xlim([-6.5,6.5])
@@ -117,7 +118,7 @@ subplot(2,2,2)
 scatter(mF,E/const.h/1e6,100,'Marker','_','MarkerEdgeColor','black','Linewidth',1);
 hold on
 scatter(mF(finalstate),E(finalstate)/const.h/1e6,100,'Marker','_','MarkerEdgeColor','green','Linewidth',2);
-ylim([3.468e3,3.478e3])
+% ylim([3.468e3,3.478e3])
 ylabel("Energy [MHz]")
 xlabel('m_F')
 xlim([-6.5,6.5])

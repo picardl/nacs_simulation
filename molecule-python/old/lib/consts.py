@@ -19,11 +19,4 @@ gS = 2.0023193043622
 gI_na = -0.00080461080
 gI_cs = -0.00039885395
 
-e = sp.constants.e # 1.60217663e-19 # [C]
-a0 = sp.constants.physical_constants['Bohr radius'][0]
-me = sp.constants.m_e
-eps0 = sp.constants.epsilon_0
-Eh = sp.constants.physical_constants['Hartree energy'][0]
-
-c = sp.constants.c    
-    
+c = sp.constants.c

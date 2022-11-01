@@ -93,10 +93,6 @@ def join_basis(b_list):
     b_np = np.concatenate(b_concat, axis=1)
     return am_basis(col_names,b_np)
 
-def truncate_basis(b, col, val, M):
-    arr = b.v.loc[b.v[col]==val].to_numpy(dtype='float64',na_value=np.nan)
-    b_trunc = am_basis(b.get_cols(), arr)
-    return b_trunc, M[b.v[col]==val,:]
 
 def b_op(f,b,is_py3nj,*arg):
     x,y = np.meshgrid(range(0,b.nrow),range(0,b.nrow))
@@ -154,10 +150,6 @@ def basic_ops(b):
         
     return op_dict
 
-def op_z(b, j):
-    _,_,jz = sph_ops(b,j)
-    return jz
-
 # parity operation
 def par_op(f, b):
     return b_op(lambda b1,b2: (-1)**(f(b1,b2)), b, 0)        
@@ -166,11 +158,7 @@ def scal_op(f, b):
     return b_op(lambda b1,b2: f(b1,b2),b,0)
 
 def dot_op(b, j1, j2):
-    j1x,j1y,j1z = sph_ops(b,j1)
-    j2x,j2y,j2z = sph_ops(b,j2)
-    return np.real(j1x@j2x+j1y@j2y+j1z@j2z)    
-#     return np.real(b.op[j1+'_x']@b.op[j2+'_x']+b.op[j1+'_y']@b.op[j2+'_y']+b.op[j1+'_z']@b.op[j2+'_z']) 
-
+    return np.real(b.op[j1+'_x']@b.op[j2+'_x']+b.op[j1+'_y']@b.op[j2+'_y']+b.op[j1+'_z']@b.op[j2+'_z'])  
 def diag_op(b, j):
     v = b.v[j]
     return np.diag(v)

@@ -1,0 +1,1355 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 13.1' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       158,          7]
+NotebookDataLength[     63261,       1347]
+NotebookOptionsPosition[     53919,       1234]
+NotebookOutlinePosition[     54353,       1251]
+CellTagsIndexPosition[     54310,       1248]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+
+Cell[CellGroupData[{
+Cell[BoxData[
+ RowBox[{"ys", "=", 
+  RowBox[{"Flatten", "@", 
+   RowBox[{"Table", "[", 
+    RowBox[{
+     RowBox[{"SphericalHarmonicY", "[", 
+      RowBox[{"N", ",", "mN", ",", "\[Theta]", ",", "\[Phi]"}], "]"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"N", ",", "0", ",", "1"}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"mN", ",", 
+       RowBox[{"-", "N"}], ",", "N"}], "}"}]}], "]"}]}]}]], "Input",
+ CellChangeTimes->{{3.882454671148287*^9, 3.88245470090473*^9}, {
+  3.88245484373657*^9, 3.882454849003455*^9}},
+ CellLabel->
+  "In[776]:=",ExpressionUUID->"0ced4153-ce1d-4198-a11f-e32da9b7d241"],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   FractionBox["1", 
+    RowBox[{"2", " ", 
+     SqrtBox["\[Pi]"]}]], ",", 
+   RowBox[{
+    FractionBox["1", "2"], " ", 
+    SuperscriptBox["\[ExponentialE]", 
+     RowBox[{
+      RowBox[{"-", "\[ImaginaryI]"}], " ", "\[Phi]"}]], " ", 
+    SqrtBox[
+     FractionBox["3", 
+      RowBox[{"2", " ", "\[Pi]"}]]], " ", 
+    RowBox[{"Sin", "[", "\[Theta]", "]"}]}], ",", 
+   RowBox[{
+    FractionBox["1", "2"], " ", 
+    SqrtBox[
+     FractionBox["3", "\[Pi]"]], " ", 
+    RowBox[{"Cos", "[", "\[Theta]", "]"}]}], ",", 
+   RowBox[{
+    RowBox[{"-", 
+     FractionBox["1", "2"]}], " ", 
+    SuperscriptBox["\[ExponentialE]", 
+     RowBox[{"\[ImaginaryI]", " ", "\[Phi]"}]], " ", 
+    SqrtBox[
+     FractionBox["3", 
+      RowBox[{"2", " ", "\[Pi]"}]]], " ", 
+    RowBox[{"Sin", "[", "\[Theta]", "]"}]}]}], "}"}]], "Output",
+ CellChangeTimes->{
+  3.8824547013651257`*^9, {3.882454846814888*^9, 3.882454849274736*^9}},
+ CellLabel->
+  "Out[776]=",ExpressionUUID->"11172ad0-cb5a-4f03-ab50-d9e355f331ae"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"ys", "[", 
+  RowBox[{"[", "2", "]"}], "]"}]], "Input",
+ CellChangeTimes->{{3.882454704549179*^9, 3.882454705793366*^9}},
+ CellLabel->
+  "In[774]:=",ExpressionUUID->"af52b32b-2c3d-4adb-9718-c60d1f03bb6d"],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{
+    FractionBox["1", "2"], " ", 
+    SuperscriptBox["\[ExponentialE]", 
+     RowBox[{
+      RowBox[{"-", "\[ImaginaryI]"}], " ", "\[Phi]"}]], " ", 
+    SqrtBox[
+     FractionBox["3", 
+      RowBox[{"2", " ", "\[Pi]"}]]], " ", 
+    RowBox[{"Sin", "[", "\[Theta]", "]"}]}], ",", 
+   RowBox[{
+    FractionBox["1", "2"], " ", 
+    SqrtBox[
+     FractionBox["3", "\[Pi]"]], " ", 
+    RowBox[{"Cos", "[", "\[Theta]", "]"}]}], ",", 
+   RowBox[{
+    RowBox[{"-", 
+     FractionBox["1", "2"]}], " ", 
+    SuperscriptBox["\[ExponentialE]", 
+     RowBox[{"\[ImaginaryI]", " ", "\[Phi]"}]], " ", 
+    SqrtBox[
+     FractionBox["3", 
+      RowBox[{"2", " ", "\[Pi]"}]]], " ", 
+    RowBox[{"Sin", "[", "\[Theta]", "]"}]}]}], "}"}]], "Output",
+ CellChangeTimes->{3.882454706343068*^9},
+ CellLabel->
+  "Out[774]=",ExpressionUUID->"1e2751dd-173c-45c1-8649-3b018da4c5c0"]
+}, Open  ]],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{"\[Sigma]x", ",", "\[Sigma]y", ",", "\[Sigma]z"}], "}"}], "=", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"PauliMatrix", "[", "#", "]"}], "&"}], "/@", 
+    RowBox[{"{", 
+     RowBox[{"1", ",", "2", ",", "3"}], "}"}]}]}], ";"}]], "Input",
+ CellChangeTimes->{{3.8824550084407043`*^9, 3.88245502234603*^9}, {
+  3.882457576218072*^9, 3.8824575927436323`*^9}},
+ CellLabel->
+  "In[794]:=",ExpressionUUID->"75978b5b-eb0b-44a2-b9fa-231b592ac0f7"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"r", "=", "0.3"}], ";", 
+  RowBox[{"Manipulate", "[", 
+   RowBox[{
+    RowBox[{"SphericalPlot3D", "[", 
+     RowBox[{
+      SuperscriptBox[
+       RowBox[{"Abs", "[", 
+        RowBox[{
+         RowBox[{"Flatten", "[", 
+          RowBox[{
+           RowBox[{"MatrixExp", "[", 
+            RowBox[{
+             RowBox[{"-", "\[ImaginaryI]"}], " ", "t", " ", "\[Sigma]x"}], 
+            "]"}], ".", 
+           RowBox[{"(", GridBox[{
+              {"1"},
+              {"0"}
+             }], ")"}]}], "]"}], ".", 
+         RowBox[{"ys", "[", 
+          RowBox[{"[", 
+           RowBox[{"{", 
+            RowBox[{"1", ",", "3"}], "}"}], "]"}], "]"}]}], "]"}], "2"], ",", 
+      
+      RowBox[{"{", 
+       RowBox[{"\[Theta]", ",", "0", ",", "\[Pi]"}], "}"}], ",", 
+      RowBox[{"{", 
+       RowBox[{"\[Phi]", ",", "0", ",", 
+        RowBox[{"2", "\[Pi]"}]}], "}"}], ",", 
+      RowBox[{"PlotRange", "->", 
+       RowBox[{"{", 
+        RowBox[{
+         RowBox[{"{", 
+          RowBox[{
+           RowBox[{"-", "r"}], ",", "r"}], "}"}], ",", 
+         RowBox[{"{", 
+          RowBox[{
+           RowBox[{"-", "r"}], ",", "r"}], "}"}], ",", 
+         RowBox[{"{", 
+          RowBox[{
+           RowBox[{"-", "r"}], ",", "r"}], "}"}]}], "}"}]}]}], "]"}], ",", 
+    RowBox[{"{", 
+     RowBox[{"t", ",", "0", ",", 
+      RowBox[{"2", "\[Pi]"}]}], "}"}]}], "]"}]}]], "Input",
+ CellChangeTimes->{{3.8824550264743853`*^9, 3.8824551319662523`*^9}, 
+   3.882455366395945*^9, {3.8824554141752987`*^9, 3.882455452778707*^9}, {
+   3.882455559625063*^9, 3.882455559769498*^9}, {3.8824575677236567`*^9, 
+   3.882457568057839*^9}, {3.882457656484127*^9, 3.882457664649898*^9}, {
+   3.882457763429574*^9, 3.882457792132036*^9}},
+ CellLabel->
+  "In[800]:=",ExpressionUUID->"96b77af7-9d8a-423a-a47c-8366376f8fc3"],
+
+Cell[BoxData[
+ TagBox[
+  StyleBox[
+   DynamicModuleBox[{$CellContext`t$$ = 1.1767903653702432`, Typeset`show$$ = 
+    True, Typeset`bookmarkList$$ = {}, Typeset`bookmarkMode$$ = "Menu", 
+    Typeset`animator$$, Typeset`animvar$$ = 1, Typeset`name$$ = 
+    "\"untitled\"", Typeset`specs$$ = {{
+      Hold[$CellContext`t$$], 0, 2 Pi}}, Typeset`size$$ = {
+    360., {178., 182.}}, Typeset`update$$ = 0, Typeset`initDone$$, 
+    Typeset`skipInitDone$$ = True}, 
+    DynamicBox[Manipulate`ManipulateBoxes[
+     1, StandardForm, "Variables" :> {$CellContext`t$$ = 0}, 
+      "ControllerVariables" :> {}, 
+      "OtherVariables" :> {
+       Typeset`show$$, Typeset`bookmarkList$$, Typeset`bookmarkMode$$, 
+        Typeset`animator$$, Typeset`animvar$$, Typeset`name$$, 
+        Typeset`specs$$, Typeset`size$$, Typeset`update$$, Typeset`initDone$$,
+         Typeset`skipInitDone$$}, "Body" :> SphericalPlot3D[Abs[
+          Dot[
+           Flatten[
+            Dot[
+             MatrixExp[(-I) $CellContext`t$$ $CellContext`\[Sigma]x], {{1}, {
+             0}}]], 
+           Part[$CellContext`ys, {1, 3}]]]^2, {$CellContext`\[Theta], 0, 
+         Pi}, {$CellContext`\[Phi], 0, 2 Pi}, 
+        PlotRange -> {{-$CellContext`r, $CellContext`r}, {-$CellContext`r, \
+$CellContext`r}, {-$CellContext`r, $CellContext`r}}], 
+      "Specifications" :> {{$CellContext`t$$, 0, 2 Pi}}, "Options" :> {}, 
+      "DefaultOptions" :> {}],
+     ImageSizeCache->{404., {236., 242.}},
+     SingleEvaluation->True],
+    Deinitialization:>None,
+    DynamicModuleValues:>{},
+    SynchronousInitialization->True,
+    UndoTrackedVariables:>{Typeset`show$$, Typeset`bookmarkMode$$},
+    UnsavedVariables:>{Typeset`initDone$$},
+    UntrackedVariables:>{Typeset`size$$}], "Manipulate",
+   Deployed->True,
+   StripOnInput->False],
+  Manipulate`InterpretManipulate[1]]], "Output",
+ CellChangeTimes->{{3.882455038490725*^9, 3.882455143530107*^9}, {
+  3.8824553686744747`*^9, 3.882455371922126*^9}, {3.882455431551322*^9, 
+  3.88245545576444*^9}, {3.882455560455398*^9, 3.882455562584873*^9}, {
+  3.882457568995273*^9, 3.882457598504161*^9}, {3.882457657747881*^9, 
+  3.882457666964361*^9}, {3.8824577641210003`*^9, 3.8824577940517797`*^9}},
+ CellLabel->
+  "Out[800]=",ExpressionUUID->"84143128-61b3-412e-b398-15bac4539c43"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "Part", "partd", 
+   "\"Part specification \\!\\(\\*RowBox[{\\\"ys\\\", \
+\\\"\[LeftDoubleBracket]\\\", RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \
+\\\",\\\", \\\"3\\\"}], \\\"}\\\"}], \\\"\[RightDoubleBracket]\\\"}]\\) is \
+longer than depth of object.\"", 2, 1, 1, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882460228532537*^9},
+ CellLabel->"",ExpressionUUID->"f863ab5e-cb8b-41aa-9426-b850b683f9aa"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "General", "prng", 
+   "\"Value of option PlotRange -> \\!\\(\\*RowBox[{\\\"{\\\", \
+RowBox[{RowBox[{\\\"{\\\", RowBox[{RowBox[{\\\"-\\\", \\\"r\\\"}], \\\",\\\", \
+\\\"r\\\"}], \\\"}\\\"}], \\\",\\\", RowBox[{\\\"{\\\", RowBox[{RowBox[{\\\"-\
+\\\", \\\"r\\\"}], \\\",\\\", \\\"r\\\"}], \\\"}\\\"}], \\\",\\\", RowBox[{\\\
+\"{\\\", RowBox[{RowBox[{\\\"-\\\", \\\"r\\\"}], \\\",\\\", \\\"r\\\"}], \
+\\\"}\\\"}]}], \\\"}\\\"}]\\) is not All, Full, Automatic, a positive machine \
+number, or an appropriate list of range specifications.\"", 2, 1, 2, 
+   20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882460228643147*^9},
+ CellLabel->"",ExpressionUUID->"f1984605-27c9-4d19-8b4c-046c8c437363"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "Part", "partd", 
+   "\"Part specification \\!\\(\\*RowBox[{\\\"ys\\\", \
+\\\"\[LeftDoubleBracket]\\\", RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \
+\\\",\\\", \\\"3\\\"}], \\\"}\\\"}], \\\"\[RightDoubleBracket]\\\"}]\\) is \
+longer than depth of object.\"", 2, 1, 3, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882460228689389*^9},
+ CellLabel->"",ExpressionUUID->"c6cd4793-da36-40d1-aec9-f5f557976c91"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "Part", "partd", 
+   "\"Part specification \\!\\(\\*RowBox[{\\\"ys\\\", \
+\\\"\[LeftDoubleBracket]\\\", RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \
+\\\",\\\", \\\"3\\\"}], \\\"}\\\"}], \\\"\[RightDoubleBracket]\\\"}]\\) is \
+longer than depth of object.\"", 2, 1, 4, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.8824602287018213`*^9},
+ CellLabel->"",ExpressionUUID->"88d95eb2-2688-4686-8194-1607fa098e83"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "General", "stop", 
+   "\"Further output of \\!\\(\\*StyleBox[RowBox[{\\\"Part\\\", \\\"::\\\", \
+\\\"partd\\\"}], \\\"MessageName\\\"]\\) will be suppressed during this \
+calculation.\"", 2, 1, 5, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.8824602287083*^9},
+ CellLabel->"",ExpressionUUID->"3c8113b4-67f0-4919-ab66-d0054349f68a"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "ParametricPlot3D", "prng", 
+   "\"Value of option PlotRange -> \\!\\(\\*RowBox[{\\\"{\\\", \
+RowBox[{RowBox[{\\\"{\\\", RowBox[{RowBox[{\\\"-\\\", \\\"r\\\"}], \\\",\\\", \
+\\\"r\\\"}], \\\"}\\\"}], \\\",\\\", RowBox[{\\\"{\\\", RowBox[{RowBox[{\\\"-\
+\\\", \\\"r\\\"}], \\\",\\\", \\\"r\\\"}], \\\"}\\\"}], \\\",\\\", RowBox[{\\\
+\"{\\\", RowBox[{RowBox[{\\\"-\\\", \\\"r\\\"}], \\\",\\\", \\\"r\\\"}], \
+\\\"}\\\"}]}], \\\"}\\\"}]\\) is not All, Full, Automatic, a positive machine \
+number, or an appropriate list of range specifications.\"", 2, 1, 6, 
+   20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882460228790516*^9},
+ CellLabel->"",ExpressionUUID->"60c1eea7-edb4-4bee-8993-602cf33370f3"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "Part", "partd", 
+   "\"Part specification \\!\\(\\*RowBox[{\\\"ys\\\", \
+\\\"\[LeftDoubleBracket]\\\", RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \
+\\\",\\\", \\\"3\\\"}], \\\"}\\\"}], \\\"\[RightDoubleBracket]\\\"}]\\) is \
+longer than depth of object.\"", 2, 42, 7, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882460233392973*^9},
+ CellLabel->"",ExpressionUUID->"f53a7828-fdd5-410e-8aa1-f6ae61978648"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "General", "prng", 
+   "\"Value of option PlotRange -> \\!\\(\\*RowBox[{\\\"{\\\", \
+RowBox[{RowBox[{\\\"{\\\", RowBox[{RowBox[{\\\"-\\\", \\\"r\\\"}], \\\",\\\", \
+\\\"r\\\"}], \\\"}\\\"}], \\\",\\\", RowBox[{\\\"{\\\", RowBox[{RowBox[{\\\"-\
+\\\", \\\"r\\\"}], \\\",\\\", \\\"r\\\"}], \\\"}\\\"}], \\\",\\\", RowBox[{\\\
+\"{\\\", RowBox[{RowBox[{\\\"-\\\", \\\"r\\\"}], \\\",\\\", \\\"r\\\"}], \
+\\\"}\\\"}]}], \\\"}\\\"}]\\) is not All, Full, Automatic, a positive machine \
+number, or an appropriate list of range specifications.\"", 2, 42, 8, 
+   20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882460233400238*^9},
+ CellLabel->"",ExpressionUUID->"6c5d36c3-0e58-41a7-9670-9441fca3932f"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "Part", "partd", 
+   "\"Part specification \\!\\(\\*RowBox[{\\\"ys\\\", \
+\\\"\[LeftDoubleBracket]\\\", RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \
+\\\",\\\", \\\"3\\\"}], \\\"}\\\"}], \\\"\[RightDoubleBracket]\\\"}]\\) is \
+longer than depth of object.\"", 2, 42, 9, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.8824602334125137`*^9},
+ CellLabel->"",ExpressionUUID->"8ffc02a5-bbe4-4c11-9a37-7340c0ea6389"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "Part", "partd", 
+   "\"Part specification \\!\\(\\*RowBox[{\\\"ys\\\", \
+\\\"\[LeftDoubleBracket]\\\", RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \
+\\\",\\\", \\\"3\\\"}], \\\"}\\\"}], \\\"\[RightDoubleBracket]\\\"}]\\) is \
+longer than depth of object.\"", 2, 42, 10, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882460233418356*^9},
+ CellLabel->"",ExpressionUUID->"95ddbe24-1bac-4890-8048-e41e4fb8c717"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "General", "stop", 
+   "\"Further output of \\!\\(\\*StyleBox[RowBox[{\\\"Part\\\", \\\"::\\\", \
+\\\"partd\\\"}], \\\"MessageName\\\"]\\) will be suppressed during this \
+calculation.\"", 2, 42, 11, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882460233423666*^9},
+ CellLabel->"",ExpressionUUID->"75a47401-7f88-46b5-96b5-fa8662bc70b4"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "ParametricPlot3D", "prng", 
+   "\"Value of option PlotRange -> \\!\\(\\*RowBox[{\\\"{\\\", \
+RowBox[{RowBox[{\\\"{\\\", RowBox[{RowBox[{\\\"-\\\", \\\"r\\\"}], \\\",\\\", \
+\\\"r\\\"}], \\\"}\\\"}], \\\",\\\", RowBox[{\\\"{\\\", RowBox[{RowBox[{\\\"-\
+\\\", \\\"r\\\"}], \\\",\\\", \\\"r\\\"}], \\\"}\\\"}], \\\",\\\", RowBox[{\\\
+\"{\\\", RowBox[{RowBox[{\\\"-\\\", \\\"r\\\"}], \\\",\\\", \\\"r\\\"}], \
+\\\"}\\\"}]}], \\\"}\\\"}]\\) is not All, Full, Automatic, a positive machine \
+number, or an appropriate list of range specifications.\"", 2, 42, 12, 
+   20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.8824602334299803`*^9},
+ CellLabel->"",ExpressionUUID->"d9c44757-5f84-4513-a7c9-af7c31a055a7"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "Part", "partd", 
+   "\"Part specification \\!\\(\\*RowBox[{\\\"ys\\\", \
+\\\"\[LeftDoubleBracket]\\\", RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \
+\\\",\\\", \\\"3\\\"}], \\\"}\\\"}], \\\"\[RightDoubleBracket]\\\"}]\\) is \
+longer than depth of object.\"", 2, 105, 19, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882460757685062*^9},
+ CellLabel->"",ExpressionUUID->"8692fa17-9d30-40d7-9359-b762ff986a23"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "General", "prng", 
+   "\"Value of option PlotRange -> \\!\\(\\*RowBox[{\\\"{\\\", \
+RowBox[{RowBox[{\\\"{\\\", RowBox[{RowBox[{\\\"-\\\", \\\"r\\\"}], \\\",\\\", \
+\\\"r\\\"}], \\\"}\\\"}], \\\",\\\", RowBox[{\\\"{\\\", RowBox[{RowBox[{\\\"-\
+\\\", \\\"r\\\"}], \\\",\\\", \\\"r\\\"}], \\\"}\\\"}], \\\",\\\", RowBox[{\\\
+\"{\\\", RowBox[{RowBox[{\\\"-\\\", \\\"r\\\"}], \\\",\\\", \\\"r\\\"}], \
+\\\"}\\\"}]}], \\\"}\\\"}]\\) is not All, Full, Automatic, a positive machine \
+number, or an appropriate list of range specifications.\"", 2, 105, 20, 
+   20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.8824607576936626`*^9},
+ CellLabel->"",ExpressionUUID->"876605eb-a24c-4709-bc1a-09075d48d275"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "Part", "partd", 
+   "\"Part specification \\!\\(\\*RowBox[{\\\"ys\\\", \
+\\\"\[LeftDoubleBracket]\\\", RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \
+\\\",\\\", \\\"3\\\"}], \\\"}\\\"}], \\\"\[RightDoubleBracket]\\\"}]\\) is \
+longer than depth of object.\"", 2, 105, 21, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882460757746492*^9},
+ CellLabel->"",ExpressionUUID->"f4adb6c0-ea5e-4875-ab81-f9e178c2415a"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "Part", "partd", 
+   "\"Part specification \\!\\(\\*RowBox[{\\\"ys\\\", \
+\\\"\[LeftDoubleBracket]\\\", RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \
+\\\",\\\", \\\"3\\\"}], \\\"}\\\"}], \\\"\[RightDoubleBracket]\\\"}]\\) is \
+longer than depth of object.\"", 2, 105, 22, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.8824607577528763`*^9},
+ CellLabel->"",ExpressionUUID->"fff65f37-e4d6-4332-9f19-9d2b7910c407"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "General", "stop", 
+   "\"Further output of \\!\\(\\*StyleBox[RowBox[{\\\"Part\\\", \\\"::\\\", \
+\\\"partd\\\"}], \\\"MessageName\\\"]\\) will be suppressed during this \
+calculation.\"", 2, 105, 23, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882460757758663*^9},
+ CellLabel->"",ExpressionUUID->"f44a9441-3966-43c8-99aa-b6fba299b856"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "ParametricPlot3D", "prng", 
+   "\"Value of option PlotRange -> \\!\\(\\*RowBox[{\\\"{\\\", \
+RowBox[{RowBox[{\\\"{\\\", RowBox[{RowBox[{\\\"-\\\", \\\"r\\\"}], \\\",\\\", \
+\\\"r\\\"}], \\\"}\\\"}], \\\",\\\", RowBox[{\\\"{\\\", RowBox[{RowBox[{\\\"-\
+\\\", \\\"r\\\"}], \\\",\\\", \\\"r\\\"}], \\\"}\\\"}], \\\",\\\", RowBox[{\\\
+\"{\\\", RowBox[{RowBox[{\\\"-\\\", \\\"r\\\"}], \\\",\\\", \\\"r\\\"}], \
+\\\"}\\\"}]}], \\\"}\\\"}]\\) is not All, Full, Automatic, a positive machine \
+number, or an appropriate list of range specifications.\"", 2, 105, 24, 
+   20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882460757769526*^9},
+ CellLabel->"",ExpressionUUID->"0e8b52c6-70fa-4566-b757-eaf3b9511426"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "Part", "partd", 
+   "\"Part specification \\!\\(\\*RowBox[{\\\"ys\\\", \
+\\\"\[LeftDoubleBracket]\\\", RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \
+\\\",\\\", \\\"3\\\"}], \\\"}\\\"}], \\\"\[RightDoubleBracket]\\\"}]\\) is \
+longer than depth of object.\"", 2, 106, 25, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882460762644265*^9},
+ CellLabel->"",ExpressionUUID->"1b0cfcbb-45c9-4ebf-a739-994737bd0640"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "General", "prng", 
+   "\"Value of option PlotRange -> \\!\\(\\*RowBox[{\\\"{\\\", \
+RowBox[{RowBox[{\\\"{\\\", RowBox[{RowBox[{\\\"-\\\", \\\"r\\\"}], \\\",\\\", \
+\\\"r\\\"}], \\\"}\\\"}], \\\",\\\", RowBox[{\\\"{\\\", RowBox[{RowBox[{\\\"-\
+\\\", \\\"r\\\"}], \\\",\\\", \\\"r\\\"}], \\\"}\\\"}], \\\",\\\", RowBox[{\\\
+\"{\\\", RowBox[{RowBox[{\\\"-\\\", \\\"r\\\"}], \\\",\\\", \\\"r\\\"}], \
+\\\"}\\\"}]}], \\\"}\\\"}]\\) is not All, Full, Automatic, a positive machine \
+number, or an appropriate list of range specifications.\"", 2, 106, 26, 
+   20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882460762651984*^9},
+ CellLabel->"",ExpressionUUID->"3f58d5ce-54b1-49ec-8cda-a5881faeb0bc"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "Part", "partd", 
+   "\"Part specification \\!\\(\\*RowBox[{\\\"ys\\\", \
+\\\"\[LeftDoubleBracket]\\\", RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \
+\\\",\\\", \\\"3\\\"}], \\\"}\\\"}], \\\"\[RightDoubleBracket]\\\"}]\\) is \
+longer than depth of object.\"", 2, 106, 27, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882460762664198*^9},
+ CellLabel->"",ExpressionUUID->"76ab65e1-f95c-42d0-8e9b-955fcd64482b"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "Part", "partd", 
+   "\"Part specification \\!\\(\\*RowBox[{\\\"ys\\\", \
+\\\"\[LeftDoubleBracket]\\\", RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \
+\\\",\\\", \\\"3\\\"}], \\\"}\\\"}], \\\"\[RightDoubleBracket]\\\"}]\\) is \
+longer than depth of object.\"", 2, 106, 28, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.8824607626695833`*^9},
+ CellLabel->"",ExpressionUUID->"bcd11cce-84d8-41f5-8d77-260afed36e12"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "General", "stop", 
+   "\"Further output of \\!\\(\\*StyleBox[RowBox[{\\\"Part\\\", \\\"::\\\", \
+\\\"partd\\\"}], \\\"MessageName\\\"]\\) will be suppressed during this \
+calculation.\"", 2, 106, 29, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882460762676461*^9},
+ CellLabel->"",ExpressionUUID->"1fb0c122-6d02-4d76-9194-6124dc373365"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "ParametricPlot3D", "prng", 
+   "\"Value of option PlotRange -> \\!\\(\\*RowBox[{\\\"{\\\", \
+RowBox[{RowBox[{\\\"{\\\", RowBox[{RowBox[{\\\"-\\\", \\\"r\\\"}], \\\",\\\", \
+\\\"r\\\"}], \\\"}\\\"}], \\\",\\\", RowBox[{\\\"{\\\", RowBox[{RowBox[{\\\"-\
+\\\", \\\"r\\\"}], \\\",\\\", \\\"r\\\"}], \\\"}\\\"}], \\\",\\\", RowBox[{\\\
+\"{\\\", RowBox[{RowBox[{\\\"-\\\", \\\"r\\\"}], \\\",\\\", \\\"r\\\"}], \
+\\\"}\\\"}]}], \\\"}\\\"}]\\) is not All, Full, Automatic, a positive machine \
+number, or an appropriate list of range specifications.\"", 2, 106, 30, 
+   20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882460762717025*^9},
+ CellLabel->"",ExpressionUUID->"03b08f99-fd0a-49d2-acc7-61eacaaa6847"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "Part", "partd", 
+   "\"Part specification \\!\\(\\*RowBox[{\\\"ys\\\", \
+\\\"\[LeftDoubleBracket]\\\", RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \
+\\\",\\\", \\\"3\\\"}], \\\"}\\\"}], \\\"\[RightDoubleBracket]\\\"}]\\) is \
+longer than depth of object.\"", 2, 107, 31, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882460768693007*^9},
+ CellLabel->"",ExpressionUUID->"f34da0aa-3095-4ade-85d7-396e65d06367"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "General", "prng", 
+   "\"Value of option PlotRange -> \\!\\(\\*RowBox[{\\\"{\\\", \
+RowBox[{RowBox[{\\\"{\\\", RowBox[{RowBox[{\\\"-\\\", \\\"r\\\"}], \\\",\\\", \
+\\\"r\\\"}], \\\"}\\\"}], \\\",\\\", RowBox[{\\\"{\\\", RowBox[{RowBox[{\\\"-\
+\\\", \\\"r\\\"}], \\\",\\\", \\\"r\\\"}], \\\"}\\\"}], \\\",\\\", RowBox[{\\\
+\"{\\\", RowBox[{RowBox[{\\\"-\\\", \\\"r\\\"}], \\\",\\\", \\\"r\\\"}], \
+\\\"}\\\"}]}], \\\"}\\\"}]\\) is not All, Full, Automatic, a positive machine \
+number, or an appropriate list of range specifications.\"", 2, 107, 32, 
+   20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882460768700801*^9},
+ CellLabel->"",ExpressionUUID->"93c364ce-b5e9-4a08-8079-2d22205bb97c"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "Part", "partd", 
+   "\"Part specification \\!\\(\\*RowBox[{\\\"ys\\\", \
+\\\"\[LeftDoubleBracket]\\\", RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \
+\\\",\\\", \\\"3\\\"}], \\\"}\\\"}], \\\"\[RightDoubleBracket]\\\"}]\\) is \
+longer than depth of object.\"", 2, 107, 33, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882460768719396*^9},
+ CellLabel->"",ExpressionUUID->"9eb1a1f9-60d3-4779-ac61-4bb2d98508cd"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "Part", "partd", 
+   "\"Part specification \\!\\(\\*RowBox[{\\\"ys\\\", \
+\\\"\[LeftDoubleBracket]\\\", RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \
+\\\",\\\", \\\"3\\\"}], \\\"}\\\"}], \\\"\[RightDoubleBracket]\\\"}]\\) is \
+longer than depth of object.\"", 2, 107, 34, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882460768725441*^9},
+ CellLabel->"",ExpressionUUID->"cc21eff1-d608-49cb-b7b3-d6fa2d7b962d"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "General", "stop", 
+   "\"Further output of \\!\\(\\*StyleBox[RowBox[{\\\"Part\\\", \\\"::\\\", \
+\\\"partd\\\"}], \\\"MessageName\\\"]\\) will be suppressed during this \
+calculation.\"", 2, 107, 35, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.88246076873295*^9},
+ CellLabel->"",ExpressionUUID->"40fe89eb-f5af-4bf2-b36a-592f30e6fc29"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "ParametricPlot3D", "prng", 
+   "\"Value of option PlotRange -> \\!\\(\\*RowBox[{\\\"{\\\", \
+RowBox[{RowBox[{\\\"{\\\", RowBox[{RowBox[{\\\"-\\\", \\\"r\\\"}], \\\",\\\", \
+\\\"r\\\"}], \\\"}\\\"}], \\\",\\\", RowBox[{\\\"{\\\", RowBox[{RowBox[{\\\"-\
+\\\", \\\"r\\\"}], \\\",\\\", \\\"r\\\"}], \\\"}\\\"}], \\\",\\\", RowBox[{\\\
+\"{\\\", RowBox[{RowBox[{\\\"-\\\", \\\"r\\\"}], \\\",\\\", \\\"r\\\"}], \
+\\\"}\\\"}]}], \\\"}\\\"}]\\) is not All, Full, Automatic, a positive machine \
+number, or an appropriate list of range specifications.\"", 2, 107, 36, 
+   20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882460768801058*^9},
+ CellLabel->"",ExpressionUUID->"dee82ec7-5b9e-435d-af17-c6b978dc0f4f"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "Part", "partd", 
+   "\"Part specification \\!\\(\\*RowBox[{\\\"ys\\\", \
+\\\"\[LeftDoubleBracket]\\\", RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \
+\\\",\\\", \\\"3\\\"}], \\\"}\\\"}], \\\"\[RightDoubleBracket]\\\"}]\\) is \
+longer than depth of object.\"", 2, 108, 37, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.8824608142586412`*^9},
+ CellLabel->"",ExpressionUUID->"d651254b-69b8-4102-a425-9ca661c41f66"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "General", "prng", 
+   "\"Value of option PlotRange -> \\!\\(\\*RowBox[{\\\"{\\\", \
+RowBox[{RowBox[{\\\"{\\\", RowBox[{RowBox[{\\\"-\\\", \\\"r\\\"}], \\\",\\\", \
+\\\"r\\\"}], \\\"}\\\"}], \\\",\\\", RowBox[{\\\"{\\\", RowBox[{RowBox[{\\\"-\
+\\\", \\\"r\\\"}], \\\",\\\", \\\"r\\\"}], \\\"}\\\"}], \\\",\\\", RowBox[{\\\
+\"{\\\", RowBox[{RowBox[{\\\"-\\\", \\\"r\\\"}], \\\",\\\", \\\"r\\\"}], \
+\\\"}\\\"}]}], \\\"}\\\"}]\\) is not All, Full, Automatic, a positive machine \
+number, or an appropriate list of range specifications.\"", 2, 108, 38, 
+   20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.8824608142709303`*^9},
+ CellLabel->"",ExpressionUUID->"53d35155-4a6a-4205-ba9e-dd9953738f8c"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "Part", "partd", 
+   "\"Part specification \\!\\(\\*RowBox[{\\\"ys\\\", \
+\\\"\[LeftDoubleBracket]\\\", RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \
+\\\",\\\", \\\"3\\\"}], \\\"}\\\"}], \\\"\[RightDoubleBracket]\\\"}]\\) is \
+longer than depth of object.\"", 2, 108, 39, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882460814327784*^9},
+ CellLabel->"",ExpressionUUID->"afd0f172-7901-47e6-b5c6-b264b80a237e"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "Part", "partd", 
+   "\"Part specification \\!\\(\\*RowBox[{\\\"ys\\\", \
+\\\"\[LeftDoubleBracket]\\\", RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \
+\\\",\\\", \\\"3\\\"}], \\\"}\\\"}], \\\"\[RightDoubleBracket]\\\"}]\\) is \
+longer than depth of object.\"", 2, 108, 40, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882460814334318*^9},
+ CellLabel->"",ExpressionUUID->"f765c520-a46e-413e-b6cb-0d0af138fd50"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "General", "stop", 
+   "\"Further output of \\!\\(\\*StyleBox[RowBox[{\\\"Part\\\", \\\"::\\\", \
+\\\"partd\\\"}], \\\"MessageName\\\"]\\) will be suppressed during this \
+calculation.\"", 2, 108, 41, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.88246081433987*^9},
+ CellLabel->"",ExpressionUUID->"9746c822-8dd6-4cb4-a7b7-91aeae8204ad"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "ParametricPlot3D", "prng", 
+   "\"Value of option PlotRange -> \\!\\(\\*RowBox[{\\\"{\\\", \
+RowBox[{RowBox[{\\\"{\\\", RowBox[{RowBox[{\\\"-\\\", \\\"r\\\"}], \\\",\\\", \
+\\\"r\\\"}], \\\"}\\\"}], \\\",\\\", RowBox[{\\\"{\\\", RowBox[{RowBox[{\\\"-\
+\\\", \\\"r\\\"}], \\\",\\\", \\\"r\\\"}], \\\"}\\\"}], \\\",\\\", RowBox[{\\\
+\"{\\\", RowBox[{RowBox[{\\\"-\\\", \\\"r\\\"}], \\\",\\\", \\\"r\\\"}], \
+\\\"}\\\"}]}], \\\"}\\\"}]\\) is not All, Full, Automatic, a positive machine \
+number, or an appropriate list of range specifications.\"", 2, 108, 42, 
+   20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882460814351283*^9},
+ CellLabel->"",ExpressionUUID->"f6014638-0a99-4a0e-8c3f-c3a0aeb558a6"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "Part", "partd", 
+   "\"Part specification \\!\\(\\*RowBox[{\\\"ys\\\", \
+\\\"\[LeftDoubleBracket]\\\", RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \
+\\\",\\\", \\\"3\\\"}], \\\"}\\\"}], \\\"\[RightDoubleBracket]\\\"}]\\) is \
+longer than depth of object.\"", 2, 109, 43, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882460844924213*^9},
+ CellLabel->"",ExpressionUUID->"3771f5eb-250e-4c5c-8f1b-f012c89f06e0"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "General", "prng", 
+   "\"Value of option PlotRange -> \\!\\(\\*RowBox[{\\\"{\\\", \
+RowBox[{RowBox[{\\\"{\\\", RowBox[{RowBox[{\\\"-\\\", \\\"r\\\"}], \\\",\\\", \
+\\\"r\\\"}], \\\"}\\\"}], \\\",\\\", RowBox[{\\\"{\\\", RowBox[{RowBox[{\\\"-\
+\\\", \\\"r\\\"}], \\\",\\\", \\\"r\\\"}], \\\"}\\\"}], \\\",\\\", RowBox[{\\\
+\"{\\\", RowBox[{RowBox[{\\\"-\\\", \\\"r\\\"}], \\\",\\\", \\\"r\\\"}], \
+\\\"}\\\"}]}], \\\"}\\\"}]\\) is not All, Full, Automatic, a positive machine \
+number, or an appropriate list of range specifications.\"", 2, 109, 44, 
+   20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882460844935082*^9},
+ CellLabel->"",ExpressionUUID->"b5b335e2-eebc-4c85-b1c7-5f43c0d037f6"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "Part", "partd", 
+   "\"Part specification \\!\\(\\*RowBox[{\\\"ys\\\", \
+\\\"\[LeftDoubleBracket]\\\", RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \
+\\\",\\\", \\\"3\\\"}], \\\"}\\\"}], \\\"\[RightDoubleBracket]\\\"}]\\) is \
+longer than depth of object.\"", 2, 109, 45, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882460844993393*^9},
+ CellLabel->"",ExpressionUUID->"0909e7ca-3847-4352-8c0d-25970a72e52c"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "Part", "partd", 
+   "\"Part specification \\!\\(\\*RowBox[{\\\"ys\\\", \
+\\\"\[LeftDoubleBracket]\\\", RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \
+\\\",\\\", \\\"3\\\"}], \\\"}\\\"}], \\\"\[RightDoubleBracket]\\\"}]\\) is \
+longer than depth of object.\"", 2, 109, 46, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882460844999811*^9},
+ CellLabel->"",ExpressionUUID->"40811761-8ede-4cfc-acef-2fb2400f3299"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "General", "stop", 
+   "\"Further output of \\!\\(\\*StyleBox[RowBox[{\\\"Part\\\", \\\"::\\\", \
+\\\"partd\\\"}], \\\"MessageName\\\"]\\) will be suppressed during this \
+calculation.\"", 2, 109, 47, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.88246084500513*^9},
+ CellLabel->"",ExpressionUUID->"ea196b58-51c6-4897-bede-eab82e85b853"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "ParametricPlot3D", "prng", 
+   "\"Value of option PlotRange -> \\!\\(\\*RowBox[{\\\"{\\\", \
+RowBox[{RowBox[{\\\"{\\\", RowBox[{RowBox[{\\\"-\\\", \\\"r\\\"}], \\\",\\\", \
+\\\"r\\\"}], \\\"}\\\"}], \\\",\\\", RowBox[{\\\"{\\\", RowBox[{RowBox[{\\\"-\
+\\\", \\\"r\\\"}], \\\",\\\", \\\"r\\\"}], \\\"}\\\"}], \\\",\\\", RowBox[{\\\
+\"{\\\", RowBox[{RowBox[{\\\"-\\\", \\\"r\\\"}], \\\",\\\", \\\"r\\\"}], \
+\\\"}\\\"}]}], \\\"}\\\"}]\\) is not All, Full, Automatic, a positive machine \
+number, or an appropriate list of range specifications.\"", 2, 109, 48, 
+   20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882460845036059*^9},
+ CellLabel->"",ExpressionUUID->"1b438633-4ece-41f9-9475-538d99409d3b"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "Part", "partd", 
+   "\"Part specification \\!\\(\\*RowBox[{\\\"ys\\\", \
+\\\"\[LeftDoubleBracket]\\\", RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \
+\\\",\\\", \\\"3\\\"}], \\\"}\\\"}], \\\"\[RightDoubleBracket]\\\"}]\\) is \
+longer than depth of object.\"", 2, 111, 49, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882461010319644*^9},
+ CellLabel->"",ExpressionUUID->"5ebf0861-c642-4be3-9395-19550dff1ff0"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "General", "prng", 
+   "\"Value of option PlotRange -> \\!\\(\\*RowBox[{\\\"{\\\", \
+RowBox[{RowBox[{\\\"{\\\", RowBox[{RowBox[{\\\"-\\\", \\\"r\\\"}], \\\",\\\", \
+\\\"r\\\"}], \\\"}\\\"}], \\\",\\\", RowBox[{\\\"{\\\", RowBox[{RowBox[{\\\"-\
+\\\", \\\"r\\\"}], \\\",\\\", \\\"r\\\"}], \\\"}\\\"}], \\\",\\\", RowBox[{\\\
+\"{\\\", RowBox[{RowBox[{\\\"-\\\", \\\"r\\\"}], \\\",\\\", \\\"r\\\"}], \
+\\\"}\\\"}]}], \\\"}\\\"}]\\) is not All, Full, Automatic, a positive machine \
+number, or an appropriate list of range specifications.\"", 2, 111, 50, 
+   20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882461010331286*^9},
+ CellLabel->"",ExpressionUUID->"8badf833-9756-4823-95ca-7121a8d7d4c9"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "Part", "partd", 
+   "\"Part specification \\!\\(\\*RowBox[{\\\"ys\\\", \
+\\\"\[LeftDoubleBracket]\\\", RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \
+\\\",\\\", \\\"3\\\"}], \\\"}\\\"}], \\\"\[RightDoubleBracket]\\\"}]\\) is \
+longer than depth of object.\"", 2, 111, 51, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.8824610103434668`*^9},
+ CellLabel->"",ExpressionUUID->"c9cec03f-af18-4f17-8919-953bf0a35652"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "Part", "partd", 
+   "\"Part specification \\!\\(\\*RowBox[{\\\"ys\\\", \
+\\\"\[LeftDoubleBracket]\\\", RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \
+\\\",\\\", \\\"3\\\"}], \\\"}\\\"}], \\\"\[RightDoubleBracket]\\\"}]\\) is \
+longer than depth of object.\"", 2, 111, 52, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.88246101034906*^9},
+ CellLabel->"",ExpressionUUID->"8842d22c-52cd-49e3-9954-d1f935794a9f"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "General", "stop", 
+   "\"Further output of \\!\\(\\*StyleBox[RowBox[{\\\"Part\\\", \\\"::\\\", \
+\\\"partd\\\"}], \\\"MessageName\\\"]\\) will be suppressed during this \
+calculation.\"", 2, 111, 53, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.8824610103542*^9},
+ CellLabel->"",ExpressionUUID->"51e2dcfc-1ce2-49e4-afd8-769a30c4cec8"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "ParametricPlot3D", "prng", 
+   "\"Value of option PlotRange -> \\!\\(\\*RowBox[{\\\"{\\\", \
+RowBox[{RowBox[{\\\"{\\\", RowBox[{RowBox[{\\\"-\\\", \\\"r\\\"}], \\\",\\\", \
+\\\"r\\\"}], \\\"}\\\"}], \\\",\\\", RowBox[{\\\"{\\\", RowBox[{RowBox[{\\\"-\
+\\\", \\\"r\\\"}], \\\",\\\", \\\"r\\\"}], \\\"}\\\"}], \\\",\\\", RowBox[{\\\
+\"{\\\", RowBox[{RowBox[{\\\"-\\\", \\\"r\\\"}], \\\",\\\", \\\"r\\\"}], \
+\\\"}\\\"}]}], \\\"}\\\"}]\\) is not All, Full, Automatic, a positive machine \
+number, or an appropriate list of range specifications.\"", 2, 111, 54, 
+   20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882461010405768*^9},
+ CellLabel->"",ExpressionUUID->"8adc2685-a712-40a9-be26-1099c4f87f0d"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "Part", "partd", 
+   "\"Part specification \\!\\(\\*RowBox[{\\\"ys\\\", \
+\\\"\[LeftDoubleBracket]\\\", RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \
+\\\",\\\", \\\"3\\\"}], \\\"}\\\"}], \\\"\[RightDoubleBracket]\\\"}]\\) is \
+longer than depth of object.\"", 2, 112, 55, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.88246107180818*^9},
+ CellLabel->"",ExpressionUUID->"b752a02b-e06c-4dcd-97cd-65cb4b9b3a7f"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "General", "prng", 
+   "\"Value of option PlotRange -> \\!\\(\\*RowBox[{\\\"{\\\", \
+RowBox[{RowBox[{\\\"{\\\", RowBox[{RowBox[{\\\"-\\\", \\\"r\\\"}], \\\",\\\", \
+\\\"r\\\"}], \\\"}\\\"}], \\\",\\\", RowBox[{\\\"{\\\", RowBox[{RowBox[{\\\"-\
+\\\", \\\"r\\\"}], \\\",\\\", \\\"r\\\"}], \\\"}\\\"}], \\\",\\\", RowBox[{\\\
+\"{\\\", RowBox[{RowBox[{\\\"-\\\", \\\"r\\\"}], \\\",\\\", \\\"r\\\"}], \
+\\\"}\\\"}]}], \\\"}\\\"}]\\) is not All, Full, Automatic, a positive machine \
+number, or an appropriate list of range specifications.\"", 2, 112, 56, 
+   20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882461071821142*^9},
+ CellLabel->"",ExpressionUUID->"022eb77a-6536-48e0-a550-0acd6170e494"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "Part", "partd", 
+   "\"Part specification \\!\\(\\*RowBox[{\\\"ys\\\", \
+\\\"\[LeftDoubleBracket]\\\", RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \
+\\\",\\\", \\\"3\\\"}], \\\"}\\\"}], \\\"\[RightDoubleBracket]\\\"}]\\) is \
+longer than depth of object.\"", 2, 112, 57, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882461071845549*^9},
+ CellLabel->"",ExpressionUUID->"0ecc8787-b4dd-4d81-baa0-f6d1b18574a0"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "Part", "partd", 
+   "\"Part specification \\!\\(\\*RowBox[{\\\"ys\\\", \
+\\\"\[LeftDoubleBracket]\\\", RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \
+\\\",\\\", \\\"3\\\"}], \\\"}\\\"}], \\\"\[RightDoubleBracket]\\\"}]\\) is \
+longer than depth of object.\"", 2, 112, 58, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882461071851499*^9},
+ CellLabel->"",ExpressionUUID->"43e377a3-9cc3-48da-932b-e2773a539cca"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "General", "stop", 
+   "\"Further output of \\!\\(\\*StyleBox[RowBox[{\\\"Part\\\", \\\"::\\\", \
+\\\"partd\\\"}], \\\"MessageName\\\"]\\) will be suppressed during this \
+calculation.\"", 2, 112, 59, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882461071863291*^9},
+ CellLabel->"",ExpressionUUID->"894acb22-8deb-403c-a56e-c1b889c0b47a"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "ParametricPlot3D", "prng", 
+   "\"Value of option PlotRange -> \\!\\(\\*RowBox[{\\\"{\\\", \
+RowBox[{RowBox[{\\\"{\\\", RowBox[{RowBox[{\\\"-\\\", \\\"r\\\"}], \\\",\\\", \
+\\\"r\\\"}], \\\"}\\\"}], \\\",\\\", RowBox[{\\\"{\\\", RowBox[{RowBox[{\\\"-\
+\\\", \\\"r\\\"}], \\\",\\\", \\\"r\\\"}], \\\"}\\\"}], \\\",\\\", RowBox[{\\\
+\"{\\\", RowBox[{RowBox[{\\\"-\\\", \\\"r\\\"}], \\\",\\\", \\\"r\\\"}], \
+\\\"}\\\"}]}], \\\"}\\\"}]\\) is not All, Full, Automatic, a positive machine \
+number, or an appropriate list of range specifications.\"", 2, 112, 60, 
+   20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.8824610719214373`*^9},
+ CellLabel->"",ExpressionUUID->"011d5ad9-3088-4617-8852-491f36b1f21f"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "Part", "partd", 
+   "\"Part specification \\!\\(\\*RowBox[{\\\"ys\\\", \
+\\\"\[LeftDoubleBracket]\\\", RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \
+\\\",\\\", \\\"3\\\"}], \\\"}\\\"}], \\\"\[RightDoubleBracket]\\\"}]\\) is \
+longer than depth of object.\"", 2, 113, 61, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882461185977813*^9},
+ CellLabel->"",ExpressionUUID->"da93eec7-f4c9-4e18-b61c-c961b66a9582"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "Part", "partd", 
+   "\"Part specification \\!\\(\\*RowBox[{\\\"ys\\\", \
+\\\"\[LeftDoubleBracket]\\\", RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \
+\\\",\\\", \\\"3\\\"}], \\\"}\\\"}], \\\"\[RightDoubleBracket]\\\"}]\\) is \
+longer than depth of object.\"", 2, 113, 62, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882461185992116*^9},
+ CellLabel->"",ExpressionUUID->"9442339f-bfa1-4d3e-b0f2-4abdad8ddb22"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "Part", "partd", 
+   "\"Part specification \\!\\(\\*RowBox[{\\\"ys\\\", \
+\\\"\[LeftDoubleBracket]\\\", RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \
+\\\",\\\", \\\"3\\\"}], \\\"}\\\"}], \\\"\[RightDoubleBracket]\\\"}]\\) is \
+longer than depth of object.\"", 2, 113, 63, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882461185998036*^9},
+ CellLabel->"",ExpressionUUID->"73bc73b4-13ce-485a-882c-a02a928d64d7"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "General", "stop", 
+   "\"Further output of \\!\\(\\*StyleBox[RowBox[{\\\"Part\\\", \\\"::\\\", \
+\\\"partd\\\"}], \\\"MessageName\\\"]\\) will be suppressed during this \
+calculation.\"", 2, 113, 64, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882461186003728*^9},
+ CellLabel->"",ExpressionUUID->"29cf4f6f-1d34-4e55-9cec-4f3cfe598aec"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "Part", "partd", 
+   "\"Part specification \\!\\(\\*RowBox[{\\\"ys\\\", \
+\\\"\[LeftDoubleBracket]\\\", RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \
+\\\",\\\", \\\"3\\\"}], \\\"}\\\"}], \\\"\[RightDoubleBracket]\\\"}]\\) is \
+longer than depth of object.\"", 2, 114, 65, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.88246121760989*^9},
+ CellLabel->"",ExpressionUUID->"9b8dcd71-4ecd-4157-a4e3-9555f4a82ba2"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "Part", "partd", 
+   "\"Part specification \\!\\(\\*RowBox[{\\\"ys\\\", \
+\\\"\[LeftDoubleBracket]\\\", RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \
+\\\",\\\", \\\"3\\\"}], \\\"}\\\"}], \\\"\[RightDoubleBracket]\\\"}]\\) is \
+longer than depth of object.\"", 2, 114, 66, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.88246121762635*^9},
+ CellLabel->"",ExpressionUUID->"baff42de-7350-4064-8a7c-1efac878d06e"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "Part", "partd", 
+   "\"Part specification \\!\\(\\*RowBox[{\\\"ys\\\", \
+\\\"\[LeftDoubleBracket]\\\", RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \
+\\\",\\\", \\\"3\\\"}], \\\"}\\\"}], \\\"\[RightDoubleBracket]\\\"}]\\) is \
+longer than depth of object.\"", 2, 114, 67, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882461217632434*^9},
+ CellLabel->"",ExpressionUUID->"f448b240-ed0b-42c2-9b9d-b3f03fa70982"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "General", "stop", 
+   "\"Further output of \\!\\(\\*StyleBox[RowBox[{\\\"Part\\\", \\\"::\\\", \
+\\\"partd\\\"}], \\\"MessageName\\\"]\\) will be suppressed during this \
+calculation.\"", 2, 114, 68, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882461217637825*^9},
+ CellLabel->"",ExpressionUUID->"e247286c-bc2a-4294-b047-f6a1b0b7facb"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "Part", "partd", 
+   "\"Part specification \\!\\(\\*RowBox[{\\\"ys\\\", \
+\\\"\[LeftDoubleBracket]\\\", RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \
+\\\",\\\", \\\"3\\\"}], \\\"}\\\"}], \\\"\[RightDoubleBracket]\\\"}]\\) is \
+longer than depth of object.\"", 2, 115, 69, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882461249028297*^9},
+ CellLabel->"",ExpressionUUID->"851cf913-3392-43b2-acbc-90eee18d83de"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "Part", "partd", 
+   "\"Part specification \\!\\(\\*RowBox[{\\\"ys\\\", \
+\\\"\[LeftDoubleBracket]\\\", RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \
+\\\",\\\", \\\"3\\\"}], \\\"}\\\"}], \\\"\[RightDoubleBracket]\\\"}]\\) is \
+longer than depth of object.\"", 2, 115, 70, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882461249047759*^9},
+ CellLabel->"",ExpressionUUID->"195c8729-27f9-4db9-8865-9678a833138e"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "Part", "partd", 
+   "\"Part specification \\!\\(\\*RowBox[{\\\"ys\\\", \
+\\\"\[LeftDoubleBracket]\\\", RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \
+\\\",\\\", \\\"3\\\"}], \\\"}\\\"}], \\\"\[RightDoubleBracket]\\\"}]\\) is \
+longer than depth of object.\"", 2, 115, 71, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.8824612490537786`*^9},
+ CellLabel->"",ExpressionUUID->"1c5b3486-64b4-4748-ab32-b74dbce6ddf2"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "General", "stop", 
+   "\"Further output of \\!\\(\\*StyleBox[RowBox[{\\\"Part\\\", \\\"::\\\", \
+\\\"partd\\\"}], \\\"MessageName\\\"]\\) will be suppressed during this \
+calculation.\"", 2, 115, 72, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882461249059339*^9},
+ CellLabel->"",ExpressionUUID->"b0c1d399-7d61-4528-b677-b8bb5f2f5cc0"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "Part", "partd", 
+   "\"Part specification \\!\\(\\*RowBox[{\\\"ys\\\", \
+\\\"\[LeftDoubleBracket]\\\", RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \
+\\\",\\\", \\\"3\\\"}], \\\"}\\\"}], \\\"\[RightDoubleBracket]\\\"}]\\) is \
+longer than depth of object.\"", 2, 116, 73, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882461255627384*^9},
+ CellLabel->"",ExpressionUUID->"7963934e-8d4d-4d53-b220-4e1156dacf60"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "Part", "partd", 
+   "\"Part specification \\!\\(\\*RowBox[{\\\"ys\\\", \
+\\\"\[LeftDoubleBracket]\\\", RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \
+\\\",\\\", \\\"3\\\"}], \\\"}\\\"}], \\\"\[RightDoubleBracket]\\\"}]\\) is \
+longer than depth of object.\"", 2, 116, 74, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882461255643137*^9},
+ CellLabel->"",ExpressionUUID->"b2c2ab77-dbaa-4a00-8ad6-7b82d811215d"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "Part", "partd", 
+   "\"Part specification \\!\\(\\*RowBox[{\\\"ys\\\", \
+\\\"\[LeftDoubleBracket]\\\", RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \
+\\\",\\\", \\\"3\\\"}], \\\"}\\\"}], \\\"\[RightDoubleBracket]\\\"}]\\) is \
+longer than depth of object.\"", 2, 116, 75, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.8824612556490383`*^9},
+ CellLabel->"",ExpressionUUID->"5b0815ab-0c8e-41bd-ac53-d182ac78f5f6"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "General", "stop", 
+   "\"Further output of \\!\\(\\*StyleBox[RowBox[{\\\"Part\\\", \\\"::\\\", \
+\\\"partd\\\"}], \\\"MessageName\\\"]\\) will be suppressed during this \
+calculation.\"", 2, 116, 76, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882461255654738*^9},
+ CellLabel->"",ExpressionUUID->"85c86d43-0340-4379-ade9-f5732605f7b3"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "Part", "partd", 
+   "\"Part specification \\!\\(\\*RowBox[{\\\"ys\\\", \
+\\\"\[LeftDoubleBracket]\\\", RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \
+\\\",\\\", \\\"3\\\"}], \\\"}\\\"}], \\\"\[RightDoubleBracket]\\\"}]\\) is \
+longer than depth of object.\"", 2, 117, 77, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882461262186949*^9},
+ CellLabel->"",ExpressionUUID->"a0c4f5ab-b644-4bdd-9635-f61264fd8037"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "Part", "partd", 
+   "\"Part specification \\!\\(\\*RowBox[{\\\"ys\\\", \
+\\\"\[LeftDoubleBracket]\\\", RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \
+\\\",\\\", \\\"3\\\"}], \\\"}\\\"}], \\\"\[RightDoubleBracket]\\\"}]\\) is \
+longer than depth of object.\"", 2, 117, 78, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882461262200574*^9},
+ CellLabel->"",ExpressionUUID->"ef30562f-3237-48bf-b164-4f9e6572531e"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "Part", "partd", 
+   "\"Part specification \\!\\(\\*RowBox[{\\\"ys\\\", \
+\\\"\[LeftDoubleBracket]\\\", RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \
+\\\",\\\", \\\"3\\\"}], \\\"}\\\"}], \\\"\[RightDoubleBracket]\\\"}]\\) is \
+longer than depth of object.\"", 2, 117, 79, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882461262208584*^9},
+ CellLabel->"",ExpressionUUID->"315a6c0b-b1a3-463a-84e2-3f23853d01c3"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "General", "stop", 
+   "\"Further output of \\!\\(\\*StyleBox[RowBox[{\\\"Part\\\", \\\"::\\\", \
+\\\"partd\\\"}], \\\"MessageName\\\"]\\) will be suppressed during this \
+calculation.\"", 2, 117, 80, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.88246126221386*^9},
+ CellLabel->"",ExpressionUUID->"47db14b9-5d5b-4c68-b3c7-a650d8755e05"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "Part", "partd", 
+   "\"Part specification \\!\\(\\*RowBox[{\\\"ys\\\", \
+\\\"\[LeftDoubleBracket]\\\", RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \
+\\\",\\\", \\\"3\\\"}], \\\"}\\\"}], \\\"\[RightDoubleBracket]\\\"}]\\) is \
+longer than depth of object.\"", 2, 118, 81, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.8824612976212254`*^9},
+ CellLabel->"",ExpressionUUID->"bf93b040-6f7a-40b2-be04-60b84766aa53"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "Part", "partd", 
+   "\"Part specification \\!\\(\\*RowBox[{\\\"ys\\\", \
+\\\"\[LeftDoubleBracket]\\\", RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \
+\\\",\\\", \\\"3\\\"}], \\\"}\\\"}], \\\"\[RightDoubleBracket]\\\"}]\\) is \
+longer than depth of object.\"", 2, 118, 82, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882461297635676*^9},
+ CellLabel->"",ExpressionUUID->"b6234883-151a-4d1d-a837-b49716695213"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "Part", "partd", 
+   "\"Part specification \\!\\(\\*RowBox[{\\\"ys\\\", \
+\\\"\[LeftDoubleBracket]\\\", RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \
+\\\",\\\", \\\"3\\\"}], \\\"}\\\"}], \\\"\[RightDoubleBracket]\\\"}]\\) is \
+longer than depth of object.\"", 2, 118, 83, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.8824612976416893`*^9},
+ CellLabel->"",ExpressionUUID->"c3b3809b-e6ef-4b14-8a09-4ae033c01eab"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "General", "stop", 
+   "\"Further output of \\!\\(\\*StyleBox[RowBox[{\\\"Part\\\", \\\"::\\\", \
+\\\"partd\\\"}], \\\"MessageName\\\"]\\) will be suppressed during this \
+calculation.\"", 2, 118, 84, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882461297646994*^9},
+ CellLabel->"",ExpressionUUID->"37bde281-326d-469e-9a3d-18582a3ddabd"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "Part", "partd", 
+   "\"Part specification \\!\\(\\*RowBox[{\\\"ys\\\", \
+\\\"\[LeftDoubleBracket]\\\", RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \
+\\\",\\\", \\\"3\\\"}], \\\"}\\\"}], \\\"\[RightDoubleBracket]\\\"}]\\) is \
+longer than depth of object.\"", 2, 129, 85, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.8824615248111486`*^9},
+ CellLabel->"",ExpressionUUID->"7cf6df58-e6c8-4791-9137-f149b2d101cb"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "Part", "partd", 
+   "\"Part specification \\!\\(\\*RowBox[{\\\"ys\\\", \
+\\\"\[LeftDoubleBracket]\\\", RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \
+\\\",\\\", \\\"3\\\"}], \\\"}\\\"}], \\\"\[RightDoubleBracket]\\\"}]\\) is \
+longer than depth of object.\"", 2, 129, 86, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.8824615248318663`*^9},
+ CellLabel->"",ExpressionUUID->"dcfce220-b0c3-4c95-af3f-872aec67441f"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "Part", "partd", 
+   "\"Part specification \\!\\(\\*RowBox[{\\\"ys\\\", \
+\\\"\[LeftDoubleBracket]\\\", RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \
+\\\",\\\", \\\"3\\\"}], \\\"}\\\"}], \\\"\[RightDoubleBracket]\\\"}]\\) is \
+longer than depth of object.\"", 2, 129, 87, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.8824615248377*^9},
+ CellLabel->"",ExpressionUUID->"abb34496-00b0-4f92-a16e-24d9a4294a59"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "General", "stop", 
+   "\"Further output of \\!\\(\\*StyleBox[RowBox[{\\\"Part\\\", \\\"::\\\", \
+\\\"partd\\\"}], \\\"MessageName\\\"]\\) will be suppressed during this \
+calculation.\"", 2, 129, 88, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882461524842958*^9},
+ CellLabel->"",ExpressionUUID->"523a298b-406a-4e34-815f-4d9116975874"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "Part", "partd", 
+   "\"Part specification \\!\\(\\*RowBox[{\\\"ys\\\", \
+\\\"\[LeftDoubleBracket]\\\", RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \
+\\\",\\\", \\\"3\\\"}], \\\"}\\\"}], \\\"\[RightDoubleBracket]\\\"}]\\) is \
+longer than depth of object.\"", 2, 141, 89, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882462225831892*^9},
+ CellLabel->"",ExpressionUUID->"043b40b7-20f6-44c7-8fe3-63822b697a14"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "Part", "partd", 
+   "\"Part specification \\!\\(\\*RowBox[{\\\"ys\\\", \
+\\\"\[LeftDoubleBracket]\\\", RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \
+\\\",\\\", \\\"3\\\"}], \\\"}\\\"}], \\\"\[RightDoubleBracket]\\\"}]\\) is \
+longer than depth of object.\"", 2, 141, 90, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882462225849865*^9},
+ CellLabel->"",ExpressionUUID->"b917e793-8bcd-44b4-aba0-3b25d533a29e"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "Part", "partd", 
+   "\"Part specification \\!\\(\\*RowBox[{\\\"ys\\\", \
+\\\"\[LeftDoubleBracket]\\\", RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \
+\\\",\\\", \\\"3\\\"}], \\\"}\\\"}], \\\"\[RightDoubleBracket]\\\"}]\\) is \
+longer than depth of object.\"", 2, 141, 91, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882462225856825*^9},
+ CellLabel->"",ExpressionUUID->"2adcce0f-5cd0-44d3-b764-a83678403e22"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "General", "stop", 
+   "\"Further output of \\!\\(\\*StyleBox[RowBox[{\\\"Part\\\", \\\"::\\\", \
+\\\"partd\\\"}], \\\"MessageName\\\"]\\) will be suppressed during this \
+calculation.\"", 2, 141, 92, 20697464192366011003, "Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{3.882462225865361*^9},
+ CellLabel->"",ExpressionUUID->"0d606906-1109-4766-94a2-30b0f0e4228f"]
+}, Open  ]]
+},
+WindowSize->{1470, 891},
+WindowMargins->{{0, Automatic}, {Automatic, 0}},
+TaggingRules-><|"TryRealOnly" -> False|>,
+FrontEndVersion->"13.1 for Mac OS X ARM (64-bit) (June 16, 2022)",
+StyleDefinitions->"Default.nb",
+ExpressionUUID->"dc5f5969-a8b4-4233-9c68-81450595d5d5"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[CellGroupData[{
+Cell[580, 22, 601, 15, 30, "Input",ExpressionUUID->"0ced4153-ce1d-4198-a11f-e32da9b7d241"],
+Cell[1184, 39, 1032, 32, 60, "Output",ExpressionUUID->"11172ad0-cb5a-4f03-ab50-d9e355f331ae"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[2253, 76, 227, 5, 30, "Input",ExpressionUUID->"af52b32b-2c3d-4adb-9718-c60d1f03bb6d"],
+Cell[2483, 83, 905, 28, 58, "Output",ExpressionUUID->"1e2751dd-173c-45c1-8649-3b018da4c5c0"]
+}, Open  ]],
+Cell[3403, 114, 498, 13, 30, "Input",ExpressionUUID->"75978b5b-eb0b-44a2-b9fa-231b592ac0f7"],
+Cell[CellGroupData[{
+Cell[3926, 131, 1826, 51, 45, "Input",ExpressionUUID->"96b77af7-9d8a-423a-a47c-8366376f8fc3"],
+Cell[5755, 184, 2287, 46, 497, "Output",ExpressionUUID->"84143128-61b3-412e-b398-15bac4539c43"],
+Cell[8045, 232, 479, 9, 28, "Message",ExpressionUUID->"f863ab5e-cb8b-41aa-9426-b850b683f9aa"],
+Cell[8527, 243, 767, 13, 28, "Message",ExpressionUUID->"f1984605-27c9-4d19-8b4c-046c8c437363"],
+Cell[9297, 258, 479, 9, 28, "Message",ExpressionUUID->"c6cd4793-da36-40d1-aec9-f5f557976c91"],
+Cell[9779, 269, 481, 9, 28, "Message",ExpressionUUID->"88d95eb2-2688-4686-8194-1607fa098e83"],
+Cell[10263, 280, 412, 8, 28, "Message",ExpressionUUID->"3c8113b4-67f0-4919-ab66-d0054349f68a"],
+Cell[10678, 290, 776, 13, 28, "Message",ExpressionUUID->"60c1eea7-edb4-4bee-8993-602cf33370f3"],
+Cell[11457, 305, 480, 9, 28, "Message",ExpressionUUID->"f53a7828-fdd5-410e-8aa1-f6ae61978648"],
+Cell[11940, 316, 768, 13, 28, "Message",ExpressionUUID->"6c5d36c3-0e58-41a7-9670-9441fca3932f"],
+Cell[12711, 331, 482, 9, 28, "Message",ExpressionUUID->"8ffc02a5-bbe4-4c11-9a37-7340c0ea6389"],
+Cell[13196, 342, 481, 9, 28, "Message",ExpressionUUID->"95ddbe24-1bac-4890-8048-e41e4fb8c717"],
+Cell[13680, 353, 416, 8, 28, "Message",ExpressionUUID->"75a47401-7f88-46b5-96b5-fa8662bc70b4"],
+Cell[14099, 363, 780, 13, 28, "Message",ExpressionUUID->"d9c44757-5f84-4513-a7c9-af7c31a055a7"],
+Cell[14882, 378, 482, 9, 28, "Message",ExpressionUUID->"8692fa17-9d30-40d7-9359-b762ff986a23"],
+Cell[15367, 389, 772, 13, 28, "Message",ExpressionUUID->"876605eb-a24c-4709-bc1a-09075d48d275"],
+Cell[16142, 404, 482, 9, 28, "Message",ExpressionUUID->"f4adb6c0-ea5e-4875-ab81-f9e178c2415a"],
+Cell[16627, 415, 484, 9, 28, "Message",ExpressionUUID->"fff65f37-e4d6-4332-9f19-9d2b7910c407"],
+Cell[17114, 426, 417, 8, 28, "Message",ExpressionUUID->"f44a9441-3966-43c8-99aa-b6fba299b856"],
+Cell[17534, 436, 779, 13, 28, "Message",ExpressionUUID->"0e8b52c6-70fa-4566-b757-eaf3b9511426"],
+Cell[18316, 451, 482, 9, 28, "Message",ExpressionUUID->"1b0cfcbb-45c9-4ebf-a739-994737bd0640"],
+Cell[18801, 462, 770, 13, 28, "Message",ExpressionUUID->"3f58d5ce-54b1-49ec-8cda-a5881faeb0bc"],
+Cell[19574, 477, 482, 9, 28, "Message",ExpressionUUID->"76ab65e1-f95c-42d0-8e9b-955fcd64482b"],
+Cell[20059, 488, 484, 9, 28, "Message",ExpressionUUID->"bcd11cce-84d8-41f5-8d77-260afed36e12"],
+Cell[20546, 499, 417, 8, 28, "Message",ExpressionUUID->"1fb0c122-6d02-4d76-9194-6124dc373365"],
+Cell[20966, 509, 779, 13, 28, "Message",ExpressionUUID->"03b08f99-fd0a-49d2-acc7-61eacaaa6847"],
+Cell[21748, 524, 482, 9, 28, "Message",ExpressionUUID->"f34da0aa-3095-4ade-85d7-396e65d06367"],
+Cell[22233, 535, 770, 13, 28, "Message",ExpressionUUID->"93c364ce-b5e9-4a08-8079-2d22205bb97c"],
+Cell[23006, 550, 482, 9, 28, "Message",ExpressionUUID->"9eb1a1f9-60d3-4779-ac61-4bb2d98508cd"],
+Cell[23491, 561, 482, 9, 28, "Message",ExpressionUUID->"cc21eff1-d608-49cb-b7b3-d6fa2d7b962d"],
+Cell[23976, 572, 416, 8, 28, "Message",ExpressionUUID->"40fe89eb-f5af-4bf2-b36a-592f30e6fc29"],
+Cell[24395, 582, 779, 13, 28, "Message",ExpressionUUID->"dee82ec7-5b9e-435d-af17-c6b978dc0f4f"],
+Cell[25177, 597, 484, 9, 28, "Message",ExpressionUUID->"d651254b-69b8-4102-a425-9ca661c41f66"],
+Cell[25664, 608, 772, 13, 28, "Message",ExpressionUUID->"53d35155-4a6a-4205-ba9e-dd9953738f8c"],
+Cell[26439, 623, 482, 9, 28, "Message",ExpressionUUID->"afd0f172-7901-47e6-b5c6-b264b80a237e"],
+Cell[26924, 634, 482, 9, 28, "Message",ExpressionUUID->"f765c520-a46e-413e-b6cb-0d0af138fd50"],
+Cell[27409, 645, 416, 8, 28, "Message",ExpressionUUID->"9746c822-8dd6-4cb4-a7b7-91aeae8204ad"],
+Cell[27828, 655, 779, 13, 28, "Message",ExpressionUUID->"f6014638-0a99-4a0e-8c3f-c3a0aeb558a6"],
+Cell[28610, 670, 482, 9, 28, "Message",ExpressionUUID->"3771f5eb-250e-4c5c-8f1b-f012c89f06e0"],
+Cell[29095, 681, 770, 13, 28, "Message",ExpressionUUID->"b5b335e2-eebc-4c85-b1c7-5f43c0d037f6"],
+Cell[29868, 696, 482, 9, 28, "Message",ExpressionUUID->"0909e7ca-3847-4352-8c0d-25970a72e52c"],
+Cell[30353, 707, 482, 9, 28, "Message",ExpressionUUID->"40811761-8ede-4cfc-acef-2fb2400f3299"],
+Cell[30838, 718, 416, 8, 28, "Message",ExpressionUUID->"ea196b58-51c6-4897-bede-eab82e85b853"],
+Cell[31257, 728, 779, 13, 28, "Message",ExpressionUUID->"1b438633-4ece-41f9-9475-538d99409d3b"],
+Cell[32039, 743, 482, 9, 28, "Message",ExpressionUUID->"5ebf0861-c642-4be3-9395-19550dff1ff0"],
+Cell[32524, 754, 770, 13, 28, "Message",ExpressionUUID->"8badf833-9756-4823-95ca-7121a8d7d4c9"],
+Cell[33297, 769, 484, 9, 28, "Message",ExpressionUUID->"c9cec03f-af18-4f17-8919-953bf0a35652"],
+Cell[33784, 780, 481, 9, 28, "Message",ExpressionUUID->"8842d22c-52cd-49e3-9954-d1f935794a9f"],
+Cell[34268, 791, 415, 8, 28, "Message",ExpressionUUID->"51e2dcfc-1ce2-49e4-afd8-769a30c4cec8"],
+Cell[34686, 801, 779, 13, 28, "Message",ExpressionUUID->"8adc2685-a712-40a9-be26-1099c4f87f0d"],
+Cell[35468, 816, 481, 9, 28, "Message",ExpressionUUID->"b752a02b-e06c-4dcd-97cd-65cb4b9b3a7f"],
+Cell[35952, 827, 770, 13, 28, "Message",ExpressionUUID->"022eb77a-6536-48e0-a550-0acd6170e494"],
+Cell[36725, 842, 482, 9, 28, "Message",ExpressionUUID->"0ecc8787-b4dd-4d81-baa0-f6d1b18574a0"],
+Cell[37210, 853, 482, 9, 28, "Message",ExpressionUUID->"43e377a3-9cc3-48da-932b-e2773a539cca"],
+Cell[37695, 864, 417, 8, 28, "Message",ExpressionUUID->"894acb22-8deb-403c-a56e-c1b889c0b47a"],
+Cell[38115, 874, 781, 13, 28, "Message",ExpressionUUID->"011d5ad9-3088-4617-8852-491f36b1f21f"],
+Cell[38899, 889, 482, 9, 28, "Message",ExpressionUUID->"da93eec7-f4c9-4e18-b61c-c961b66a9582"],
+Cell[39384, 900, 482, 9, 28, "Message",ExpressionUUID->"9442339f-bfa1-4d3e-b0f2-4abdad8ddb22"],
+Cell[39869, 911, 482, 9, 28, "Message",ExpressionUUID->"73bc73b4-13ce-485a-882c-a02a928d64d7"],
+Cell[40354, 922, 417, 8, 28, "Message",ExpressionUUID->"29cf4f6f-1d34-4e55-9cec-4f3cfe598aec"],
+Cell[40774, 932, 481, 9, 28, "Message",ExpressionUUID->"9b8dcd71-4ecd-4157-a4e3-9555f4a82ba2"],
+Cell[41258, 943, 481, 9, 28, "Message",ExpressionUUID->"baff42de-7350-4064-8a7c-1efac878d06e"],
+Cell[41742, 954, 482, 9, 28, "Message",ExpressionUUID->"f448b240-ed0b-42c2-9b9d-b3f03fa70982"],
+Cell[42227, 965, 417, 8, 28, "Message",ExpressionUUID->"e247286c-bc2a-4294-b047-f6a1b0b7facb"],
+Cell[42647, 975, 482, 9, 28, "Message",ExpressionUUID->"851cf913-3392-43b2-acbc-90eee18d83de"],
+Cell[43132, 986, 482, 9, 28, "Message",ExpressionUUID->"195c8729-27f9-4db9-8865-9678a833138e"],
+Cell[43617, 997, 484, 9, 28, "Message",ExpressionUUID->"1c5b3486-64b4-4748-ab32-b74dbce6ddf2"],
+Cell[44104, 1008, 417, 8, 28, "Message",ExpressionUUID->"b0c1d399-7d61-4528-b677-b8bb5f2f5cc0"],
+Cell[44524, 1018, 482, 9, 28, "Message",ExpressionUUID->"7963934e-8d4d-4d53-b220-4e1156dacf60"],
+Cell[45009, 1029, 482, 9, 28, "Message",ExpressionUUID->"b2c2ab77-dbaa-4a00-8ad6-7b82d811215d"],
+Cell[45494, 1040, 484, 9, 28, "Message",ExpressionUUID->"5b0815ab-0c8e-41bd-ac53-d182ac78f5f6"],
+Cell[45981, 1051, 417, 8, 28, "Message",ExpressionUUID->"85c86d43-0340-4379-ade9-f5732605f7b3"],
+Cell[46401, 1061, 482, 9, 28, "Message",ExpressionUUID->"a0c4f5ab-b644-4bdd-9635-f61264fd8037"],
+Cell[46886, 1072, 482, 9, 28, "Message",ExpressionUUID->"ef30562f-3237-48bf-b164-4f9e6572531e"],
+Cell[47371, 1083, 482, 9, 28, "Message",ExpressionUUID->"315a6c0b-b1a3-463a-84e2-3f23853d01c3"],
+Cell[47856, 1094, 416, 8, 28, "Message",ExpressionUUID->"47db14b9-5d5b-4c68-b3c7-a650d8755e05"],
+Cell[48275, 1104, 484, 9, 28, "Message",ExpressionUUID->"bf93b040-6f7a-40b2-be04-60b84766aa53"],
+Cell[48762, 1115, 482, 9, 28, "Message",ExpressionUUID->"b6234883-151a-4d1d-a837-b49716695213"],
+Cell[49247, 1126, 484, 9, 28, "Message",ExpressionUUID->"c3b3809b-e6ef-4b14-8a09-4ae033c01eab"],
+Cell[49734, 1137, 417, 8, 28, "Message",ExpressionUUID->"37bde281-326d-469e-9a3d-18582a3ddabd"],
+Cell[50154, 1147, 484, 9, 28, "Message",ExpressionUUID->"7cf6df58-e6c8-4791-9137-f149b2d101cb"],
+Cell[50641, 1158, 484, 9, 28, "Message",ExpressionUUID->"dcfce220-b0c3-4c95-af3f-872aec67441f"],
+Cell[51128, 1169, 480, 9, 28, "Message",ExpressionUUID->"abb34496-00b0-4f92-a16e-24d9a4294a59"],
+Cell[51611, 1180, 417, 8, 28, "Message",ExpressionUUID->"523a298b-406a-4e34-815f-4d9116975874"],
+Cell[52031, 1190, 482, 9, 28, "Message",ExpressionUUID->"043b40b7-20f6-44c7-8fe3-63822b697a14"],
+Cell[52516, 1201, 482, 9, 28, "Message",ExpressionUUID->"b917e793-8bcd-44b4-aba0-3b25d533a29e"],
+Cell[53001, 1212, 482, 9, 28, "Message",ExpressionUUID->"2adcce0f-5cd0-44d3-b764-a83678403e22"],
+Cell[53486, 1223, 417, 8, 28, "Message",ExpressionUUID->"0d606906-1109-4766-94a2-30b0f0e4228f"]
+}, Open  ]]
+}
+]
+*)
+

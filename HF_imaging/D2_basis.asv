@@ -1,0 +1,31 @@
+function basis = D2_basis(name)
+
+c = constants();
+c.j_CsD2 = 3/2;
+c.j_NaD2 = 3/2;
+c.i_CsD2 = 7/2;
+c.i_NaD2 = 3/2;
+
+c.zeta_hf_CsD2 = c.h*50.275e6;
+c.B_hf_CsD2 = -c.h*0.53e6;
+
+if nargin<1
+    name = 'CsD2';
+end
+
+i_name = ['i_' name];
+j_name = ['j_' name];
+
+basis.qnums = build_basis({i_name,j_name},{c.(i_name),c.(j_name)},[1 1]);
+basis.ops = build_operators(basis.qnums);
+
+% hyperfine
+Ham_HF = c.(['zeta_hf_' name])*op_dot(basis.ops,i_name,j_name)...
+    + c.(['B_hf_' name])*(3*op_dot(basis.ops,i_name,j_name)^2 + (3/2)*op_dot(basis.ops,i_name,j_name)...
+    - c.(j_name)*(c.(j_name)+1)*c.(i_name)*(c.(i_name) + 1))/(2*c.(i_name)*(2*c.(i_name)-1)*c.(j_name)*(2*c.(j_name)-1));
+basis.ops.(['H_' name '_hyperfine']) = Ham_HF;
+
+% zeeman
+% basis.ops.(['H0_' name '_zeeman']) = (c.(['gj_' name])*c.uB*basis.ops.([s_name '_z']) + c.(['gi_' name])*c.uB*basis.ops.([i_name '_z']));
+
+end

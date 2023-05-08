@@ -13,7 +13,7 @@ Eoffs = const.Cs_D12_weighted/const.hartree;
 
 Nx = 501;
 xrange = [5 1e2];
-
+Erange = [-0.02 -0.0017];
 
 %% basis
 basis.qnums = build_basis({'J','S','Lambda'},{0:2,0:1,0:1},[0 0 0],'a');
@@ -72,7 +72,6 @@ Lambda = basis.qnums.Lambda;
 
 socpad = @(x) reshape(padarray(x(:,2),NRpad,0,'pre'),1,1,[]);
 
-
 SOC_b3P_A1S = load('lib/rosario_potentials/SOC_b3P_A1S_Full');
 xi1 = (((strcmp(terms(row),'b3P') & strcmp(terms(c),'A1S'))...
     | (strcmp(terms(c),'b3P') & strcmp(terms(row),'A1S')))...
@@ -109,7 +108,7 @@ W_thy = Wint - zeta1 - zeta2 - zeta3 - V0Pi + xi1/sqrt(2);
 W_thy = reshape(W_thy,Nstates^2,numel(R))';
 W =@(r) permute(reshape(interp1(R,W_thy,r),1,1,numel(r),Nstates,Nstates),[4 5 3 1 2]);
 
-r = adaptive_grid(W,const.m_nacs,xrange,Nx);
+r = adaptive_grid(W,const.m_nacs,Erange,xrange,Nx,1);
 W_thy = W(r) + Eoffs*eye(3);
 
 %%
@@ -188,7 +187,7 @@ iter = 0;
         [V_thy_new,W_thy_new] = eigenshuffle(W_perturbed);
         [~,ind_max] = max(abs(V_thy_new(:,:,ind_test)).^2,[],1);
         W_thy_new = W_thy_new(ind_max,:);
-        resid = (W_adiab_exp - W_thy_new).*weight;
+        resid = (W_adiab_exp - W_thy_new);%.*weight;
         ssr = 1e7*trapz(r,sum(resid.^2,1),2);
         
         if ~mod(iter,100)
@@ -250,7 +249,7 @@ iter = 0;
     end
 
 %Starting perturbation X
-data = load('data/deperturbation_210703_011507.mat');
+data = load('data/deperturbation_210706_150901.mat');
 X = reshape(data.X,4,[]);
 X_chn = data.X_chn;
 
@@ -277,9 +276,9 @@ ub = cat(2,ub,ones(1,6)*inf);
 
 %Optimize perturbation to match experimental potential
 % ssrfun(X(:)');
-X = fminsearchbnd(@ssrfun,X(:)',lb(:)',ub(:)')
+X = fminsearchbnd(@ssrfun,X(:)',lb(:)',ub(:)');
 
-% save(['data/deperturbation_' datestr(now,'YYmmDD_HHMMSS') '.mat'],'X','X_chn','Wpert')
+save(['data/deperturbation_' datestr(now,'YYmmDD_HHMMSS') '.mat'],'X','X_chn','Wpert')
 
 %%
 

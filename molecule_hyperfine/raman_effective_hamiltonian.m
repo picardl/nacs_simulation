@@ -37,7 +37,7 @@ if any(file_ind) && ~(recompute>0)
 end
 
 %% load data
-f = feshbach(B,basis,recompute);
+f = feshbach(B,basis,1);
 c = c3Sigma(B,basis,recompute,Jmax,mtot,f_vib);
 X = X1Sigma(B,basis,recompute);
 
@@ -56,6 +56,7 @@ qnums_ignore = {'S','Sigma','Lambda'};
 f_ignore = ismember(f.qnums.Properties.VariableNames,qnums_ignore);
 c_ignore = ismember(c.qnums.Properties.VariableNames,qnums_ignore);
 X_ignore = ismember(X.qnums.Properties.VariableNames,qnums_ignore);
+
 
 %% transition dipole moments, angular momentum part
 p = -1:1; % spherical index
@@ -140,9 +141,11 @@ out.H_up = H_up;
 out.H_dn = H_dn;
 out.B = B;
 
-fn = ['../data/raman_' [strrep(num2str(B*1e4),'.','p') 'G'] '_' basis '_' datestr(now,'YYmmDD_HHMMSS') '.mat'];
-% fn = ['../data/raman_' datestr(now,'YYmmDD_HHMMSS') '.mat'];
-save(fn,'out');
-disp(fn);
+if 0
+    fn = ['../data/raman_' [strrep(num2str(B*1e4),'.','p') 'G'] '_' basis '_' datestr(now,'YYmmDD_HHMMSS') '.mat'];
+    % fn = ['../data/raman_' datestr(now,'YYmmDD_HHMMSS') '.mat'];
+    save(fn,'out');
+    disp(fn);
+end
 
 end

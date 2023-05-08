@@ -2,15 +2,17 @@ function out = cbB_complex_depert(Erange,depdata_file)
 
 const = constants();
 
-% Coupled-channel calculation in ground state of NaCs. Default configured to
-% find feshbach state and lowest 2 trap states.
-
 if nargin<1
-    Erange = [-0.03 -0.002];
+    Erange = [-0.03 -0.00177];
+%     Erange = [285000 350000]*1e9*const.h/const.hartree;
 end
 if nargin<2
 %     depdata_file = '../data/deperturbation_210705_150222.mat';
-    depdata_file = '../data/deperturbation_210708_101418.mat';
+%     depdata_file = '../data/deperturbation_210706_150901.mat';
+%     depdata_file = '../data/deperturbation_220726_205206.mat';
+%     depdata_file = '../data/deperturbation_210708_101418.mat';
+%     depdata_file = '../data/deperturbation_230202_120507.mat';
+    depdata_file = '../data/deperturbation_230212_001253.mat';
 end
 
 %% simulation parameters
@@ -18,7 +20,7 @@ Nx = 4e3;
 rmin = 4.5;
 rmax = 1e2;
 % Erange = [-0.0088 -0.002];
-% Erange = [325200 325300]*1e9*const.h/const.hartree;
+% Erange = [285000 350000]*1e9*const.h/const.hartree;
 
 %% basis
 basis.qnums = build_basis({'J','S','Lambda'},{0:2,0:1,0:1},[0 0 0],'a');
@@ -156,6 +158,7 @@ out.W = W(reshape(r,1,1,[]));
 out.qnums = basis.qnums;
 out.ops = basis.ops;
 out.psi = psi;
-save(['../data/cbB_' datestr(now,'YYmmDD_HHMMSS') '.mat'],'out')
+fn = ['../data/cbB_' datestr(now,'YYmmDD_HHMMSS') '.mat']
+save(fn,'out')
 
 end

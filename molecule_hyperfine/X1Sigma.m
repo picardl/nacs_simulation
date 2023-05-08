@@ -1,6 +1,5 @@
-function out = X1Sigma(B,save_basis,recompute,Nmax,mtot)
+function out = X1Sigma(B,save_basis,recompute,Nmax,mtot,const,E_td,gamma, theta)
 
-const = constants();
 
 if nargin<1
     B = 853e-4;
@@ -17,12 +16,25 @@ end
 if nargin<5
     mtot = [2 3 4 5];
 end
+if nargin < 6
+   const = constants(); 
+end
+if nargin < 7
+   E_td = 0; 
+end
+if nargin < 8
+   gamma = 0; 
+end
+if nargin < 9
+   theta = deg2rad(90); 
+end
+
 
 % vibrational solver parameters
-Nx = 1e3;
+Nx = 500;
 rmin = 4; % abohr
 rmax = 50; % abohr
-Erange = -0.0224 + [-1 1]*1e-4; % energy range to search, atomic units
+Erange = -0.0224 + [-0.5 1]*1e-4; % energy range to search, atomic units
 % Erange = [-0.0225 0];
 
 %% check for file at this B field with this basis
@@ -73,6 +85,9 @@ basis.F2C.ops.EQ2 = diag(EQ(basis.F2C.qnums.F2,basis.F2C.qnums.N,basis.F2C.qnums
 basis.UC.ops.EQ1 = basis.change.UC_F1C * basis.F1C.ops.EQ1 * basis.change.UC_F1C';
 basis.UC.ops.EQ2 = basis.change.UC_F1C * basis.F2C.ops.EQ2 * basis.change.UC_F1C';
 
+TE = vec2sphTen([sin(theta)*cos(gamma),sin(theta)*1i*sin(gamma),cos(theta)],[sin(theta)*cos(gamma),-sin(theta)*1i*sin(gamma),cos(theta)]);
+basis.UC.ops.LS = operator_matrix(@mol_ls,basis.UC.qnums,{'N','S','m_N'},const.X1Sigma.a_perp,const.X1Sigma.a_par,TE);
+
 %% build hamiltonian
 basis.UC.ops.H0 = const.X1Sigma.Bv * basis.UC.ops.N_sq + ...
     const.X1Sigma.c4 * basis.UC.ops.i_Nadoti_Cs + ...
@@ -84,7 +99,7 @@ basis.UC.ops.Hz0 = -const.X1Sigma.gr*const.uN*( basis.UC.ops.N_z ) + ...
     -const.X1Sigma.g1*const.uN*(1-const.X1Sigma.sigma1)*( basis.UC.ops.i_Na_z ) + ...
     -const.X1Sigma.g2*const.uN*(1-const.X1Sigma.sigma2)*( basis.UC.ops.i_Cs_z );
 
-basis.UC.ops.H = basis.UC.ops.H0 + basis.UC.ops.Hz0.*reshape(B,1,1,[]);
+basis.UC.ops.H = basis.UC.ops.H0 + basis.UC.ops.Hz0.*reshape(B,1,1,[]) + E_td*basis.UC.ops.LS;
 
 %% transformation to hund's case a
 basis.aUC.qnums = build_basis({'eta','i_Na','i_Cs','J','S','Lambda'},{3,const.i_Na,const.i_Cs,0:Nmax,0,0},[0 1 1 2 0 0],'a');
@@ -98,6 +113,7 @@ end
 
 [basis.aIC,basis.aUC,basis.change.a_aIC] = couple_angmom(basis.aUC,'i_Na','i_Cs','I');
 [basis.aFC,basis.aIC,basis.change.aIC_aFC] = couple_angmom(basis.aIC,'J','I','F');
+
 
 %% truncate basis
 basis = rmfield(basis,{'IC','FC','F1C','F2C','b'});
@@ -132,8 +148,8 @@ out.psi = psi_rot;
 out.qnums = basis.(save_basis).qnums;
 out.ops = basis.(save_basis).ops;
 
-fn = ['../data/X_' [strrep(num2str(B*1e4),'.','p') 'G'] '_' save_basis '_' datestr(now,'YYmmDD_HHMMSS') '.mat'];
-save(fn,'out')
-disp(fn)
+% fn = ['../data/X_' [strrep(num2str(B*1e4),'.','p') 'G'] '_' save_basis '_' datestr(now,'YYmmDD_HHMMSS') '.mat'];
+% save(fn,'out')
+% disp(fn)
 
 end

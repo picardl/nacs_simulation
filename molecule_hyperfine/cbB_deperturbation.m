@@ -8,7 +8,7 @@ colors = {'r','b','k'};
 
 Eoffs = const.h*((4*351725718500813 + 2*335116048808294)/6)/const.hartree;
 
-cbB_file = 'data/cbB_210701_235922.mat';
+cbB_file = 'data/cbB_220726_195840.mat';
 
 
 cbB_data = load(cbB_file);
@@ -104,7 +104,7 @@ iter = 0;
 % guess(:,1) = 0.2*(r_pert/6.2).^(-8).*exp(-(r_pert/6.2).^8);
 % guess = guess + 3e-3*randn(N_pert,6);
 
-data = load('data/deperturbation_210703_123031.mat');
+data = load('data/deperturbation_210706_150901.mat');
 X = data.X;
 X = reshape(X,[],6);
 

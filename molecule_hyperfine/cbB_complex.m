@@ -6,10 +6,10 @@ const = constants();
 % Coupled-channel calculation of excited cBb complex of NaCs
 
 %% simulation parameters
-Nx = 501;
+Nx = 1001;
 rmin = 5;
 rmax = 1e2;
-Erange = [-0.027 -0.002];
+Erange = [-0.01 -0.003];
 
 %% basis
 basis.qnums = build_basis({'J','S','Lambda'},{0:2,0:1,0:1},[0 0 0],'a');
@@ -101,24 +101,33 @@ zeta3 = (((strcmp(terms(r),'c3S') & strcmp(terms(c),'B1P')) ...
 
 Wint = Wint - zeta1 - zeta2 - zeta3 - V0Pi + xi1/sqrt(2);
 
+[V,D] = eigenshuffle(Wint);
+figure(1);
+clf;
+hold on;
+% plot(R*const.abohr*1e10,diag_nd(Wint),'--');
+plot(R*const.abohr*1e10,D);
+hold off;
+set(gca,'xscale','log')
+
 %% total hamiltonian
 Wint = herm(Wint);
 Wint = reshape(Wint,Nstates^2,numel(R))';
 W =@(r) permute(reshape(interp1(R,Wint,r),1,1,numel(r),Nstates,Nstates),[4 5 3 1 2]);
 
 %% call the solver
-[E_out,nodes_out,psi,r] = cc_logderiv_adaptive_multi([rmin rmax],Nx,W,Erange,const.mu_nacs/const.me);
+% [E_out,nodes_out,psi,r] = cc_logderiv_adaptive_multi([rmin rmax],Nx,W,Erange,const.mu_nacs/const.me);
 
-%% change basis for output
-out.E = E_out;
-out.nodes = nodes_out;
-out.r = r;
-out.W = W(reshape(r,1,1,[]));
-out.qnums = basis.qnums;
-out.ops = basis.ops;
-out.psi = psi;
-fn = ['data/cbB_' datestr(now,'YYmmDD_HHMMSS') '.mat'];
-save(fn,'out')
-disp(fn);
+% %% change basis for output
+% out.E = E_out;
+% out.nodes = nodes_out;
+% out.r = r;
+% out.W = W(reshape(r,1,1,[]));
+% out.qnums = basis.qnums;
+% out.ops = basis.ops;
+% out.psi = psi;
+% fn = ['data/cbB_' datestr(now,'YYmmDD_HHMMSS') '.mat'];
+% save(fn,'out')
+% disp(fn);
 
 end

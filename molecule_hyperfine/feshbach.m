@@ -1,6 +1,8 @@
-function out = feshbach(B,save_basis,recompute)
+function out = feshbach(B,save_basis,recompute,const)
 
-const = constants();
+if ~exist('c','var')
+    const = constants();
+end
 
 if nargin<1
     B = 852.5e-4;
@@ -11,30 +13,45 @@ end
 
 % Coupled-channel calculation in ground state of NaCs. Default configured to
 % find feshbach state and lowest 2 trap states.
-
 if nargin<3
     recompute = 0;
 end
-
+if nargin < 4
+    const = constants();
+end
+if nargin < 5
+    N_tot = 0; % rotational quantum number
+end
 %% check for file at this B field with this basis
 files = dir('../data');
-file_ind = contains({files.name},['fb_' strrep(num2str(B*1e4),'.','p') 'G_' save_basis]);
-if any(file_ind) && ~(recompute>1)
-    disp('found FB file for this B field and basis')
-    fnames = {files(file_ind).name};
-    times = datenum(regexp(fnames,'\d{6}_\d{6}','match','once'),'YYmmDD_HHMMSS');
-    data = load(['../data/' fnames{times==max(times)}]);
-    out = data.out;
-    return 
+if N_tot > 0
+    file_ind = contains({files.name},['fb_','N',num2str(N_tot),'_', strrep(num2str(B*1e4),'.','p') 'G_' save_basis]);
+    if any(file_ind) && ~(recompute>1)
+        disp('found FB file for this B field and basis')
+        fnames = {files(file_ind).name};
+        times = datenum(regexp(fnames,'\d{6}_\d{6}','match','once'),'YYmmDD_HHMMSS');
+        data = load(['../data/' fnames{times==max(times)}]);
+        out = data.out;
+        return 
+    end
+else
+    file_ind = contains({files.name},['fb_' strrep(num2str(B*1e4),'.','p') 'G_' save_basis]);
+    if any(file_ind) && ~(recompute>1)
+        disp('found FB file for this B field and basis')
+        fnames = {files(file_ind).name};
+        times = datenum(regexp(fnames,'\d{6}_\d{6}','match','once'),'YYmmDD_HHMMSS');
+        data = load(['../data/' fnames{times==max(times)}]);
+        out = data.out;
+        return 
+    end
 end
 
 %% simulation parameters
-Nx = 8000;
+Nx = 200000;
 rmin = 4.5;
 rmax = 10000;
-N_tot = 0; % rotational quantum number
 mtot = 4; % total angular momentum to truncate basis
-Erange_vs_threshold = [-4e6 1e6]*const.h/const.hartree;
+Erange_vs_threshold = [-300e6 2e6]*const.h/const.hartree;
 
 %% uncoupled basis
 Nmin = 0;
@@ -89,7 +106,7 @@ basis.SC.ops.Hrot0 = const.hbar^2*basis.SC.ops.N_sq./(2*const.mu_nacs*const.hart
 
 %% trap
 waist = 1064e-9; % meter
-Power = 10e-3; % watt
+Power = 25e-3;%10e-3; % watt
 I0 = 2*Power/(pi*waist^2); % W/m^2
 trap_depth = (const.apol_Cs*I0)/(2*const.eps0*const.c)/const.hartree;
 atrap = 2*((const.abohr)/waist).^2;
@@ -97,7 +114,7 @@ Vtrap =@(r) trap_depth*(1-exp(-atrap*r.^2));
 
 %% total hamiltonian
 W =@(r) herm(basis.SC.ops.H0 + NaCsXPES(r).*basis.SC.ops.Proj_singlet ...
-    + NaCsaPES(r).*basis.SC.ops.Proj_triplet + Vtrap(r).*basis.SC.ops.I);
+    + NaCsaPES(r).*basis.SC.ops.Proj_triplet + Vtrap(r).*basis.SC.ops.I + NaCsVd(r).*(basis.SC.ops.S_sq)) ;
 
 %% find lowest energy channel and set energy search range
 rtest = logspace(log10(rmin),log10(rmax),1e2);
@@ -118,11 +135,16 @@ out.r = r;
 out.qnums = basis.(save_basis).qnums;
 out.ops = basis.(save_basis).ops;
 out.psi = zeros(size(basis.(save_basis).qnums,1),numel(r),size(basis.SC.qnums,3));
+out.E_lowest_chan_threshold = E_lowest_chan_threshold*const.hartree;
 for i = 1:size(psi,3)
     out.psi(:,:,i) = (basis.change.(['SC_' save_basis])')*psi(:,:,i);
 end
 
-fn = ['../data/fb_' [strrep(num2str(B*1e4),'.','p') 'G'] '_' save_basis '_' datestr(now,'YYmmDD_HHMMSS') '.mat'];
-save(fn,'out')
+if N_tot > 0
+        fn = ['../data/fb_','N',num2str(N_tot),'_', [strrep(num2str(B*1e4),'.','p') 'G'] '_' save_basis '_' datestr(now,'YYmmDD_HHMMSS') '.mat'];
+else
+    fn = ['../data/fb_' [strrep(num2str(B*1e4),'.','p') 'G'] '_' save_basis '_' datestr(now,'YYmmDD_HHMMSS') '.mat'];
+end
+    save(fn,'out')
 disp(fn)
 end

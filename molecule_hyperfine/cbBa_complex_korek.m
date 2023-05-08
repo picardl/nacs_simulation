@@ -84,6 +84,8 @@ zeta3 = (((strcmp(terms(r),'c3S') & strcmp(terms(c),'B1P')) ...
     & ((Omega(r)==Omega(c)) & (abs(Omega(r))==1))) ...
     .* socpad(SOC_c3S_B1P);
 
+dm_c3S_a3S = load('../lib/rosario_potentials/DM_a3S_c3S_Full');
+
 Wint = Wint - zeta1 - zeta2 - zeta3 - V0Pi + xi1/sqrt(2) - Eoffs*eye(Nstates);
 
 %%
@@ -91,10 +93,20 @@ Wint = Wint - zeta1 - zeta2 - zeta3 - V0Pi + xi1/sqrt(2) - Eoffs*eye(Nstates);
 figure(1);
 clf;
 hold on;
-plot(R,diag_nd(Wint),'--');
-plot(R,D);
+plot(R*const.abohr*1e10,diag_nd(Wint),'--');
+plot(R*const.abohr*1e10,D);
 hold off;
 set(gca,'xscale','log')
+
+figure(3)
+clf
+semilogx(SOC_b3P_A1S(:,1)*const.abohr*1e10,SOC_b3P_A1S(:,2))
+hold on
+semilogx(SOC_b3P_b3P(:,1)*const.abohr*1e10,SOC_b3P_b3P(:,2))
+semilogx(SOC_b3P_B1P(:,1)*const.abohr*1e10,SOC_b3P_B1P(:,2))
+semilogx(SOC_b3P_c3S(:,1)*const.abohr*1e10,SOC_b3P_c3S(:,2))
+semilogx(SOC_c3S_B1P(:,1)*const.abohr*1e10,SOC_c3S_B1P(:,2))
+legend({'b3P-A1S','b3P-b3P','b3P-B1P','b3P-c3S','c3S-B1P'})
 
 %% total hamiltonian
 Wint = herm(Wint);

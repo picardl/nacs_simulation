@@ -1,21 +1,24 @@
-function plot_cbB_data
 
 const = constants();
 
 Eoffs = const.h*((4*351725718500813 + 2*335116048808294)/6)/const.hartree;
 
-% cbB_file = '../data/cbB_210701_235922.mat';
-cbB_file = '../data/cbB_210703_014725.mat';
+% cbB_file = '../data/cbB_210703_012348.mat';
+% cbB_file = '../data/cbB_210703_014725.mat';
+% cbB_file = '../data/cbB_210706_154204.mat';
 % cbB_file = '../data/cbB_210705_120344.mat';
 % cbB_file = '../data/cbB_210705_125650.mat';
 % cbB_file = '../data/cbB_210705_141528.mat';
 % cbB_file = '../data/cbB_210706_154204.mat';
 % cbB_file = '../data/cbB_210708_103752.mat';
-
-fb_file = '../data/fb_852G_aFC_210706_113524.mat';
+% cbB_file = '../data/cbB_210703_014725.mat'; %THE GOOD ONE
+cbB_file = '../data/cbB_230212_111435.mat';
+% cbB_file = '../data/cbB_230202_162252.mat';
+% fb_file = '../data/fb_860G_aFC_220623_121035.mat';%'../data/fb_852G_aFC_210706_113524.mat';
 X_file = '../data/X_vib_210706_163735.mat';
 a_file = '../data/a_210706_160129.mat';
-c_file = '../data/c_vib_210706_162602.mat';
+% c_file = '../data/c_vib_210706_162602.mat';
+emp_file = '../data/empirical_cbB_230204_205052.mat';
 
 cbB_data = load(cbB_file);
 
@@ -27,10 +30,10 @@ ops = cbB_data.out.ops;
 psi = cbB_data.out.psi;
 W = cbB_data.out.W;
 
-fb_data = load(fb_file);
-r_fb = fb_data.out.r;
-psi_fb = fb_data.out.psi(:,:,1);
-qnums_fb = fb_data.out.qnums;
+fb_data = feshbach(860e-4,'aFC',1,const);%load(fb_file);
+r_fb = fb_data.r;
+psi_fb = fb_data.psi(:,:,1);
+qnums_fb = fb_data.qnums;
 
 X_data = load(X_file);
 r_X = X_data.out.r;
@@ -40,11 +43,21 @@ a_data = load(a_file);
 r_a = a_data.out.r;
 psi_a = a_data.out.psi;
 
-c_data = load(c_file);
-nodes_c = c_data.out.nodes;
-E_c = c_data.out.E;
-r_c = c_data.out.r;
-psi_c = c_data.out.psi;
+emp_data = load(emp_file);
+nodes_c = emp_data.out_exp.nodes_c;
+E_c = emp_data.out_exp.E_c;
+r_c = emp_data.out_exp.r;
+psi_c = emp_data.out_exp.psi_c;
+nodes_B = emp_data.out_exp.nodes_B;
+E_B = emp_data.out_exp.E_B;
+r_B = emp_data.out_exp.r;
+psi_B = emp_data.out_exp.psi_B;
+nodes_b = emp_data.out_exp.nodes_b;
+E_b = emp_data.out_exp.E_b;
+r_b = emp_data.out_exp.r;
+psi_b = emp_data.out_exp.psi_b;
+
+E_emp = {E_c,E_B,E_b};
 
 [V,W_adiab] = eigenshuffle(W);
 Rref = 9;
@@ -169,13 +182,13 @@ clf;
 hold on;
 box on;
 Wplot = plot(r,(W_adiab+Eoffs)*yscale-yoffs);
-for i = 1:3
-    psi_plot = yscale*(psi_chn{i}*peak2peak(E)/numel(nodes)/4 + reshape(E_chn{i},1,1,[])) - yoffs;
-    for j = 1:size(psi_chn{i},3)
-        pp = plot(r,psi_plot(:,:,j));
-        arrayfun(@(p,w) set(p,'color',get(w,'color')),pp,Wplot)
-    end
-end
+% for i = 1:3
+%     psi_plot = yscale*(psi_chn{i}*peak2peak(E)/numel(nodes)/4 + reshape(E_chn{i},1,1,[])) - yoffs;
+%     for j = 1:size(psi_chn{i},3)
+%         pp = plot(r,psi_plot(:,:,j));
+%         arrayfun(@(p,w) set(p,'color',get(w,'color')),pp,Wplot)
+%     end
+% end
 hold off;
 ylim([160 335]-yoffs)
 set(gca,'xscale','log')
@@ -233,13 +246,122 @@ figure(6);
 clf;
 hold on;
 box on;
-for i = 1
+for i = 1:3
+    subplot(3,1,i)
     stem((E_chn{i})*yscale,0:numel(E_chn{i})-1)
+    hold on
+    stem((E_emp{i})*yscale,0:numel(E_emp{i})-1)
+    ylabel('v')
+    xlabel('E-E_0 (THz)')
+    legend('ab initio','empirical')
+    xlim([290,335])
 end
-stem((E_c)*yscale,0:numel(E_c)-1)
 hold off;
-ylabel('v')
-xlabel('E-E_0 (THz)')
-legend('ab initio','empirical')
 
-end
+
+%% plot fig 7
+lc = lines(3);
+
+rd = ceil(p - max(p)+0.001);
+sp = cumsum(rd,2);
+b3p = find(rd(3,:) ==1);
+c3s = find(rd(1,:) ==1);
+b1p = find(rd(2,:) ==1);
+
+%manual tweaks
+swap_ind = [];%[34,35,37:39,41:61];%[30,32,33,35,36,38,39]
+swap_ind_bc = [11,13];%[12];%[34,35,37:39,41:61];%[30,32,33,35,36,38,39]
+b3p_sup = c3s(swap_ind);
+c3s(swap_ind) = [];
+c3s_sup = b1p(swap_ind_bc);
+b1p(swap_ind_bc) = [];
+
+b3pE = E(b3p);
+c3sE = E(c3s);
+b1pE = E(b1p);
+b3pv = sp(3,b3p);
+c3sv = sp(1,c3s);
+b1pv = sp(2,b1p);
+
+b3pE_sup = E(b3p_sup);
+c3sE_sup = E(c3s_sup);
+
+% purity = 3*var(p);
+% padd = p + repmat([-1;0;1],1,138);
+
+plotSettings = struct();
+plotSettings.LineStyle = '-';
+
+%%
+xrange = [0.997*min(c3sE),max(b3pE)]*yscale;
+figure(7)
+clf;
+subaxis(4,1,1)
+scatter(b3pE*yscale,p(1,b3p),'MarkerFaceColor',min(lc(1,:) + 0.4,1))
+hold on
+scatter(b3pE*yscale,p(2,b3p),'MarkerFaceColor',min(lc(2,:) + 0.4,1))
+scatter(b3pE*yscale,p(3,b3p),'MarkerFaceColor',min(lc(3,:) + 0.4,1))
+
+scatter(b3pE_sup*yscale,p(1,b3p_sup),'MarkerEdgeColor',lc(1,:))
+scatter(b3pE_sup*yscale,p(2,b3p_sup),'MarkerEdgeColor',lc(2,:))
+scatter(b3pE_sup*yscale,p(3,b3p_sup),'MarkerEdgeColor',lc(3,:))
+xlim(xrange)
+legend('c^3\Sigma_1','B^1\Pi_1','b^3\Pi_1','location','w')
+ylabel('State admixture')
+ax = gca;
+ax.XTick = [];
+ax.FontSize = 10;
+% xlabel('Energy [THz]')
+title('b^3\Pi_1')
+xline(334.369,'color','red');
+
+subaxis(4,1,3)
+scatter(c3sE*yscale,p(1,c3s),'MarkerFaceColor',min(lc(1,:) + 0.4,1))
+hold on
+scatter(c3sE*yscale,p(2,c3s),'MarkerFaceColor',min(lc(2,:) + 0.4,1))
+scatter(c3sE*yscale,p(3,c3s),'MarkerFaceColor',min(lc(3,:) + 0.4,1))
+
+scatter(c3sE_sup*yscale,p(1,c3s_sup),'MarkerEdgeColor',lc(1,:))
+scatter(c3sE_sup*yscale,p(2,c3s_sup),'MarkerEdgeColor',lc(2,:))
+scatter(c3sE_sup*yscale,p(3,c3s_sup),'MarkerEdgeColor',lc(3,:))
+xlim(xrange)
+x1 = xline(320.002,'-','Label','v=22');
+x1.LabelVerticalAlignment = 'middle';
+x1.LabelHorizontalAlignment = 'center';
+x2 = xline(325.121,'-.','Label','v=26');
+x2.LabelVerticalAlignment = 'middle';
+x2.LabelHorizontalAlignment = 'center';
+legend('c^3\Sigma_1','B^1\Pi_1','b^3\Pi_1','location','w')
+ylabel('State admixture')
+ax = gca;
+ax.XTick = [];
+ax.FontSize = 10;
+title('c^3\Sigma_1')
+xline(334.369,'color','red');
+
+subaxis(4,1,2)
+scatter(b1pE*yscale,p(1,b1p),'MarkerFaceColor',min(lc(1,:) + 0.4,1))
+hold on
+scatter(b1pE*yscale,p(2,b1p),'MarkerFaceColor',min(lc(2,:) + 0.4,1))
+scatter(b1pE*yscale,p(3,b1p),'MarkerFaceColor',min(lc(3,:) + 0.4,1))
+xlim(xrange)
+legend('c^3\Sigma_1','B^1\Pi_1','b^3\Pi_1','location','w')
+ylabel('State admixture')
+ax = gca;
+ax.XTick = [];
+title('B^1\Pi_1')
+ax.FontSize = 10;
+xline(334.369,'color','red');
+
+linewidths = [39,27,70,12,10,12,27,17,42,120];
+linewidths_err = [13,1,10,3,3,8,5,3,9,30];
+linewidths_E = [288.699,306.497,309.260,310.625,311.986,313.341,314.692,320.002,323.866,325.121];
+subaxis(4,1,4)
+errorbar(linewidths_E,linewidths,linewidths_err,'Marker','o','MarkerFaceColor',min(lc(1,:) + 0.4,1),'LineStyle','none');
+xlim(xrange);
+ax = gca;
+ylabel('Linewidth [MHz]')
+x1 = xline(320.010,'-');
+x2 = xline(325.129,'-.');
+xlabel('Energy [THz]')
+ax.FontSize = 10;

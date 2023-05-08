@@ -1,4 +1,5 @@
 function V = NaCsbbPES(r)
+%potential for NaCs b3Pi_1
 
 wavenum2hartree = 4.55634011e-6;
 bohr2angstrom = 0.529177210903;

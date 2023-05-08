@@ -8,9 +8,9 @@ end
 
 basis = 'aFC';
 
-recompute = 2;
+recompute = 1;
 
-raman_data = raman_effective_hamiltonian(B,basis,recompute);
+raman_data = raman_effective_hamiltonian(B,basis,recompute,3,[3 4 5],320010);
 
 %% initial state
 psi_init = zeros(size(raman_data.f.E));
@@ -19,13 +19,13 @@ psi_init(1) = 1;
 %% laser stuff
 power = 100e-3;
 waist = 50e-6;
-pol = sphten([1 0 0]);
+pol = sphten([1 -1i 0]/sqrt(2));
 t = 10e-3;
 
 Efield = sqrt(4*const.eta0*power/(pi*waist^2));
 
 Ndet = 1e3;
-freq_offs = 325178e9;
+freq_offs = 320010e9;
 detuning = linspace(0,20e9,Ndet);
 
 %%

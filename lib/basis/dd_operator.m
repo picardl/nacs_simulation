@@ -5,7 +5,7 @@ function Vdd = dd_operator(ops,s1,s2)
 % Vdd = op_dot(ops,s1,s2) - 3*s1tot.*s2tot; % this seems hella wrong
 % Vdd = op_dot(ops,s1,s2) - 3*s1tot.*s2tot;
 
-Vdd = op_dot(ops,s1,s2) - 3*ops.([s1 '_zmol'])*ops.([s2 '_zmol']);
+Vdd = op_dot(ops,s1,s2) - 3*ops.([s1 '_z'])*ops.([s2 '_z']);
 % Vdd = op_dot(ops,s1,s2);
 
 end

@@ -1,6 +1,6 @@
 function x = adaptive_grid(W,m,Erange,xrange,Nx,radial_boo)
 
-if nargin<5
+if nargin<6
     radial_boo = 1;
 end
 

@@ -286,7 +286,7 @@ X = X(:)';
 Nterms = size(X,2);
 
 % ssrfun(X(:)');
-X = fminsearchbnd(@ssrfun,X(:)',lb(:)',ub(:)')
+X = fminsearchbnd(@ssrfun,X(:)',lb(:)',ub(:)');
 % 
 fn = ['../data/deperturbation_' datestr(now,'YYmmDD_HHMMSS') '.mat'];
 save(fn,'X','X_chn','Wpert')

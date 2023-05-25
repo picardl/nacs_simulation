@@ -2,42 +2,32 @@
 %load constants
 C = constants();
 
-auToCmV = 1.648773e-41;
+auToCmV = 1.648773e-41; %
 lambda = 1064e-9;
 k = 2*pi/lambda;
-w0 = lambda*1.17; %
-% ItoU_mol = ItoU_Cs*molPol/csPol;
+w0 = lambda*1.17; %Calibrated from axial to radial ratio
 
 ns = 0:1:20;
 
 T0 = 0; %Initial temp in Kelvin
 E0 = 3/2*C.kb*T0;
 
-% I = 2.5e10; %W / m^2. cooling depth
-% I = 0.44*2.5e10; %W / m^2. cooling depth
-
 csPol = 1163.4*auToCmV;
-% molPol = 939.8*auToCmV;%au
 
 mNaCs = C.m_nacs;
 mCs = C.m_cs;
 
-UCsCool = fRadToU(mCs,240e3/2,w0);
-UCs = fRadToU(mCs,194.2e3/2,w0);
+UCsCool = fRadToU(mCs,240e3/2,w0); %Cooling depth
+UCs = fRadToU(mCs,194.2e3/2,w0); %Calibration depth for molecule polarizability measurement
 Umol = fRadToU(mNaCs,171.7e3/2,w0);
 
 I = ItoU(UCs,csPol,1);
-IScat = I*1.834/1.5;
+IScat = I*1.834/1.5; %Intensity at 40 MHz, roughly 1.834 V ODT for scattering
 IHold = I/15;
 ICool = ItoU(UCsCool,csPol,1);
-testU = ItoU(I,csPol);
 
 molPol = csPol*(Umol/UCs);
-
-% % MHz/(W/m^2)
-%  
-% Umol = ItoU_mol*I;
-% UCs = ItoU_Cs*I;
+disp(['NaCs polarizability ',num2str(molPol/auToCmV),' au'])
 
 radFreq = sqrt(4*C.h.*Umol/(mNaCs*w0^2))/(2*pi);
 axFreq = sqrt(2*C.h.*Umol*lambda^2/(mNaCs*pi^2*w0^4))/(2*pi);
@@ -74,7 +64,7 @@ ylabel('nbar')
 
 xMean = [];
 for i = 1:length(ts)
-    xMean(end+1) = x2(20,radFreq,Ts(i),radFreq);
+    xMean(end+1) = x2(20,radFreq,Ts(i),mNaCs);
 end
 
 figure(1)

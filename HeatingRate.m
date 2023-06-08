@@ -95,7 +95,7 @@ function res = ItoU(x,pol,bInv) %Return trap depth in Hz for an intensity in W /
 end
 
 function res = freqsToWaist(fRad,fAx,lambda)
-    res = sqrt(2*fRad*lambda)/(2*fAx*pi);
+    res =  lambda*(fRad/fAx)/(pi*sqrt(2));
 end
 
 function res = fRadToU(m,fRad,w0) %Convert radial trap frequency to a trap depth in Hz

@@ -123,7 +123,7 @@ end
 psi_col = tensor([psi for i=1:num_molecules]...)
 tWaits = [1,50,350,500,1000]*1e-3
 cts = zeros(length(tWaits))
-NShots = 50
+NShots = 20
 NPhases = 30
 pf_shots = zeros(NShots,NPhases)
 @time begin
@@ -138,6 +138,8 @@ pf_shots = zeros(NShots,NPhases)
             plot(range(0,2*pi,30),pf_col)  =#
         end
         pf_avg = mean(pf_shots,dims = 1)
+        pf_se = std(pf_shots,dims = 1)/sqrt(NShots)
+        maxpt = maximum(pf_avg)
         cts[j] = maximum(pf_avg) - minimum(pf_avg)
 #=         xlabel("Ramsey phase")
         ylabel("N=0 popn")

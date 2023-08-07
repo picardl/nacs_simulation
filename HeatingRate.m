@@ -2,10 +2,13 @@
 %load constants
 C = constants();
 
+freqsToWaist(160e3,32e3,1064e-9)
+
 auToCmV = 1.648773e-41; %
 lambda = 1064e-9;
 k = 2*pi/lambda;
-w0 = lambda*1.17; %Calibrated from axial to radial ratio
+% w0 = lambda*1.17; %Calibrated from axial to radial ratio
+w0 = 1.248e-6;%+/-3e-9 From 20230420_105116 param heating
 
 ns = 0:1:20;
 
@@ -17,9 +20,12 @@ csPol = 1163.4*auToCmV;
 mNaCs = C.m_nacs;
 mCs = C.m_cs;
 
-UCsCool = fRadToU(mCs,240e3/2,w0); %Cooling depth
+% UCsCool = fRadToU(mCs,218e3/2,1.19e-6); %Cooling depth
+UCsCool = fRadToU(mCs,291e3/2,w0); %VODT of 3.4, pow2amp of 5.9982 from 20230509_192841 param heating
 UCs = fRadToU(mCs,194.2e3/2,w0); %Calibration depth for molecule polarizability measurement
 Umol = fRadToU(mNaCs,171.7e3/2,w0);
+
+UCsAx = fAxToU(mCs,28.2e3,lambda,1.1974e-06);
 
 I = ItoU(UCs,csPol,1);
 IScat = I*1.834/1.5; %Intensity at 40 MHz, roughly 1.834 V ODT for scattering
@@ -95,12 +101,17 @@ function res = ItoU(x,pol,bInv) %Return trap depth in Hz for an intensity in W /
 end
 
 function res = freqsToWaist(fRad,fAx,lambda)
-    res = sqrt(2*fRad*lambda)/(2*fAx*pi);
+    res = lambda*(fRad/fAx)/(pi*sqrt(2));
 end
 
 function res = fRadToU(m,fRad,w0) %Convert radial trap frequency to a trap depth in Hz
     C = constants();
     res = m.*(2*pi.*fRad).^2.*w0.^2/4/C.h; 
+end
+
+function res = fAxToU(m,fAx,lambda,w0) %Convert radial trap frequency to a trap depth in Hz
+    C = constants();
+    res = (2*pi*fAx)^2*m*pi^2*w0^4/(2*lambda^2)/C.h; 
 end
 
 function res = x2(nMax,trapFreq,T,m)

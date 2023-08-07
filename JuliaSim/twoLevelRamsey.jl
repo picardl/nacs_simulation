@@ -57,9 +57,11 @@ end
 
 N = 2
 b = NLevelBasis(N)
-Δ = 2*pi*(0e3); #Microwave detuning
+Δ = 2*pi*(500); #Microwave detuning
 tPi = 32.2e-6; #Microwave pi pulse time at zero detuning
 Ω = 2*pi*(1/(4*tPi))
+
+psi = nlevelstate(b,1)
 
 tspan = range(0,100e-6,10000)
 
@@ -78,8 +80,8 @@ genRot(Ωarg,ϕ) = Ωarg*(cos(ϕ)*σx + sin(ϕ)*σy)
 
 # SIMULATE SPIN ECHO FOR A SINGLE MOLECULE
 tsSpinEcho = tPi.*[1/2,1]
-tWaitsSpinEcho = [100,100]*1e-6
-phasesSpinEcho = [0,pi]
+tWaitsSpinEcho = [360,360]*1e-6
+phasesSpinEcho = [0,0]
 
 probePhases = range(0,2*pi,30)
 
@@ -88,12 +90,12 @@ figure(1)
 plot(probePhases,pf)
 xlabel("Ramsey phase")
 ylabel("N=0 popn")
-title("Single molecule spin Echo Ramsey")
+title("Single molecule spin Echo Ramsey") 
 
 # SIMULATE COLLECTIVE SPIN ECHO FOR 8 MOLECULES
-num_molecules = 8;
+#= num_molecules = 8;
 rabi_frequencies = range(0.995,1.005,8) #Fractional errors in pi time for each state
-dets = range(-500,500,8)
+dets = 500*(rand(8).-0.5).*2*pi;
 
 b_coll = tensor([b for i=1:num_molecules]...)
 Xs(i,rabRat) = embed(b_coll,i,Ω*σx*rabRat)
@@ -113,24 +115,175 @@ figure(2)
 plot(probePhases,pf_col)
 xlabel("Ramsey phase")
 ylabel("N=0 popn")
-title("Avg Spinecho Ramsey with 1% Ω err and +- 500 Hz Δ err")
+title("Avg Spinecho Ramsey with 1% Ω err and +- 500 Hz Δ err") =#
+
+#= # SIMULATE COLLECTIVE SPIN ECHO FOR 8 MOLECULES DETUNING ONLY
+num_molecules = 8;
+rabi_frequencies =ones(8) #Fractional errors in pi time for each state
+Δ = 0:50:5000
+
+b_coll = tensor([b for i=1:num_molecules]...)
+Xs(i,rabRat) = embed(b_coll,i,Ω*σx*rabRat)
+Ys(i,rabRat) = embed(b_coll,i,Ω*σy*rabRat)
+frees(i,Δ) = embed(b_coll,i,Δ*P2)
+P1s(i) = embed(b_coll,i,P1)
+P_col = sum(P1s.(1:num_molecules))/num_molecules
+
+X_col = sum(Xs.(1:num_molecules,rabi_frequencies))
+Y_col = sum(Ys.(1:num_molecules,rabi_frequencies))
+
+pf_col = zeros(length(Δ))
+
+for i = 1:length(Δ)
+    dets = Δ[i]*(range(-0.5,0.5,num_molecules)).*2*pi;
+    free_col = sum(frees.(1:num_molecules,dets))
+
+    psi_col = tensor([psi for i=1:num_molecules]...)
+    pf_col_loop = RamseyPhase(0,tPi,tsSpinEcho,tWaitsSpinEcho,phasesSpinEcho,X_col,Y_col,free_col,P_col,psi_col,1e6)
+    pf_col[i] = pf_col_loop[1]
+end
+figure(2)
+plot(Δ,pf_col)
+xlabel("Pk2Pk detuning")
+ylabel("Spin echo at π phase") =#
+
+# SIMULATE COLLECTIVE RAMSEY NO ECHO FOR 8 MOLECULES DETUNING ONLY
+num_molecules = 8;
+rabi_frequencies =ones(8) #Fractional errors in pi time for each state
+Δ = 0:10:1500
+
+b_coll = tensor([b for i=1:num_molecules]...)
+Xs(i,rabRat) = embed(b_coll,i,Ω*σx*rabRat)
+Ys(i,rabRat) = embed(b_coll,i,Ω*σy*rabRat)
+frees(i,Δ) = embed(b_coll,i,Δ*P2)
+P1s(i) = embed(b_coll,i,P1)
+P_col = sum(P1s.(1:num_molecules))/num_molecules
+
+X_col = sum(Xs.(1:num_molecules,rabi_frequencies))
+Y_col = sum(Ys.(1:num_molecules,rabi_frequencies))
+
+pf_col = zeros(length(Δ))
+
+for i = 1:length(Δ)
+    dets = Δ[i]*(range(-0.5,0.5,num_molecules)).*2*pi;
+    free_col = sum(frees.(1:num_molecules,dets))
+
+    psi_col = tensor([psi for i=1:num_molecules]...)
+    pf_col_loop = RamseyPhase(pi,tPi,tPi.*[1/2],[720e-6],[0],X_col,Y_col,free_col,P_col,psi_col,1e6)
+    pf_col[i] = pf_col_loop[1]
+end
+figure(2)
+plot(Δ,abs.(pf_col .- 0.5).*2)
+xlabel("Pk2Pk detuning")
+ylabel("Ramsey at π phase")
+title("Ramsey contrast with wait = 0.72ms")
+
+# SIMULATE COLLECTIVE RAMSEY NO ECHO FOR 8 MOLECULES DETUNING ONLY TIME SCAN
+num_molecules = 8;
+rabi_frequencies =ones(8) #Fractional errors in pi time for each state
+tWaits = range(0,5e-3,100)
+
+b_coll = tensor([b for i=1:num_molecules]...)
+Xs(i,rabRat) = embed(b_coll,i,Ω*σx*rabRat)
+Ys(i,rabRat) = embed(b_coll,i,Ω*σy*rabRat)
+frees(i,Δ) = embed(b_coll,i,Δ*P2)
+P1s(i) = embed(b_coll,i,P1)
+P_col = sum(P1s.(1:num_molecules))/num_molecules
+
+X_col = sum(Xs.(1:num_molecules,rabi_frequencies))
+Y_col = sum(Ys.(1:num_molecules,rabi_frequencies))
+dets = 832.2*(range(-0.5,0.5,num_molecules)).*2*pi;
+free_col = sum(frees.(1:num_molecules,dets))
+
+pf_col = zeros(length(tWaits))
+
+for i = 1:length(tWaits)
+    psi_col = tensor([psi for i=1:num_molecules]...)
+    pf_col_loop = RamseyPhase(pi,tPi,tPi.*[1/2],[tWaits[i]],[0],X_col,Y_col,free_col,P_col,psi_col,1e6)
+    pf_col[i] = pf_col_loop[1]
+end
+figure(3)
+plot(tWaits.*1e3,abs.(pf_col .- 0.5).*2)
+xlabel("Ramsey time [ms]")
+ylabel("Ramsey contrast at π phase")
 
 # SIMULATE COLLECTIVE XY8 AS A FUNCTION OF NGROUPS
-
-tsXY = tPi.*vcat([1/2],ones(80))
+#= maxGroups = 16;
+tsXY = tPi.*vcat([1/2],ones(maxGroups*8))
 tWaitsXY = ones(size(tsXY))*100*1e-6
-phasesXY = vcat([0],repeat([0,pi/2],40))
-phasesXX = vcat([0],repeat([0,0],40))
-
-XYcontr = zeros(10)
-
-for i = 1:10
+phasesXY = vcat([0],repeat([0,pi/2,0,pi/2,pi/2,0,pi/2,0],maxGroups))
+phasesXX = vcat([0],repeat([0,0],maxGroups*4))
+phasesXY16 = vcat([0],repeat([0,pi/2,0,pi/2,pi/2,0,pi/2,0,pi,3*pi/2,pi,3*pi/2,3*pi/2,pi,3*pi/2,pi],Int(maxGroups/2)))
+ =#
+#= XYcontr = zeros(maxGroups)
+XXcontr = zeros(maxGroups)
+for i = 1:maxGroups
     res = RamseyPhase([pi],tPi,tsXY[1:8*i+1],tWaitsXY[1:8*i+1],phasesXY[1:8*i+1],X_col,Y_col,free_col,P_col,psi_col,1e6)
     XYcontr[i] = res[end]
+    resXX = RamseyPhase([pi],tPi,tsXY[1:8*i+1],tWaitsXY[1:8*i+1],phasesXX[1:8*i+1],X_col,Y_col,free_col,P_col,psi_col,1e6)
+    XXcontr[i] = resXX[end]
+end
+
+XY16contr = zeros(Int(maxGroups/2))
+for i = 1:Int(maxGroups/2)
+    res = RamseyPhase([pi],tPi,tsXY[1:8*i*2+1],tWaitsXY[1:8*i*2+1],phasesXY16[1:8*i*2+1],X_col,Y_col,free_col,P_col,psi_col,1e6)
+    XY16contr[i] = res[end]
 end
 
 figure(3)
-plot(1:10,XYcontr)
-xlabel("N XY8 groups")
+plot(1:maxGroups,XXcontr,label = "X8")
+plot(1:maxGroups,XYcontr,label = "XY8")
+plot(2:2:maxGroups,XY16contr,label = "XY16")
+xlabel("N groups")
 ylabel("Ramsey contrast")
-title("Avg XY8 contrast with 1% Ω err and +- 500 Hz Δ err")
+title("Avg pulse sequence contrasts with 1% Ω err and +- 500 Hz Δ err")
+legend() =#
+
+# Try adding some noise on specification of phases
+#= phasesXYNoisy = vcat([0],repeat([0,pi/2,0,pi/2,pi/2,0,pi/2,0],maxGroups))
+phasesXYNoisy = phasesXYNoisy .+ pi/15*(rand(Int(length(phasesXYNoisy))) .- 0.5)
+phasesXYNoisy[1] = 0;
+print(phasesXYNoisy[1:10])
+
+XYNoisycontr = zeros(maxGroups)
+for i = 1:maxGroups
+    res = RamseyPhase([pi],tPi,tsXY[1:8*i+1],tWaitsXY[1:8*i+1],phasesXYNoisy[1:8*i+1],X_col,Y_col,free_col,P_col,psi_col,1e6)
+    XYNoisycontr[i] = res[end]
+end
+
+figure(5)
+plot(1:maxGroups,XYNoisycontr,label = "XY8 with ±π/30 phase noise")
+xlabel("N groups")
+ylabel("Ramsey contrast")
+title("Avg pulse sequence contrasts with 1% Ω err and +- 500 Hz Δ err")
+legend() =#
+
+# Try an imperfect rotation to Y
+#=phasesXYImperf = vcat([0],repeat([0,pi/2-pi/4,0,pi/2-pi/4,pi/2-pi/4,0,pi/2-pi/4,0],maxGroups))
+
+XYImperfcontr = zeros(maxGroups)
+for i = 1:maxGroups
+    res = RamseyPhase([pi],tPi,tsXY[1:8*i+1],tWaitsXY[1:8*i+1],phasesXYImperf[1:8*i+1],X_col,Y_col,free_col,P_col,psi_col,1e6)
+    XYImperfcontr[i] = res[end]
+end
+
+figure(6)
+plot(1:maxGroups,XYImperfcontr,label = "XY8 with Y axis off by π/4")
+xlabel("N groups")
+ylabel("Ramsey contrast")
+title("Avg pulse sequence contrasts with 1% Ω err and +- 500 Hz Δ err")
+legend()=#
+
+# Plot XY8 state evolution
+#= tsXY = tPi.*vcat([1/2],ones(80))
+tWaitsXY = ones(size(tsXY))*100*1e-6
+phasesXY = vcat([0],repeat([0,pi/2],40))
+tout, psi_t = DDSeq(tsXY,tWaitsXY,phasesXY,Ω*σx,Ω*σy,Δ*P2,psi,1e6)
+exp_val = expect(P1, psi_t)
+exp_X = expect(σx, psi_t)
+figure(6)
+plot(tout,exp_val,label="N=0 popn")
+plot(tout,exp_X,label="<ψ|σx|ψ>")
+xlabel("Time (s)")
+ylabel("Expectation value")
+legend() =#

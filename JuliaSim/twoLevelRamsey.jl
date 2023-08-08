@@ -1,6 +1,9 @@
 using QuantumOptics
 using PyPlot
+include("DynamicalDecoupling.jl")
+using .DynamicalDecoupling
 
+#=
 function DDSeq(ts,tWaits,phases,XRot,YRot,freeEv,ψ0,SR)
     #Does time evolution for a generic dynamical decoupling pulse sequence
     #ts: (N,1) array of rotation times 
@@ -54,6 +57,7 @@ function RamseyPhase(probePhases,tPi,ts,tWaits,phases,XRot,YRot,freeEv,P1,ψ0,SR
     end
     return pf
 end
+=#
 
 N = 2
 b = NLevelBasis(N)
@@ -68,6 +72,7 @@ tspan = range(0,100e-6,10000)
 tpi2 =range(0,tPi/2,1000)
 
 #Sigma x and y operators for the two levels
+#=
 σx = (transition(b,1,2) + dagger(transition(b,1,2)))
 σy = (-im*transition(b,1,2) + im*dagger(transition(b,1,2)))
 
@@ -77,20 +82,43 @@ P2 =  tensor(nlevelstate(b,2), dagger(nlevelstate(b,2)))
 
 #general rotation Hamiltonian
 genRot(Ωarg,ϕ) = Ωarg*(cos(ϕ)*σx + sin(ϕ)*σy)
-
+=#
 # SIMULATE SPIN ECHO FOR A SINGLE MOLECULE
-tsSpinEcho = tPi.*[1/2,1]
-tWaitsSpinEcho = [360,360]*1e-6
-phasesSpinEcho = [0,0]
 
+XRot, YRot, FreeEv, Ps = genNLevelOperators(2, Ω, Δ)
+P1 = Ps[1]
 probePhases = range(0,2*pi,30)
 
-pf = RamseyPhase(probePhases,tPi,tsSpinEcho,tWaitsSpinEcho,phasesSpinEcho,Ω*σx,Ω*σy,Δ*P2,P1,psi,1e6)
+tsSpinEcho = tPi.*tFracSpinEcho
+tWaitsSpinEcho = 360*1e-6*waitFracSpinEcho
+
+pf, ψf = RamseyPhase(probePhases,tPi,tsSpinEcho,tWaitsSpinEcho,phasesSpinEcho,XRot,YRot,FreeEv,P1,psi,1e6)
 figure(1)
 plot(probePhases,pf)
 xlabel("Ramsey phase")
 ylabel("N=0 popn")
 title("Single molecule spin Echo Ramsey") 
+
+
+# SIMULATE AVG SPIN ECHO FOR 8 MOLECULES
+#=
+rabi_frequencies = range(0.7,1.3,8) #Fractional errors in pi time for each state
+dets = 500*(rand(8).-0.5).*2*pi;
+
+Xs(rabRat) = Ω*σx*rabRat
+Ys(rabRat) = Ω*σy*rabRat
+FreeEv(Δ) = Δ*P2
+
+X_col = Xs.(rabi_frequencies)
+Y_col = Ys.(rabi_frequencies)
+free_col = frees.(dets)
+
+pf_col, allRes = DynamicalDecoupling.CollectiveRamseyPhase(probePhases,tPi,tsSpinEcho,tWaitsSpinEcho,phasesSpinEcho,X_col,Y_col,free_col,P1,psi,1e6)
+figure(2)
+plot(probePhases,pf_col)
+xlabel("Ramsey phase")
+ylabel("N=0 popn")
+title("Avg Spinecho Ramsey with 1% Ω err and +- 500 Hz Δ err")=#
 
 # SIMULATE COLLECTIVE SPIN ECHO FOR 8 MOLECULES
 #= num_molecules = 8;
@@ -148,6 +176,7 @@ xlabel("Pk2Pk detuning")
 ylabel("Spin echo at π phase") =#
 
 # SIMULATE COLLECTIVE RAMSEY NO ECHO FOR 8 MOLECULES DETUNING ONLY
+#=
 num_molecules = 8;
 rabi_frequencies =ones(8) #Fractional errors in pi time for each state
 Δ = 0:10:1500
@@ -206,7 +235,7 @@ figure(3)
 plot(tWaits.*1e3,abs.(pf_col .- 0.5).*2)
 xlabel("Ramsey time [ms]")
 ylabel("Ramsey contrast at π phase")
-
+=#
 # SIMULATE COLLECTIVE XY8 AS A FUNCTION OF NGROUPS
 #= maxGroups = 16;
 tsXY = tPi.*vcat([1/2],ones(maxGroups*8))

@@ -2,8 +2,9 @@ using QuantumOptics
 using PyPlot
 using Interpolations
 using Statistics
+using LsqFit
 
-function DDSeq(ts,tWaits,phases,XRot,YRot,freeEv,ψ0,SR,tOffs)
+function DDSeq(ts,tWaits,phases,XRot,YRot,freeEv,H_s,ψ0,SR,tOffs)
     #Does time evolution for a generic dynamical decoupling pulse sequence
     #ts: (N,1) array of rotation times 
     #tWaits: (N,1) array of free evolution times after each pulse in ts
@@ -22,14 +23,17 @@ function DDSeq(ts,tWaits,phases,XRot,YRot,freeEv,ψ0,SR,tOffs)
         H_t = (t,psi) -> begin
             freeEv(t,psi) + cos(phases[i])*XRot + sin(phases[i])*YRot
         end
-        tout, ψ_t = timeevolution.schroedinger_dynamic(tPulse, ψ, H_t)
+        H_s_t = (t,psi) -> begin
+            H_s
+        end
+        tout, ψ_t = stochastic.schroedinger_dynamic(tPulse, ψ, H_t,H_s_t)
 
         tEnd = tout[end]
         ψ = ψ_t[end]
 
         if tWaits[i] > 0
             tPulse = tEnd:T*200:tWaits[i]+tEnd
-            tout, ψ_t = timeevolution.schroedinger_dynamic(tPulse, ψ, freeEv)
+            tout, ψ_t = stochastic.schroedinger_dynamic(tPulse, ψ, freeEv,H_s_t)
 
             tEnd = tout[end]
             ψ = ψ_t[end]
@@ -39,24 +43,27 @@ function DDSeq(ts,tWaits,phases,XRot,YRot,freeEv,ψ0,SR,tOffs)
     return tEnd, ψ
 end
 
-function RamseyPhase(probePhases,tPi,ts,tWaits,phases,XRot,YRot,freeEv,P1,ψ0,SR,tOffs)
+function RamseyPhase(probePhases,tPi,ts,tWaits,phases,XRot,YRot,freeEv,H_s,P1,ψ0,SR,tOffs)
     #Return final |0⟩ popn for final pi/2 phases in probePhases
-    tEnd, ψ = DDSeq(ts,tWaits,phases,XRot,YRot,freeEv,ψ0,SR,tOffs)
+    tEnd, ψ = DDSeq(ts,tWaits,phases,XRot,YRot,freeEv,H_s,ψ0,SR,tOffs)
     exp_val = expect(P1, ψ)
+    H_s_t = (t,psi) -> begin
+            H_s
+    end
     
     pf = zeros(size(probePhases));
     for i = 1:length(probePhases)
         H_t = (t,psi) -> begin
             freeEv(t,psi) + cos(probePhases[i])*XRot + sin(probePhases[i])*YRot
         end
-        toutf, psif = timeevolution.schroedinger_dynamic([0,tPi/2] .+ tEnd, ψ,H_t)
+        toutf, psif = stochastic.schroedinger_dynamic([0,tPi/2] .+ tEnd, ψ,H_t,H_s_t)
         pf[i] = real(expect(P1, psif[end]))
     end
     return pf
 end
 
-#csv_file_path = "C:/nilab-projects/nacs_simulation/JuliaSim/dcNoise250ms.CSV"
-csv_file_path = "C:/nilab-projects/nacs_simulation/JuliaSim/8Traps5s.CSV"
+csv_file_path = "C:/nilab-projects/nacs_simulation/JuliaSim/dcNoise250ms.CSV"
+#csv_file_path = "C:/nacs_simulation/JuliaSim/8Traps5s.CSV"
 lines = readlines(csv_file_path)
 lines = map(strip, lines)
 data = map(line -> split(line, ','), lines)
@@ -66,8 +73,8 @@ data = map(row -> [row[1], row[2], row[3], parse(Float64, row[4]), parse(Float64
 data_t = map(row -> row[4], data)
 # Extract the 5th column
 data_v = map(row -> row[5], data)
-data_t = data_t[500:end] .- data_t[500]
-data_v = data_v[500:end]
+data_t = data_t[100:end] .- data_t[100]
+data_v = data_v[100:end]
 
 fracIntens = LinearInterpolation(data_t, data_v./mean(data_v))
 
@@ -97,7 +104,7 @@ P2 =  tensor(nlevelstate(b,2), dagger(nlevelstate(b,2)))
 #general rotation Hamiltonian
 genRot(Ωarg,ϕ) = Ωarg*(cos(ϕ)*σx + sin(ϕ)*σy)
 
-# SIMULATE COLLECTIVE RAMSEY NO ECHO FOR 8 MOLECULES DETUNING ONLY TIME SCAN
+# SIMULATE COLLECTIVE RAMSEY SPIN ECHO
 num_molecules = 8;
 #rabi_frequencies =range(0.995,1.005,num_molecules) #Fractional errors in pi time for each state
 rabi_frequencies = [49.6,49.5,48.5,49.9,49.9,49.9,49.9,50.1]./mean([49.6,49.5,48.5,49.9,49.9,49.9,49.9,50.1])
@@ -112,19 +119,24 @@ P_col = sum(P1s.(1:num_molecules))/num_molecules
 X_col = sum(Xs.(1:num_molecules,rabi_frequencies))
 Y_col = sum(Ys.(1:num_molecules,rabi_frequencies))
 #dets = 832.2*(range(-0.5,0.5,num_molecules)).*2*pi;
-dets = [-78.2,14.0,108.6,186.2,152.3,339.7,339.7,508.0].*2*pi;
+dets = ([-78.2,14.0,108.6,186.2,152.3,339.7,339.7,508.0]).*2*pi;
+detGauss = 100
+#dets = rand(8).*2*pi.*781;
 
 free_col = sum(frees.(1:num_molecules,dets))
 
+H_s = sum(frees.(1:num_molecules,ones(num_molecules)).*detGauss)
+
 free_col_t = (t,psi) -> begin
-    free_col * fracIntens(t)
+    free_col * (fracIntens(t))
 end
 
 psi_col = tensor([psi for i=1:num_molecules]...)
-tWaits = [1,50,350,500,1000]*1e-3
+tWaits = [1,5]*1e-3
 cts = zeros(length(tWaits))
+ctsErrs = zeros(length(tWaits))
 NShots = 20
-NPhases = 30
+NPhases = 20
 pf_shots = zeros(NShots,NPhases)
 @time begin
     for j = 1:length(tWaits)
@@ -132,23 +144,39 @@ pf_shots = zeros(NShots,NPhases)
         print('.') 
         global tWaitsSpinEcho = [1/2,1/2].*tWaits[j]
         for i = 1:NShots
-            pf_col = RamseyPhase(range(0,2*pi,30),tPi,tsSpinEcho,tWaitsSpinEcho,phasesSpinEcho,X_col,Y_col,free_col_t,P_col,psi_col,1e6,alltOffs[i])
+            pf_col = RamseyPhase(range(0,2*pi,NPhases),tPi,tsSpinEcho,tWaitsSpinEcho,phasesSpinEcho,X_col,Y_col,free_col_t,H_s,P_col,psi_col,1e6,alltOffs[i])
             pf_shots[i,:] = pf_col;
 #=              figure(j)
             plot(range(0,2*pi,30),pf_col)  =#
         end
         pf_avg = mean(pf_shots,dims = 1)
-        pf_se = std(pf_shots,dims = 1)/sqrt(NShots)
-        maxpt = maximum(pf_avg)
-        cts[j] = maximum(pf_avg) - minimum(pf_avg)
-#=         xlabel("Ramsey phase")
+        pf_se = std(pf_shots,dims = 1)./sqrt(NShots)
+        sMax =  maximum(pf_avg)
+        sMaxErr = pf_se[argmax(pf_avg)]
+        sMin =  minimum(pf_avg)
+        sMinErr =  pf_se[argmin(pf_avg)]
+        cts[j] = sMax -sMin
+        ctsErrs[j] = sMaxErr + sMinErr
+        figure(1)
+        plot(range(0,2*pi,NPhases),pf_avg[1,:])  
+        xlabel("Ramsey phase")
         ylabel("N=0 popn")
-        title("Wait time $(tWaits[j]) ms")  =#
     end
 end
-figure(77)
-plot(tWaits,cts)
+ ftfun(x,p) = p[1].*exp.(-x.^2.0/abs(p[2]).^2.0) .+ p[3]
+guess = [1.0,0.6,0.6]
+ftResult = curve_fit(ftfun,tWaits,cts,1 ./ctsErrs,guess)
+fit_params = ftResult.param
+#fit_errs = stderror(ftResult) 
 
+figure(77)
+errorbar(tWaits,cts,ctsErrs)
+xfit = range(0,tWaits[end],1000)
+plot(xfit,ftfun(xfit,fit_params))
+print("Decay time: $(fit_params[2])")
+xlabel("Spin echo time [s]")
+ylabel("Ramsey coherence")
+ylim([0,1])
 #= pf_col = zeros(length(tWaits))
 
 for i = 1:length(tWaits)

@@ -33,24 +33,23 @@ function DDSeq(ts,tWaits,phases,XRot,YRot,freeEv,ψ0,SR)
     tEnd = 0
 
     T = 1/SR
-
     for i = 1:length(ts)
-        tPulse = 0:T:ts[i]
+        tPulse = [0,ts[i]];#:T:ts[i]
         tout, ψ_t = timeevolution.schroedinger(tPulse, ψ, freeEv + cos(phases[i])*XRot + sin(phases[i])*YRot)
         tTots = vcat(tTots,tout .+ tEnd)
         ψTots = vcat(ψTots,ψ_t)
 
         tEnd = tTots[end]
-        ψ = ψTots[end]
+        ψ = ψ_t[end]
 
         if tWaits[i] > 0
-            tPulse = 0:T:tWaits[i]
+            tPulse = [0,tWaits[i]];#0:T:tWaits[i]
             tout, ψ_t = timeevolution.schroedinger(tPulse, ψ, freeEv)
             tTots = vcat(tTots,tout .+ tEnd)
             ψTots = vcat(ψTots,ψ_t)
 
             tEnd = tTots[end]
-            ψ = ψTots[end]
+            ψ = ψ_t[end]
         end
     end
 
@@ -155,32 +154,27 @@ function DDSeqTimeDep(ts,tWaits,phases,XRot,YRot,freeEv,ψ0,SR)
     ψ = ψ0
     tEnd = 0
     indEnd = 0
-
     for i = 1:length(ts)
         tPulse = 0:T:ts[i]
 
         H_t = (t,psi) -> begin
-            freeEv(t,psi) + cos(phases[i])*XRot(t,psi) + sin(phases[i])*YRot(t,psi)
+            freeEv(t + tEnd,psi) + cos(phases[i])*XRot(t + tEnd,psi) + sin(phases[i])*YRot(t + tEnd,psi)
         end
 
         tout, ψ_t = timeevolution.schroedinger_dynamic(tPulse, ψ, H_t)
-        tTots[indEnd+1:indEnd+length(tout)] = tout
+        tTots[indEnd+1:indEnd+length(tout)] = tout .+ tEnd
         ψTots[indEnd+1:indEnd+length(tout)] = ψ_t
 
         indEnd = indEnd+length(tout)
-
         tEnd = tTots[indEnd]
         ψ = ψTots[indEnd]
 
         if tWaits[i] > 0
             tPulse = 0:T*10:tWaits[i]
-            tout, ψ_t = timeevolution.schroedinger_dynamic(tPulse, ψ, freeEv)
-
-            tTots[indEnd+1:indEnd+length(tout)] = tout
+            tout, ψ_t = timeevolution.schroedinger_dynamic(tPulse, ψ, (t,psi) -> freeEv(t + tEnd,0))
+            tTots[indEnd+1:indEnd+length(tout)] = tout .+ tEnd
             ψTots[indEnd+1:indEnd+length(tout)] = ψ_t
-    
             indEnd = indEnd+length(tout)
-    
             tEnd = tTots[indEnd]
             ψ = ψTots[indEnd]
         end
@@ -213,13 +207,12 @@ function RamseyPhaseTimeDep(probePhases,tPi,ts,tWaits,phases,XRot,YRot,freeEv,P1
     """
 
     tout, psi_t = DDSeqTimeDep(ts,tWaits,phases,XRot,YRot,freeEv,ψ0,SR)
-    exp_val = expect(P1, psi_t)
-    
+    exp_val = expect(P1, psi_t[end])
     pf = zeros(size(probePhases));
     ψf = Array{Any, 1}(undef, length(probePhases))
     for i = 1:length(probePhases)
         H_t = (t,psi) -> begin
-            freeEv(t,psi) + cos(probePhases[i])*XRot(t,psi) + sin(probePhases[i])*YRot(t,psi) 
+            freeEv(t + tout[end],psi) + cos(probePhases[i])*XRot(t+ tout[end],psi) + sin(probePhases[i])*YRot(t+ tout[end],psi) 
         end
         toutf, psif = timeevolution.schroedinger_dynamic([0,tPi/2], psi_t[end], H_t)
         pf[i] = real(expect(P1, psif[end]))

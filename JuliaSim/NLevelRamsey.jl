@@ -57,7 +57,7 @@ NMax = 20
 pfN = Array{Any, 1}(undef, NMax);
 ψfN = Array{Any, 1}(undef, NMax);
 probePhases = pi
-for i = 1:1:NMax
+for i = 1:5:NMax
     tsXY,tWaitsXY,phasesXY = genXY8(tPi,200e-6,i)
     pfN[i], ψfN[i] = RamseyPhase(probePhases,tPi,tsXY,tWaitsXY,phasesXY,XRot,YRot,FreeEv,Ps[1],psi,1e6)
 end

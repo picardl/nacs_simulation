@@ -5,7 +5,7 @@ using .DynamicalDecoupling
 
 N = 4
 Δ = 2*pi*[0,-329.6e3,320e3]; #Microwave detuning
-tPi = 32.2e-6; #Microwave pi pulse time at zero detuning
+tPi = 10e-6;#34e-6; #Microwave pi pulse time at zero detuning
 Ω = 2*pi*(1/(4*tPi))*[1,2.805,0.58]
 
 XRot, YRot, FreeEv, Ps, b = genNLevelOperators(N, Ω, Δ)
@@ -54,12 +54,13 @@ title("XY8")
 
 #XY8 N groups scan
 NMax = 20
+tau = 0.1e-3;
 pfN = Array{Any, 1}(undef, NMax);
 ψfN = Array{Any, 1}(undef, NMax);
 probePhases = pi
 for i = 1:1:NMax
-    tsXY,tWaitsXY,phasesXY = genXY8(tPi,200e-6,i)
-    pfN[i], ψfN[i] = RamseyPhase(probePhases,tPi,tsXY,tWaitsXY,phasesXY,XRot,YRot,FreeEv,Ps[1],psi,1e6)
+    tsXY,tWaitsXY,phasesXY = genXY8(tPi,tau,i)
+    pfN[i], ψfN[i] = RamseyPhase(probePhases,tPi,tsXY,tWaitsXY,phasesXY,XRot,YRot,FreeEv,Ps[1],psi,10e6)
 end
 figure(3)
 plot(1:NMax,expect(Ps[1], ψfN),label="N=0")

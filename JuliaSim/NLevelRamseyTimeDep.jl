@@ -6,9 +6,12 @@ using Interpolations
 using Statistics
 using LsqFit
 using Profile
+using Base.Threads
 
 N = 4
-tPi = 34e-6; #Microwave pi pulse time at zero detuning
+tPi = 7.4235e-6; #Microwave pi pulse time at zero detuning
+
+lk = ReentrantLock()
 
 csv_file_path = "C:/nilab-projects/nacs_simulation/JuliaSim/dcNoise250ms.CSV"
 #csv_file_path = "C:/nacs_simulation/JuliaSim/8Traps5s.CSV"
@@ -27,13 +30,16 @@ data_v = data_v[100:end]
 fracIntens = LinearInterpolation(data_t, data_v./mean(data_v))
 
 Δt = (t) -> begin #Microwave detuning
-    2*pi*[500,-329.6e3,320e3]*fracIntens(t); 
+    #2*pi*[0,-329.6e3,320e3]*fracIntens(t); 
+    2*pi*[0,-261.17e3,261.17e3]*fracIntens(t); 
 end
 Ωt = (t) -> begin
-    2*pi*(1/(4*tPi))*[1,2.805,0.58];
+    #2*pi*(1/(4*tPi))*[1,2.805,0.58];
+    2*pi*(1/(4*tPi))*[1,1,1];
+    #2*pi*(1/(4*tPi))*[1,0,0];
 end
 
-XRot, YRot, FreeEv, Ps, b = genNLevelOperatorsTimeDep(N, Ωt, Δt)
+XRot, YRot, FreeEv, Ps, b = DynamicalDecoupling.genNLevelOperatorsTimeDep(N, Ωt, Δt)
 
 tspan = range(0,1e-3,1000);
 
@@ -116,10 +122,10 @@ end
 
 #XY8 N groups scan monte carlo
 if true
-    NTrials = 15;
+    NTrials = 12;
 
-    NMax = 20;
-    dN = 1;
+    NMax = 10;
+    dN = 2;
     tau = 0.3e-3;
     pfN = Array{Any, 1}(undef, length(1:dN:NMax));
     mean_values = zeros(Float64,length(1:dN:NMax),N)
@@ -143,9 +149,12 @@ if true
 
     for n = 1:dN:NMax
         tsXY,tWaitsXY,phasesXY = DynamicalDecoupling.genXY8(tPi,tau,n)
-        for j=1:NTrials
-            @time pf,ψf = RamseyPhaseTimeDep(probePhases,tPi,tsXY,tWaitsXY,phasesXY,Xoffs[j],Yoffs[j],Freeoffs[j],Ps[1],psi,5e6)
-            these_expect[:,j] = [inner[1] for inner in real.(expect.(Ps, Ref(ψf)))]
+        @time begin
+            for j=1:NTrials
+                pf,ψf = RamseyPhaseTimeDep(probePhases,tPi,tsXY,tWaitsXY,phasesXY,Xoffs[j],Yoffs[j],Freeoffs[j],Ps[1],psi,5e6)
+                updated_expect = [inner[1] for inner in real.(expect.(Ps, Ref(ψf)))];
+                these_expect[:,j] = updated_expect;
+            end
         end
         mean_values[i,:] = mean(these_expect, dims=2)
         stderr_values[i,:] = std(these_expect, dims=2)./sqrt(NTrials)

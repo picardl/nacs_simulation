@@ -118,7 +118,7 @@ title("XY8")
 end
 
 #XY8 N groups scan monte carlo
-if true
+if false
     NTrials = 10;
 
     NMax = 20;

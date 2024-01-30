@@ -11,10 +11,8 @@ using Base.Threads
 N = 4
 tPi = 7.4235e-6; #Microwave pi pulse time at zero detuning
 
-lk = ReentrantLock()
-
-csv_file_path = "C:/nilab-projects/nacs_simulation/JuliaSim/dcNoise250ms.CSV"
-#csv_file_path = "C:/nacs_simulation/JuliaSim/8Traps5s.CSV"
+#csv_file_path = "C:/nilab-projects/nacs_simulation/JuliaSim/dcNoise250ms.CSV"
+csv_file_path = "C:/projects/nacs_simulation/JuliaSim/dcNoise250ms.CSV"
 lines = readlines(csv_file_path)
 lines = map(strip, lines)
 data = map(line -> split(line, ','), lines)
@@ -30,13 +28,13 @@ data_v = data_v[100:end]
 fracIntens = LinearInterpolation(data_t, data_v./mean(data_v))
 
 Δt = (t) -> begin #Microwave detuning
-    #2*pi*[0,-329.6e3,320e3]*fracIntens(t); 
+    #2*pi*[500,-329.6e3,320e3]*fracIntens(t); 
     2*pi*[0,-261.17e3,261.17e3]*fracIntens(t); 
 end
 Ωt = (t) -> begin
     #2*pi*(1/(4*tPi))*[1,2.805,0.58];
+    #2*pi*(1/(4*tPi))*[1,0.2725,0.6585];
     2*pi*(1/(4*tPi))*[1,1,1];
-    #2*pi*(1/(4*tPi))*[1,0,0];
 end
 
 XRot, YRot, FreeEv, Ps, b = DynamicalDecoupling.genNLevelOperatorsTimeDep(N, Ωt, Δt)
@@ -121,12 +119,12 @@ title("XY8")
 end
 
 #XY8 N groups scan monte carlo
-if true
-    NTrials = 12;
+if false
+    NTrials = 10;
 
-    NMax = 10;
-    dN = 2;
-    tau = 0.3e-3;
+    NMax = 20;
+    dN = 5;
+    tau = 1.25e-3;
     pfN = Array{Any, 1}(undef, length(1:dN:NMax));
     mean_values = zeros(Float64,length(1:dN:NMax),N)
     stderr_values = zeros(Float64,length(1:dN:NMax),N)
@@ -168,6 +166,63 @@ if true
     
     legend()
     xlabel("N XY8 groups")
+    ylabel("Popn")
+    ylim([0,1])
+    title("XY8")
+end
+
+#XY8 scan pi time
+if false
+    NTrials = 20;
+
+    NMax = 30;
+    tau = 0.3e-3;
+
+    #piTimes = [1,2,5,10,15,20,25,30,35,40,50]*1e-6;
+    piTimes = [1,2,10,20,25,30,40,50,100]*1e-6;
+
+    pfN = Array{Any, 1}(undef, length(piTimes));
+    mean_values = zeros(Float64,length(piTimes),N)
+    stderr_values = zeros(Float64,length(piTimes),N)
+
+    these_expect = zeros(Float64,N,NTrials)
+
+    probePhases = pi
+    global i = 1
+
+    tStart = rand(1,NTrials)
+    Xoffs = Vector{Any}(undef, NTrials)
+    Yoffs = Vector{Any}(undef, NTrials)
+    Freeoffs = Vector{Any}(undef, NTrials)
+    for j=1:NTrials
+
+    end
+
+    for n = 1:1:length(piTimes)
+        tFrac = piTimes[n]/tPi
+        tsXY,tWaitsXY,phasesXY = DynamicalDecoupling.genXY8(tPi,tau,NMax)
+        @time begin 
+            for j=1:NTrials
+                t_offset = tStart[j]
+                Xoffs = (t, psi) -> XRot(t + t_offset, psi)/tFrac
+                Yoffs = (t,psi)-> YRot(t + t_offset, psi)/tFrac
+                Freeoffs = (t,psi)-> FreeEv(t + t_offset, psi)
+                pf,ψf = RamseyPhaseTimeDep(probePhases,tPi*tFrac,tsXY*tFrac,tWaitsXY,phasesXY,Xoffs,Yoffs,Freeoffs,Ps[1],psi,5e6)
+                these_expect[:,j] = [inner[1] for inner in real.(expect.(Ps, Ref(ψf)))]
+            end
+        end
+        mean_values[i,:] = mean(these_expect, dims=2)
+        stderr_values[i,:] = std(these_expect, dims=2)./sqrt(NTrials)
+        global i = i+1;
+    end
+    figure(3)
+    errorbar(piTimes,mean_values[:,1], stderr_values[:,1],label="N=0")
+    errorbar(piTimes,mean_values[:,2], stderr_values[:,2],label="N=1,0")
+    errorbar(piTimes,mean_values[:,3], stderr_values[:,3],label="N=1,-1")
+    errorbar(piTimes,mean_values[:,4], stderr_values[:,4],label="N=1,1")
+    
+    legend()
+    xlabel("Pi time")
     ylabel("Popn")
     ylim([0,1])
     title("XY8")

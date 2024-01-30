@@ -2,10 +2,107 @@ module DynamicalDecoupling
 using Interpolations
 using QuantumOptics
 using PyPlot
+using SpecialFunctions
+using StochasticDiffEq
 
 export DDSeq, RamseyPhase,CollectiveRamseyPhase
 export DDSeqTimeDep,RamseyPhaseTimeDep,CollectiveRamseyPhaseTimeDep
 export genNLevelOperators,genNLevelOperatorsTimeDep,genXY8, tFracSpinEcho, waitFracSpinEcho, phasesSpinEcho
+
+function generalPulseSeq(ψ0,amps,times,phases,Omega,Deltas,N,pulseShape,params)
+
+    tTots = []
+    ψTots = []
+    ψ = ψ0;
+    tEnd = 0;
+
+    _, _, _, Ps, _ = genNLevelOperators(N, 1, 1)
+
+    for i = 1:length(times)
+        Δt = (t) -> Deltas; 
+        params["len"] = times[i]
+        Ωt = loadPulseShape(pulseShape,Omega,params);
+        XRot, YRot, FreeEv,_, _ = genNLevelOperatorsTimeDep(N, Ωt, Δt);
+        tPulse = [0,times[i]];
+
+        H_t = (t,psi) -> begin
+            FreeEv(t,psi) + amps[i]*cos(phases[i])*XRot(t,psi) + amps[i]*sin(phases[i])*YRot(t ,psi)
+        end
+
+        tout, ψ_t = timeevolution.schroedinger_dynamic(tPulse, ψ,  H_t);
+        tTots = vcat(tTots,tout[end] .+ tEnd);
+        ψTots = vcat(ψTots,ψ_t[end]);
+
+        tEnd = tTots[end];
+        ψ = ψ_t[end];
+    end
+
+    return tTots,ψTots,Ps
+
+end
+
+function generalPulseSeq_stochastic(ψ0,amps,times,phases,Omega,Deltas,H_noise,N,pulseShape,params)
+
+    tTots = []
+    ψTots = []
+    ψ = ψ0;
+    tEnd = 0;
+    dt = 10e-9;
+
+    _, _, _, Ps, _ = genNLevelOperators(N, 1, 1)
+
+    for i = 1:length(times)
+        Δt = (t) -> Deltas; 
+        params["len"] = times[i]
+        Ωt = loadPulseShape(pulseShape,Omega,params);
+        XRot, YRot, FreeEv,_, _ = genNLevelOperatorsTimeDep(N, Ωt, Δt);
+        tPulse = [0,times[i]];
+
+        H_t = (t,psi) -> begin
+            return FreeEv(t,psi) + amps[i]*cos(phases[i])*XRot(t,psi) + amps[i]*sin(phases[i])*YRot(t ,psi), [H_noise], [dagger(H_noise)]
+        end
+        # H_noise_t = (t,psi) -> begin
+        #     [H_noise]
+        # end
+        H = FreeEv(0,0) + amps[i]*cos(phases[i])*XRot(0,0) + amps[i]*sin(phases[i])*YRot(0,0)
+
+        #tout, ψ_t = stochastic.schroedinger_dynamic(tPulse, ψ,  H_t,H_noise_t;alg=StochasticDiffEq.RKMilGeneral(interpretation=:Stratonovich),dt=dt,abstol = 1e-3);
+        tout, ψ_t = timeevolution.master_dynamic(tPulse, ψ,  H_t,rates = [1]);
+        #tout, ψ_t = timeevolution.master(tPulse, ψ,  H,[H_noise];rates = [1]);
+
+        tTots = vcat(tTots,tout[end] .+ tEnd);
+        ψTots = vcat(ψTots,ψ_t[end]);
+
+        tEnd = tTots[end];
+        ψ = ψ_t[end];
+    end
+
+    return tTots,ψTots,Ps
+
+end
+
+function loadPulseShape(name,Omega,params)
+    if name == "square"
+        Ωt = (t) -> Omega
+    elseif name == "truncGaussPulse"
+        frac = params["frac"];
+        len = params["len"];
+        tau = frac*len;
+        intPulse = sqrt(pi)*tau*erf(len/(2*tau));
+        intRect = len*Omega;
+        ampMax = intRect/intPulse;
+        Ωt = (t) -> ampMax*exp(-(t-len/2).^2/tau.^2);
+    elseif name == "truncGaussDiscrete"
+        frac = params["frac"];
+        len = params["len"];
+        tau = frac*len;
+        intPulse = sqrt(pi)*tau*erf(len/(2*tau));
+        intRect = len*Omega;
+        ampMax = intRect/intPulse;
+        Ωt = (t) -> ampMax*exp(-(ceil(t/2e-6)*2e-6-len/2).^2/tau.^2);
+    end
+    return Ωt
+end
 
 function DDSeq(ts,tWaits,phases,XRot,YRot,freeEv,ψ0,SR)
     """
@@ -33,7 +130,6 @@ function DDSeq(ts,tWaits,phases,XRot,YRot,freeEv,ψ0,SR)
     tEnd = 0
 
     T = 1/SR
-
     for i = 1:length(ts)
         tPulse = 0:T:ts[i]
         tout, ψ_t = timeevolution.schroedinger(tPulse, ψ, freeEv + cos(phases[i])*XRot + sin(phases[i])*YRot)
@@ -41,7 +137,7 @@ function DDSeq(ts,tWaits,phases,XRot,YRot,freeEv,ψ0,SR)
         ψTots = vcat(ψTots,ψ_t)
 
         tEnd = tTots[end]
-        ψ = ψTots[end]
+        ψ = ψ_t[end]
 
         if tWaits[i] > 0
             tPulse = 0:T:tWaits[i]
@@ -50,7 +146,7 @@ function DDSeq(ts,tWaits,phases,XRot,YRot,freeEv,ψ0,SR)
             ψTots = vcat(ψTots,ψ_t)
 
             tEnd = tTots[end]
-            ψ = ψTots[end]
+            ψ = ψ_t[end]
         end
     end
 
@@ -155,32 +251,27 @@ function DDSeqTimeDep(ts,tWaits,phases,XRot,YRot,freeEv,ψ0,SR)
     ψ = ψ0
     tEnd = 0
     indEnd = 0
-
     for i = 1:length(ts)
         tPulse = 0:T:ts[i]
 
         H_t = (t,psi) -> begin
-            freeEv(t,psi) + cos(phases[i])*XRot(t,psi) + sin(phases[i])*YRot(t,psi)
+            freeEv(t + tEnd,psi) + cos(phases[i])*XRot(t + tEnd,psi) + sin(phases[i])*YRot(t + tEnd,psi)
         end
 
         tout, ψ_t = timeevolution.schroedinger_dynamic(tPulse, ψ, H_t)
-        tTots[indEnd+1:indEnd+length(tout)] = tout
+        tTots[indEnd+1:indEnd+length(tout)] = tout .+ tEnd
         ψTots[indEnd+1:indEnd+length(tout)] = ψ_t
 
         indEnd = indEnd+length(tout)
-
         tEnd = tTots[indEnd]
         ψ = ψTots[indEnd]
 
         if tWaits[i] > 0
             tPulse = 0:T*10:tWaits[i]
-            tout, ψ_t = timeevolution.schroedinger_dynamic(tPulse, ψ, freeEv)
-
-            tTots[indEnd+1:indEnd+length(tout)] = tout
+            tout, ψ_t = timeevolution.schroedinger_dynamic(tPulse, ψ, (t,psi) -> freeEv(t + tEnd,0))
+            tTots[indEnd+1:indEnd+length(tout)] = tout .+ tEnd
             ψTots[indEnd+1:indEnd+length(tout)] = ψ_t
-    
             indEnd = indEnd+length(tout)
-    
             tEnd = tTots[indEnd]
             ψ = ψTots[indEnd]
         end
@@ -213,13 +304,12 @@ function RamseyPhaseTimeDep(probePhases,tPi,ts,tWaits,phases,XRot,YRot,freeEv,P1
     """
 
     tout, psi_t = DDSeqTimeDep(ts,tWaits,phases,XRot,YRot,freeEv,ψ0,SR)
-    exp_val = expect(P1, psi_t)
-    
+    exp_val = expect(P1, psi_t[end])
     pf = zeros(size(probePhases));
     ψf = Array{Any, 1}(undef, length(probePhases))
     for i = 1:length(probePhases)
         H_t = (t,psi) -> begin
-            freeEv(t,psi) + cos(probePhases[i])*XRot(t,psi) + sin(probePhases[i])*YRot(t,psi) 
+            freeEv(t + tout[end],psi) + cos(probePhases[i])*XRot(t+ tout[end],psi) + sin(probePhases[i])*YRot(t+ tout[end],psi) 
         end
         toutf, psif = timeevolution.schroedinger_dynamic([0,tPi/2], psi_t[end], H_t)
         pf[i] = real(expect(P1, psif[end]))

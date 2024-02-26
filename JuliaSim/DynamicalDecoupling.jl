@@ -3,7 +3,7 @@ using Interpolations
 using QuantumOptics
 using PyPlot
 using SpecialFunctions
-using StochasticDiffEq
+#using StochasticDiffEq
 
 export DDSeq, RamseyPhase,CollectiveRamseyPhase
 export DDSeqTimeDep,RamseyPhaseTimeDep,CollectiveRamseyPhaseTimeDep
@@ -55,7 +55,7 @@ function generalPulseSeq_stochastic(ψ0,amps,times,phases,Omega,Deltas,H_noise,N
         Δt = (t) -> Deltas; 
         params["len"] = times[i]
         Ωt = loadPulseShape(pulseShape,Omega,params);
-        XRot, YRot, FreeEv,_, _ = genNLevelOperatorsTimeDep(N, Ωt, Δt);
+        XRot, YRot, FreeEv,_, _ = genNLevelOperatorsTimeDep(N,  Ωt, Δt);
         tPulse = [0,times[i]];
 
         H_t = (t,psi) -> begin
@@ -66,8 +66,8 @@ function generalPulseSeq_stochastic(ψ0,amps,times,phases,Omega,Deltas,H_noise,N
         # end
         H = FreeEv(0,0) + amps[i]*cos(phases[i])*XRot(0,0) + amps[i]*sin(phases[i])*YRot(0,0)
 
-        #tout, ψ_t = stochastic.schroedinger_dynamic(tPulse, ψ,  H_t,H_noise_t;alg=StochasticDiffEq.RKMilGeneral(interpretation=:Stratonovich),dt=dt,abstol = 1e-3);
-        tout, ψ_t = timeevolution.master_dynamic(tPulse, ψ,  H_t,rates = [1]);
+        tout, ψ_t = stochastic.schroedinger_dynamic(tPulse, ψ,  H_t,H_noise_t;alg=StochasticDiffEq.RKMilGeneral(interpretation=:Stratonovich),dt=dt,abstol = 1e-3);
+        #tout, ψ_t = timeevolution.master_dynamic(tPulse, ψ,  H_t,rates = [1]);
         #tout, ψ_t = timeevolution.master(tPulse, ψ,  H,[H_noise];rates = [1]);
 
         tTots = vcat(tTots,tout[end] .+ tEnd);
@@ -78,6 +78,37 @@ function generalPulseSeq_stochastic(ψ0,amps,times,phases,Omega,Deltas,H_noise,N
     end
 
     return tTots,ψTots,Ps
+
+end
+
+function generalPulseSeq_master(ψ0,amps,times,phases,Omega,Delta,H_noise,N,params)
+
+    tTots = []
+    rhoTots = []
+    rho = ψ0⊗dagger(ψ0);
+    tEnd = 0;
+    dt = 10e-9;
+
+    XRot, YRot, FreeEv,Ps, _ = genNLevelOperators(N,  Omega, Delta);
+
+    for i = 1:length(times)
+        Δt = (t) -> Deltas; 
+        params["len"] = times[i]
+        
+        tPulse = [0,times[i]];
+
+        H = FreeEv + amps[i]*cos(phases[i])*XRot + amps[i]*sin(phases[i])*YRot
+
+        tout, rho_t = timeevolution.master(tPulse, rho,  H,[H_noise];rates = [1]);
+
+        tTots = vcat(tTots,tout[end] .+ tEnd);
+        rhoTots = vcat(rhoTots,rho_t[end]);
+
+        tEnd = tTots[end];
+        rho = rho_t[end];
+    end
+
+    return tTots,rhoTots,Ps
 
 end
 

@@ -12,10 +12,10 @@ tPi = 20e-6;#32.2e-6; #Microwave pi pulse time at zero detuning
 Ω = 2*pi*(1/(4*tPi))*[1,0.5,0.5]
 #Ω = 2*pi*(1/(4*tPi))*[1]
 
-inter_t = 1.32e-3;
+inter_t = 2.5e-3;
 
-dets1 = [200,300e3,300e3]
-dets2 = [250,300e3,300e3]
+dets1 = [-25,700e3,700e3]
+dets2 = [25,700e3,700e3]
 
 XRot1, YRot1, FreeEv1, Ps1, b1 = DynamicalDecoupling.genNLevelOperators(N, Ω, 2*pi*dets1)
 XRot2, YRot2, FreeEv2, Ps2, b2 = DynamicalDecoupling.genNLevelOperators(N, Ω, 2*pi*dets2)
@@ -48,6 +48,7 @@ P11= Ps1[2] ⊗ Ps2[2];
 P0 = Ps1[1] ⊗ identityoperator(b2);
 
 # Vanilla interaction starting in 01
+#=
 psi01 = nlevelstate(b1,1) ⊗ nlevelstate(b2,2)
 tout, psi_t = timeevolution.schroedinger(range(0,0.05,1000), psi01, H_int + free_col)
 exp_val = expect(P01, psi_t)
@@ -55,7 +56,7 @@ plot(tout,exp_val,label="|00⟩")
 plot(tout,expect(P0, psi_t),label="|0⟩")
 xlabel("Time (s)")
 ylabel("Popn in |01>")
-title("Interaction starting in 01")
+title("Interaction starting in 01")=#
 
 # Rabi
 #=

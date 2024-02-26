@@ -30,7 +30,9 @@ P0 = tensor(nlevelstate(b,1), dagger(nlevelstate(b,1)))
 P1 =  tensor(nlevelstate(b,2), dagger(nlevelstate(b,2)))
 
 P00 = P0 ⊗ P0;
-
+P01 = P0 ⊗ P1;
+P10 = P1 ⊗ P0;
+P11 = P1 ⊗ P1;
 Xs(i) = embed(b2,i,Ω*σx)
 Ys(i) = embed(b2,i,Ω*σy)
 frees(i,Δ) = embed(b2,i,Δ*P1)
@@ -41,10 +43,10 @@ Y_col = sum(Ys.(1:2))
 free_col = sum(frees.(1:2,dets))
 
 # Vanilla interaction starting in 01
-psi01 = nlevelstate(b,1) ⊗ nlevelstate(b,2)
-tout, psi_t = timeevolution.schroedinger(range(0,0.02,1000), psi01, H_int + free_col)
-exp_val = expect(P0s(1), psi_t)
-plot(tout,exp_val)
+#psi01 = nlevelstate(b,1) ⊗ nlevelstate(b,2)
+#tout, psi_t = timeevolution.schroedinger(range(0,0.02,1000), psi01, H_int + free_col)
+#exp_val = expect(P0s(1), psi_t)
+#plot(tout,exp_val)
 
 
 # Ramsey spin echo interaction starting in 00
@@ -62,6 +64,9 @@ end
 
 figure(3)
 plot(tWaits,expect(P00, ψfN),label="|00⟩")
+plot(tWaits,expect(P01, ψfN),label="|01⟩")
+plot(tWaits,expect(P10, ψfN),label="|10⟩")
+plot(tWaits,expect(P11, ψfN),label="|11⟩")
 legend()
 xlabel("Spin echo wait time")
 ylabel("Popn")

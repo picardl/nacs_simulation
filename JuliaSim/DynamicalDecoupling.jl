@@ -112,6 +112,35 @@ function generalPulseSeq_master(ψ0,amps,times,phases,Omega,Delta,H_noise,N,para
 
 end
 
+function generalTwoBodyPulseSeq_master(ψ0,amps,times,phases,XRot,YRot, FreeEv,H_noise,params)
+
+    tTots = []
+    rhoTots = []
+    rho = ψ0⊗dagger(ψ0);
+    tEnd = 0;
+    dt = 10e-9;
+
+    for i = 1:length(times)
+        Δt = (t) -> Deltas; 
+        params["len"] = times[i]
+        
+        tPulse = [0,times[i]];
+
+        H = FreeEv + amps[i]*cos(phases[i])*XRot + amps[i]*sin(phases[i])*YRot
+
+        tout, rho_t = timeevolution.master(tPulse, rho,  H,[H_noise];rates = [1]);
+
+        tTots = vcat(tTots,tout[end] .+ tEnd);
+        rhoTots = vcat(rhoTots,rho_t[end]);
+
+        tEnd = tTots[end];
+        rho = rho_t[end];
+    end
+
+    return tTots,rhoTots
+
+end
+
 function loadPulseShape(name,Omega,params)
     if name == "square"
         Ωt = (t) -> Omega

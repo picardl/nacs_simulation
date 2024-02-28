@@ -122,7 +122,7 @@ function generalTwoBodyPulseSeq_master(ψ0,amps,times,phases,XRot,YRot, FreeEv,H
 
     for i = 1:length(times)
         Δt = (t) -> Deltas; 
-        params["len"] = times[i]
+        #params["len"] = times[i]
         
         tPulse = [0,times[i]];
 

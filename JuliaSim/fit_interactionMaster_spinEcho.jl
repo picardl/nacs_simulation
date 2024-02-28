@@ -2,8 +2,15 @@
 using QuantumOptics
 using PyPlot
 using Optimization
+using OptimizationBBO
+using OptimizationOptimJL
+using CSV
+using DataFrames
+#using Zygote
+using ForwardDiff
 include("DynamicalDecoupling.jl")
 using .DynamicalDecoupling
+#using Plots
 
 function masterSurvivals(x,tData,params)
     h = 6.62607015e-34
@@ -20,7 +27,7 @@ function masterSurvivals(x,tData,params)
     inter_t = x[1];
 
     dets1 = [-x[2]/2];
-    dets2 = [-x[2]/2];
+    dets2 = [x[2]/2];
     gammas1 = x[3];
     gammas2 = x[3];
 
@@ -56,7 +63,7 @@ function masterSurvivals(x,tData,params)
     psi00 = nlevelstate(b1,1) ⊗ nlevelstate(b2,1)
 
     amps = [1,0,1,0,1];
-    phases::Vector{Float64} = [0,0,0,0,0];
+    phases::Vector{Float64} = [0,0,0,0,pi];
 
     tsSpinEcho = tPi.*DynamicalDecoupling.tFracSpinEcho
     probePhases = 0
@@ -78,15 +85,102 @@ function masterSurvivals(x,tData,params)
     return fitData
 end
 
-function masterResid(x,tData,yData,errLower,errUpper,params)
+function masterResid(x,params)
+    tData = params["tData"];
+    yData = params["yData"];
+    errLower = params["errLower"];
+    errUpper = params["errUpper"];
 
     fitData = masterSurvivals(x,tData,params);
 
-    weights = 1.0./(errLower.^2.0 + errUpper.^2.0);
+    weights = 1.0./(errLower.^2.0 + errUpper.^2.0 .+ 1e-9);
     resids = ((fitData - yData).^2.0).*weights;
+    print(sum(resids))
+    print("\n")
     return sum(resids)
 
 end
+
+function callback_function(opt_values,f_val)
+    # Extracting the iteration count and function value
+    global iter += 1;
+    #f_val = opt_values.f_val
+
+    # Plotting the iteration and function value
+    if iter%10 == 0
+        figure(1)
+        plot(iter, f_val; marker="o", color="red")
+        xlabel("Iteration")
+        ylabel("Function Value")
+        title("Optimization Progress")
+        draw()  # Update the plot in real-time
+        pause(0.01)
+    end
+    return false
+end
+
+function load_and_extract_data(filename)
+    # Load CSV file into a DataFrame
+    df = CSV.File(filename) |> DataFrame
+
+    # Separate data into two sets based on scanIdx
+    data_scan1 = filter(row -> row.scanIdx == 1, df)
+    data_scan2 = filter(row -> row.scanIdx == 2, df)
+
+    # Extract vectors for each set
+    groupIdx_scan1 = data_scan1.groupIdx
+    axisValue_scan1 = data_scan1.axisValue
+    mean_scan1 = data_scan1.mean
+    errorLower_scan1 = data_scan1.errorLower
+    errorUpper_scan1 = data_scan1.errorUpper
+
+    groupIdx_scan2 = data_scan2.groupIdx
+    axisValue_scan2 = data_scan2.axisValue
+    mean_scan2 = data_scan2.mean
+    errorLower_scan2 = data_scan2.errorLower
+    errorUpper_scan2 = data_scan2.errorUpper
+
+    return (axisValue_scan1, mean_scan1, errorLower_scan1, errorUpper_scan1,
+            axisValue_scan2, mean_scan2, errorLower_scan2, errorUpper_scan2)
+end
+
+function stirapNorm(stirap_contrast,stirap_contrastErrLower,stirap_contrastErrUpper,this_surv,this_errLower,this_errUpper)
+    numerator = (this_surv .-  stirap_contrast[1]);
+    stirap_diff2B = (stirap_contrast[2] - stirap_contrast[1])
+    stirap_diff2BErrLower = sqrt(stirap_contrastErrLower[1].^2 + stirap_contrastErrLower[2].^2);
+    stirap_diff2BErrUpper = sqrt(stirap_contrastErrUpper[1].^2 + stirap_contrastErrUpper[2].^2);
+    this_surv = (this_surv .-  stirap_contrast[1])/stirap_diff2B;
+    this_errNumUpper = sqrt.(this_errUpper.^2 .+ stirap_contrastErrUpper[1].^2);
+    this_errNumLower = sqrt.(this_errLower.^2 .+ stirap_contrastErrLower[1].^2);
+    this_errLower = this_surv.*sqrt.((this_errNumLower./numerator).^2 .+ (stirap_diff2BErrLower./stirap_diff2B).^2);
+    this_errUpper = this_surv.*sqrt.((this_errNumUpper./numerator).^2 .+ (stirap_diff2BErrUpper./stirap_diff2B).^2);
+    this_errLower[isnan.(this_errLower)] .= 5e-2; 
+    this_errUpper[isnan.(this_errUpper)] .= 5e-2; 
+    return (this_surv,this_errLower,this_errUpper)
+end
+
+global iter = 0;
+
+dataPath = "C:/nilab-projects/nacs_simulation/JuliaSim/experimentalData"
+(_, stirap00, stirapErrLower00, stirapErrUpper00,
+    testt, survival00, errLower00, errUpper00) = load_and_extract_data(dataPath*"/chain_1_measurement_1_data.csv")
+(_, _, _, _,
+    _, survival01, errLower01, errUpper01) = load_and_extract_data(dataPath*"/chain_1_measurement_2_data.csv")
+(_, _, _, _,
+    _, survival10, errLower10, errUpper10) = load_and_extract_data(dataPath*"/chain_1_measurement_3_data.csv")
+(_, _, _, _,
+    _, survival11, errLower11, errUpper11) = load_and_extract_data(dataPath*"/chain_1_measurement_4_data.csv")
+
+testt = testt.*2;
+
+survival00, errLower00, errUpper00 = stirapNorm(stirap00,stirapErrLower00,stirapErrUpper00,survival00,errLower00,errUpper00);
+survival01, errLower01, errUpper01 = stirapNorm(stirap00, stirapErrLower00,stirapErrUpper00, survival01, errLower01, errUpper01)
+survival10, errLower10, errUpper10 = stirapNorm(stirap00, stirapErrLower00,stirapErrUpper00, survival10, errLower10, errUpper10)
+survival11, errLower11, errUpper11 = stirapNorm(stirap00, stirapErrLower00,stirapErrUpper00, survival11, errLower11, errUpper11)
+
+allSurvival = hcat(survival00, survival01, survival10, survival11)'
+allErrLower = hcat(errLower00, errLower01, errLower10, errLower11)'
+allErrUpper = hcat(errUpper00, errUpper01, errUpper10, errUpper11)'
 
 params = Dict();
 params["tPi"] = 20e-6;#32.2e-6; #Microwave pi pulse time at zero detuning
@@ -94,27 +188,43 @@ params["θ"] = 0/180*pi;
 params["R"] = 2e-6;
 params["d"] = 4.6*3.33564e-30
 params["inter_t"] = 2e-3; #Interaction pi time
-Delta = 2*pi*200; #Site-by-site detuning in 2*pi*Hz
+Delta = 2*pi*50; #Site-by-site detuning in 2*pi*Hz
 
-tPlot = range(1e-6,10e-3,60);
+tPlot = range(1e-6,maximum(testt),60);
 
-guess = [2e-3,Delta,0.01*Delta,2*pi*10]; #interaction time, detuning, detuning noise, interaction noise
+guess = [2e-3,Delta,2*pi*10,2*pi*50]; #interaction time, detuning, detuning noise, interaction noise
 
-testt = [1e-6,1.5e-3,3e-3,7.5e-3,9e-3]
-testData = [0.06 0.015 0.045 0.05 0.02;0 0.01 0.002 0.002 0.005;0 0.01 0.002 0.002 0.005;0 0.025 0.005 0.005 0.02;]./0.06;
-testErrLow = [0.01 0.005 0.01 0.01 0.01;0 0.005 0.002 0.002 0.005;0 0.005 0.002 0.002 0.005;0 0.005 0.002 0.002 0.005]./0.06;
-testErrHigh = [0.01 0.005 0.01 0.01 0.01;0.002 0.005 0.002 0.002 0.005;0.002 0.005 0.002 0.002 0.005;0.002 0.005 0.002 0.002 0.005]./0.06;
+#testt = [1e-6,1.5e-3,3e-3,7.5e-3,9e-3]
+#testData = [0.06 0.015 0.045 0.05 0.02;0 0.01 0.002 0.002 0.005;0 0.01 0.002 0.002 0.005;0 0.025 0.005 0.005 0.02;]./0.06;
+#testErrLower = [0.01 0.005 0.01 0.01 0.01;0 0.005 0.002 0.002 0.005;0 0.005 0.002 0.002 0.005;0 0.005 0.002 0.002 0.005]./0.06;
+#testErrUpper = [0.01 0.005 0.01 0.01 0.01;0.002 0.005 0.002 0.002 0.005;0.002 0.005 0.002 0.002 0.005;0.002 0.005 0.002 0.002 0.005]./0.06;
 
-resid = masterResid(guess,testt,testData,testErrLow,testErrHigh,params)
-print(resid);
+params["tData"] = testt;
+params["yData"] = allSurvival;
+params["errLower"] = allErrLower;
+params["errUpper"] = allErrUpper;
+prob = OptimizationProblem(masterResid, guess,params, lb = [0.5e-3,0,0,0], ub = [3e-3,2*pi*1e3,2*pi*1e3,2*pi*1e3])
+sol = solve(prob, BBO_adaptive_de_rand_1_bin_radiuslimited(); callback = callback_function, local_reltol = 1e-3)
+#sol = solve(prob, ParticleSwarm(); callback = callback_function,x_tol = 1e-5, f_tol = 1e-3);
+#sol = solve(prob, SAMIN(rt = 0.75); callback = callback_function, x_tol = 1e-6, f_tol = 1e-3)
 
-out = masterSurvivals(guess,tPlot,params);
+print(sol)
+
+#resid = masterResid(guess,params)
+#print(resid);
+
+out = masterSurvivals(sol,tPlot,params);
 
 figure(3);
-plot(tPlot,out[1,:],label="|00⟩");
-plot(tPlot,out[2,:],label="|01⟩");
-plot(tPlot,out[3,:],label="|10⟩");
-plot(tPlot,out[4,:],label="|11⟩");
+plot(tPlot,out[1,:],label="|00⟩",color="C0");
+errorbar(testt,allSurvival[1,:],yerr=hcat(allErrLower[1,:],allErrUpper[1,:])',color="C0",linestyle="none",marker="o")
+plot(tPlot,out[2,:],label="|01⟩",color="C1");
+errorbar(testt,allSurvival[2,:],yerr=hcat(allErrLower[2,:],allErrUpper[2,:])',color="C1",linestyle="none",marker="o")
+plot(tPlot,out[3,:],label="|10⟩",color="C2");
+errorbar(testt,allSurvival[3,:],yerr=hcat(allErrLower[3,:],allErrUpper[3,:])',color="C2",linestyle="none",marker="o")
+plot(tPlot,out[4,:],label="|11⟩",color="C3");
+errorbar(testt,allSurvival[4,:],yerr=hcat(allErrLower[4,:],allErrUpper[4,:])',color="C3",linestyle="none",marker="o")
+
 legend();
 xlabel("Spin echo wait time");
 ylabel("Popn");

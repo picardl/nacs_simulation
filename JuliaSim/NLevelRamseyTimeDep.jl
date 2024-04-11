@@ -8,9 +8,10 @@ using LsqFit
 using Profile
 using Base.Threads
 
-N = 4
+N = 2 #4
 tPi = 7.4235e-6; #Microwave pi pulse time at zero detuning
 
+#=
 #csv_file_path = "C:/nilab-projects/nacs_simulation/JuliaSim/dcNoise250ms.CSV"
 csv_file_path = "C:/projects/nacs_simulation/JuliaSim/dcNoise250ms.CSV"
 lines = readlines(csv_file_path)
@@ -26,15 +27,21 @@ data_t = data_t[100:end] .- data_t[100]
 data_v = data_v[100:end]
 
 fracIntens = LinearInterpolation(data_t, data_v./mean(data_v))
+=#
+
+detAmp = 100;
+noiseFreq = 4.6e3;
 
 Δt = (t) -> begin #Microwave detuning
     #2*pi*[500,-329.6e3,320e3]*fracIntens(t); 
-    2*pi*[0,-261.17e3,261.17e3]*fracIntens(t); 
+    #2*pi*[0,-261.17e3,261.17e3]*fracIntens(t); 
+    2*pi*[detAmp]*sin(2*pi*noiseFreq*t); 
 end
 Ωt = (t) -> begin
     #2*pi*(1/(4*tPi))*[1,2.805,0.58];
     #2*pi*(1/(4*tPi))*[1,0.2725,0.6585];
-    2*pi*(1/(4*tPi))*[1,1,1];
+    #2*pi*(1/(4*tPi))*[1,1,1];
+    2*pi*(1/(4*tPi))*[1];
 end
 
 XRot, YRot, FreeEv, Ps, b = DynamicalDecoupling.genNLevelOperatorsTimeDep(N, Ωt, Δt)
@@ -49,7 +56,7 @@ end
 psi = nlevelstate(b,1);
 
 #Evolve single particle Hamiltonian Rabi
-if true
+if false
 tout, psi_t = timeevolution.schroedinger_dynamic(tspan, psi, Ht)
 exp_val_N0 = expect(Ps[1], psi_t)
 exp_val_N10 = expect(Ps[2], psi_t)
@@ -169,6 +176,55 @@ if false
     ylabel("Popn")
     ylim([0,1])
     title("XY8")
+end
+
+#XY8 tau scan monte carlo
+if true
+    NTrials = 30;
+    n = 1;
+
+    taus = range(20e-6,60e-6,15);
+    pfN = Array{Any, 1}(undef, length(taus));
+    mean_values = zeros(Float64,length(taus),N)
+    stderr_values = zeros(Float64,length(taus),N)
+
+    these_expect = zeros(Float64,N,NTrials)
+
+    probePhases = 0
+    global i = 1
+
+    tStart = rand(1,NTrials)
+    Xoffs = Vector{Any}(undef, NTrials)
+    Yoffs = Vector{Any}(undef, NTrials)
+    Freeoffs = Vector{Any}(undef, NTrials)
+    for j=1:NTrials
+        t_offset = tStart[j]
+        Xoffs[j] = (t, psi) -> XRot(t + t_offset, psi)
+        Yoffs[j] = (t,psi)-> YRot(t + t_offset, psi)
+        Freeoffs[j] = (t,psi)-> FreeEv(t + t_offset, psi)
+    end
+
+    for thistau = taus
+        tsXY,tWaitsXY,phasesXY = DynamicalDecoupling.genXY8(tPi,thistau,n)
+        @time begin
+            for j=1:NTrials
+                pf,ψf = RamseyPhaseTimeDep(probePhases,tPi,tsXY,tWaitsXY,phasesXY,Xoffs[j],Yoffs[j],Freeoffs[j],Ps[1],psi,5e6)
+                updated_expect = [inner[1] for inner in real.(expect.(Ps, Ref(ψf)))];
+                these_expect[:,j] = updated_expect;
+            end
+        end
+        mean_values[i,:] = mean(these_expect, dims=2)
+        stderr_values[i,:] = std(these_expect, dims=2)./sqrt(NTrials)
+        global i = i+1;
+    end
+    figure(3)
+    errorbar(taus,mean_values[:,1], stderr_values[:,1],label="N=0")
+    
+    legend()
+    xlabel("XY8 tau")
+    ylabel("Popn")
+    ylim([0,1])
+    title("XY8 with 4.6 kHz noise")
 end
 
 #XY8 scan pi time

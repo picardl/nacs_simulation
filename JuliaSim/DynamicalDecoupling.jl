@@ -99,7 +99,7 @@ function generalPulseSeq_master(ψ0,amps,times,phases,Omega,Delta,H_noise,N,para
 
         H = FreeEv + amps[i]*cos(phases[i])*XRot + amps[i]*sin(phases[i])*YRot
 
-        tout, rho_t = timeevolution.master(tPulse, rho,  H,[H_noise];rates = [1]);
+        tout, rho_t = timeevolution.master(tPulse, rho,  H,H_noise);
 
         tTots = vcat(tTots,tout[end] .+ tEnd);
         rhoTots = vcat(rhoTots,rho_t[end]);
@@ -128,7 +128,7 @@ function generalTwoBodyPulseSeq_master(ψ0,amps,times,phases,XRot,YRot, FreeEv,H
 
         H = FreeEv + amps[i]*cos(phases[i])*XRot + amps[i]*sin(phases[i])*YRot
 
-        tout, rho_t = timeevolution.master(tPulse, rho,  H,[H_noise];rates = [1]);
+        tout, rho_t = timeevolution.master(tPulse, rho,  H, H_noise);
 
         tTots = vcat(tTots,tout[end] .+ tEnd);
         rhoTots = vcat(rhoTots,rho_t[end]);
@@ -138,6 +138,35 @@ function generalTwoBodyPulseSeq_master(ψ0,amps,times,phases,XRot,YRot, FreeEv,H
     end
 
     return tTots,rhoTots
+
+end
+
+function generalTwoBodyPulseSeq(ψ0,amps,times,phases,XRot,YRot, FreeEv)
+
+    tTots = []
+    ψTots = []
+    tEnd = 0;
+    dt = 10e-9;
+
+    ψ = ψ0;
+
+    for i = 1:length(times)
+        Δt = (t) -> Deltas; 
+        #params["len"] = times[i]
+        
+        tPulse = [0,times[i]];
+
+        H = FreeEv + amps[i]*cos(phases[i])*XRot + amps[i]*sin(phases[i])*YRot
+
+        tout, ψ_t = timeevolution.schroedinger(tPulse, ψ,H);
+        tTots = vcat(tTots,tout[end] .+ tEnd);
+        ψTots = vcat(ψTots,ψ_t[end]);
+
+        tEnd = tTots[end];
+        ψ = ψ_t[end];
+    end
+
+    return tTots[end],ψTots[end]
 
 end
 

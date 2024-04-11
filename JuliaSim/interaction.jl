@@ -10,7 +10,7 @@ b = NLevelBasis(N)
 tPi = 32.2e-6; #Microwave pi pulse time at zero detuning
 Ω = 2*pi*(1/(4*tPi))
 
-dets = 2*pi*[-100,100]
+dets = 2*pi*[-0,0]
 
 θ = 0/180*pi;
 R = 2e-6;
@@ -63,10 +63,10 @@ for i = 1:1:length(tWaits)
 end
 
 figure(3)
-plot(tWaits,expect(P00, ψfN),label="|00⟩")
-plot(tWaits,expect(P01, ψfN),label="|01⟩")
-plot(tWaits,expect(P10, ψfN),label="|10⟩")
-plot(tWaits,expect(P11, ψfN),label="|11⟩")
+plot(tWaits*2,expect(P00, ψfN),label="|00⟩")
+plot(tWaits*2,expect(P01, ψfN),label="|01⟩")
+plot(tWaits*2,expect(P10, ψfN),label="|10⟩")
+plot(tWaits*2,expect(P11, ψfN),label="|11⟩")
 legend()
 xlabel("Spin echo wait time")
 ylabel("Popn")

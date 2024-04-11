@@ -28,23 +28,21 @@ function masterSurvivals(x,tData,params)
 
     dets1 = [-x[2]/2];
     dets2 = [x[2]/2];
-    gammas1 = x[3];
-    gammas2 = x[3];
+    gammaCOM = x[3];
+    gammaREL = x[4];
 
 
     J = (d/sqrt(3))^2/(4*pi*eps0*R^3)*(1-3*cos(θ)^2);
     fudge = 2*abs(1/(J/(2*hbar))/2*pi)/inter_t;
-    gammaJ = x[4];
+    gammaJ = x[5];
 
     XRot1, YRot1, FreeEv1, Ps1, b1 = DynamicalDecoupling.genNLevelOperators(N, Ω, dets1);
     XRot2, YRot2, FreeEv2, Ps2, b2 = DynamicalDecoupling.genNLevelOperators(N, Ω, dets2);
     b_col = b1 ⊗ b2;
 
-
     X_col = embed(b_col,1,XRot1) + embed(b_col,2,XRot2);
     Y_col = embed(b_col,1,YRot1) + embed(b_col,2,YRot2);
     free_col = embed(b_col,1,FreeEv1) + embed(b_col,2,FreeEv2);
-
 
     H_int = fudge*J/hbar/2*(transition(b1,1,2) ⊗ transition(b2,2,1) + dagger(transition(b1,1,2) ⊗ transition(b2,2,1)));
     P00 = Ps1[1] ⊗ Ps2[1];
@@ -56,9 +54,11 @@ function masterSurvivals(x,tData,params)
 
     P0 = Ps1[1] ⊗ identityoperator(b2);
 
-    H_noise_1B = sum([sqrt(gamma) * Ps1[i+1] for (i,gamma) in enumerate(gammas1)])⊗sum([sqrt(gamma2) * Ps2[j+1] for (j,gamma2) in enumerate(gammas2)]);
+    #H_noise_1B = sum([sqrt(gamma) * Ps1[i+1] for (i,gamma) in enumerate(gammas1)])⊗sum([sqrt(gamma2) * Ps2[j+1] for (j,gamma2) in enumerate(gammas2)]);
+    H_noise_DeltaCOM = sqrt(gammas1/2)*P01 + 0.5*P01 + (sqrt(gammas1) + sqrt(gammas2))*P11;
+    H_noise_DeltaCOM = sqrt(gammas1/2)*P01 + 0.5*P01 + (sqrt(gammas1) + sqrt(gammas2))*P11;
     H_noise_2B = sqrt(gammaJ)*(transition(b1,1,2) ⊗ transition(b2,2,1) + dagger(transition(b1,1,2) ⊗ transition(b2,2,1)));
-    H_noise = H_noise_1B + H_noise_2B;
+    H_noise = [H_noise_1B, H_noise_2B];
 
     psi00 = nlevelstate(b1,1) ⊗ nlevelstate(b2,1)
 
@@ -154,14 +154,16 @@ function stirapNorm(stirap_contrast,stirap_contrastErrLower,stirap_contrastErrUp
     this_errNumLower = sqrt.(this_errLower.^2 .+ stirap_contrastErrLower[1].^2);
     this_errLower = this_surv.*sqrt.((this_errNumLower./numerator).^2 .+ (stirap_diff2BErrLower./stirap_diff2B).^2);
     this_errUpper = this_surv.*sqrt.((this_errNumUpper./numerator).^2 .+ (stirap_diff2BErrUpper./stirap_diff2B).^2);
-    this_errLower[isnan.(this_errLower)] .= 5e-2; 
-    this_errUpper[isnan.(this_errUpper)] .= 5e-2; 
+    this_errLower[isnan.(this_errLower)] .= this_errNumLower[isnan.(this_errLower)]./stirap_diff2B; 
+    this_errUpper[isnan.(this_errUpper)] .= this_errNumUpper[isnan.(this_errUpper)]./stirap_diff2B; 
     return (this_surv,this_errLower,this_errUpper)
 end
 
 global iter = 0;
 
-dataPath = "C:/nilab-projects/nacs_simulation/JuliaSim/experimentalData"
+#dataPath = "C:/nilab-projects/nacs_simulation/JuliaSim/experimentalData/20240225_115611"
+dataPath = "C:/nilab-projects/nacs_simulation/JuliaSim/experimentalData/20240303_181845"
+
 (_, stirap00, stirapErrLower00, stirapErrUpper00,
     testt, survival00, errLower00, errUpper00) = load_and_extract_data(dataPath*"/chain_1_measurement_1_data.csv")
 (_, _, _, _,
@@ -188,11 +190,11 @@ params["θ"] = 0/180*pi;
 params["R"] = 2e-6;
 params["d"] = 4.6*3.33564e-30
 params["inter_t"] = 2e-3; #Interaction pi time
-Delta = 2*pi*50; #Site-by-site detuning in 2*pi*Hz
+Delta = 2*pi*500; #Site-by-site detuning in 2*pi*Hz
 
 tPlot = range(1e-6,maximum(testt),60);
 
-guess = [2e-3,Delta,2*pi*10,2*pi*50]; #interaction time, detuning, detuning noise, interaction noise
+guess = [1.75e-3,Delta,2*pi*10,2*pi*50]; #interaction time, detuning, detuning noise, interaction noise
 
 #testt = [1e-6,1.5e-3,3e-3,7.5e-3,9e-3]
 #testData = [0.06 0.015 0.045 0.05 0.02;0 0.01 0.002 0.002 0.005;0 0.01 0.002 0.002 0.005;0 0.025 0.005 0.005 0.02;]./0.06;
@@ -204,7 +206,7 @@ params["yData"] = allSurvival;
 params["errLower"] = allErrLower;
 params["errUpper"] = allErrUpper;
 prob = OptimizationProblem(masterResid, guess,params, lb = [0.5e-3,0,0,0], ub = [3e-3,2*pi*1e3,2*pi*1e3,2*pi*1e3])
-sol = solve(prob, BBO_adaptive_de_rand_1_bin_radiuslimited(); callback = callback_function, local_reltol = 1e-3)
+sol = solve(prob, BBO_adaptive_de_rand_1_bin_radiuslimited(); callback = callback_function, local_reltol = 1e-3,local_abstol = 1e-3,maxiters = 10000)
 #sol = solve(prob, ParticleSwarm(); callback = callback_function,x_tol = 1e-5, f_tol = 1e-3);
 #sol = solve(prob, SAMIN(rt = 0.75); callback = callback_function, x_tol = 1e-6, f_tol = 1e-3)
 

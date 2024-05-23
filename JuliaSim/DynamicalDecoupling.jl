@@ -170,25 +170,25 @@ function generalTwoBodyPulseSeq(ψ0,amps,times,phases,XRot,YRot, FreeEv)
 
 end
 
-function loadPulseShape(name,Omega,params)
+function loadPulseShape(name,Omegas,params)
     if name == "square"
-        Ωt = (t) -> [Omega]
+        Ωt = (t) -> [Omega for (i,Omega) in enumerate(Omegas)]
     elseif name == "truncGaussPulse"
         frac = params["frac"];
         len = params["len"];
         tau = frac*len;
         intPulse = sqrt(pi)*tau*erf(len/(2*tau));
-        intRect = len*Omega;
-        ampMax = intRect/intPulse;
-        Ωt = (t) -> [ampMax*exp(-(t-len/2).^2/tau.^2)];
+        intRect = len.*Omegas;
+        ampsMax = intRect./intPulse;
+        Ωt = (t) -> [ampMax*exp(-(t-len/2).^2/tau.^2) for (i,ampMax) in enumerate(ampsMax)];
     elseif name == "truncGaussDiscrete"
         frac = params["frac"];
         len = params["len"];
         tau = frac*len;
         intPulse = sqrt(pi)*tau*erf(len/(2*tau));
-        intRect = len*Omega;
-        ampMax = intRect/intPulse;
-        Ωt = (t) -> [ampMax*exp(-(ceil(t/2e-6)*2e-6-len/2).^2/tau.^2)];
+        intRect = len.*Omegas;
+        ampsMax = intRect./Omegas;
+        Ωt = (t) -> [ampMax*exp(-(ceil(t/2e-6)*2e-6-len/2).^2/tau.^2) for (i,ampMax) in enumerate(ampsMax)];
     end
     return Ωt
 end

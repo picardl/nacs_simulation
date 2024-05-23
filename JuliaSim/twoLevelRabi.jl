@@ -10,7 +10,7 @@ tPi = 32.2e-6; #Microwave pi pulse time at zero detuning
 
 micro = Ω*(transition(b,1,2) + dagger(transition(b,1,2))) #Microwave coupling
 
-tspan = range(0,8e-3,100000)
+tspan = range(0,100e-6,1000)
 
 #Diagonal terms
 P1 = tensor(nlevelstate(b,1), dagger(nlevelstate(b,1)))

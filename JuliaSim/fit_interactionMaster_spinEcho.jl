@@ -6,8 +6,9 @@ using OptimizationBBO
 using OptimizationOptimJL
 using CSV
 using DataFrames
+using FiniteDiff
 #using Zygote
-using ForwardDiff
+#using ForwardDiff
 include("DynamicalDecoupling.jl")
 using .DynamicalDecoupling
 #using Plots
@@ -17,24 +18,29 @@ function masterSurvivals(x,tData,params)
     hbar = h/(2*pi)
     eps0 = 8.8541878128e-12
     N = 2
-    tPi = params["tPi"];
+    #=tPi = params["tPi"];
     θ = params["θ"];
     R = params["R"];
-    d = params["d"];
+    d = params["d"];=#
+    tPi = params[1];##Microwave pi pulse time at zero detuning
+    θ = params[2]; #θ
+    R  = params[3]; #Spacing R
+    d = params[4]; #dipole moment d
 
     Ω = 2*pi*(1/(4*tPi))*[1];
 
-    inter_t = x[1];
+    inter_t = abs(x[1]);#Interaction pi time
 
     dets1 = [-x[2]/2];
     dets2 = [x[2]/2];
-    gammaCOM = x[3];
-    gammaREL = x[4];
+    gammaCOM = abs(x[3]);
+    gammaREL = abs(x[4]);
 
 
-    J = (d/sqrt(3))^2/(4*pi*eps0*R^3)*(1-3*cos(θ)^2);
+    J = 2*(d/sqrt(3))^2/(4*pi*eps0*R^3)*(1-3*cos(θ)^2);
     fudge = 2*abs(1/(J/(2*hbar))/2*pi)/inter_t;
-    gammaJ = x[5];
+    gammaJ = abs(x[5]);
+
 
     XRot1, YRot1, FreeEv1, Ps1, b1 = DynamicalDecoupling.genNLevelOperators(N, Ω, dets1);
     XRot2, YRot2, FreeEv2, Ps2, b2 = DynamicalDecoupling.genNLevelOperators(N, Ω, dets2);
@@ -55,15 +61,15 @@ function masterSurvivals(x,tData,params)
     P0 = Ps1[1] ⊗ identityoperator(b2);
 
     #H_noise_1B = sum([sqrt(gamma) * Ps1[i+1] for (i,gamma) in enumerate(gammas1)])⊗sum([sqrt(gamma2) * Ps2[j+1] for (j,gamma2) in enumerate(gammas2)]);
-    H_noise_DeltaCOM = sqrt(gammas1/2)*P01 + 0.5*P01 + (sqrt(gammas1) + sqrt(gammas2))*P11;
-    H_noise_DeltaCOM = sqrt(gammas1/2)*P01 + 0.5*P01 + (sqrt(gammas1) + sqrt(gammas2))*P11;
+    H_noise_DeltaCOM = sqrt(gammaCOM)*(-1*P00 + P11);
+    H_noise_DeltaREL = sqrt(gammaREL/2)*(-1*P01 + P10);
     H_noise_2B = sqrt(gammaJ)*(transition(b1,1,2) ⊗ transition(b2,2,1) + dagger(transition(b1,1,2) ⊗ transition(b2,2,1)));
-    H_noise = [H_noise_1B, H_noise_2B];
+    H_noise = [H_noise_DeltaCOM, H_noise_DeltaREL,H_noise_2B];
 
     psi00 = nlevelstate(b1,1) ⊗ nlevelstate(b2,1)
 
     amps = [1,0,1,0,1];
-    phases::Vector{Float64} = [0,0,0,0,pi];
+    phases::Vector{Float64} = [0,0,pi/2,0,0];
 
     tsSpinEcho = tPi.*DynamicalDecoupling.tFracSpinEcho
     probePhases = 0
@@ -86,10 +92,10 @@ function masterSurvivals(x,tData,params)
 end
 
 function masterResid(x,params)
-    tData = params["tData"];
-    yData = params["yData"];
-    errLower = params["errLower"];
-    errUpper = params["errUpper"];
+    tData = params[6];
+    yData = params[7];
+    errLower = params[8];
+    errUpper = params[9];
 
     fitData = masterSurvivals(x,tData,params);
 
@@ -101,24 +107,81 @@ function masterResid(x,params)
 
 end
 
+function masterResidGlob(x)
+    tData = globparams[6];
+    yData = globparams[7];
+    errLower = globparams[8];
+    errUpper = globparams[9];
+
+    fitData = masterSurvivals(x,tData,globparams);
+
+    weights = 1.0./(errLower.^2.0 + errUpper.^2.0 .+ 1e-9);
+    resids = ((fitData - yData).^2.0).*weights;
+    return reshape(resids,(1,116))
+
+end
+
+#=
+function masterResid(x,params)
+    #=tData = params["tData"];
+    yData = params["yData"];
+    errLower = params["errLower"];
+    errUpper = params["errUpper"];=#
+    tData = params[6];
+    yData = params[7];
+    errLower = params[8];
+    errUpper = params[9];
+
+    randInd = rand(1:length(tData),12)
+    tSampled = [tData[i] for i in randInd]
+    errLowerSampled = [errLower[i] for i in randInd]
+    errUpperSampled = [errUpper[i] for i in randInd]
+
+    yDataSampled = zeros(size(yData,1),12)
+    for i = 1:length(randInd)
+        yDataSampled[:,i] = yData[:,randInd[i]]
+    end
+
+    fitData = masterSurvivals(x,tSampled,params);
+    weights = 1.0./(errLowerSampled.^2.0 + errUpperSampled.^2.0 .+ 1e-9);
+    resids = sum(((fitData - yDataSampled).^2.0).*transpose(weights));
+
+    print(sum(resids))
+    print("\n")
+    return sum(resids)
+
+end=#
+
 function callback_function(opt_values,f_val)
     # Extracting the iteration count and function value
     global iter += 1;
     #f_val = opt_values.f_val
 
     # Plotting the iteration and function value
-    if iter%10 == 0
+    if iter%20 == 0
         figure(1)
-        plot(iter, f_val; marker="o", color="red")
+        semilogy(iter, f_val; marker="o", color="red")
         xlabel("Iteration")
         ylabel("Function Value")
         title("Optimization Progress")
         draw()  # Update the plot in real-time
         pause(0.01)
     end
+        # Plotting the iteration and function value
+        if iter%10 == 0
+            figure(2)
+            for i = 1:length(opt_values)
+                subplot(length(opt_values),1,i)
+                plot(iter, opt_values[i]; marker="o", color="red")
+                xlabel("Iteration")
+                ylabel("Value")
+                draw()  # Update the plot in real-time
+            end
+        end
     return false
 end
 
+#=
 function load_and_extract_data(filename)
     # Load CSV file into a DataFrame
     df = CSV.File(filename) |> DataFrame
@@ -143,6 +206,20 @@ function load_and_extract_data(filename)
     return (axisValue_scan1, mean_scan1, errorLower_scan1, errorUpper_scan1,
             axisValue_scan2, mean_scan2, errorLower_scan2, errorUpper_scan2)
 end
+=#
+
+function load_and_extract_data(filename)
+    # Load CSV file into a DataFrame
+    df = CSV.File(filename) |> DataFrame
+
+    # Extract vectors for each set
+    axisValue_scan = df.axisValue
+    mean_scan = df.mean
+    errorLower_scan = df.errorLower
+    errorUpper_scan = df.errorUpper
+
+    return (axisValue_scan, mean_scan, errorLower_scan, errorUpper_scan)
+end
 
 function stirapNorm(stirap_contrast,stirap_contrastErrLower,stirap_contrastErrUpper,this_surv,this_errLower,this_errUpper)
     numerator = (this_surv .-  stirap_contrast[1]);
@@ -161,73 +238,143 @@ end
 
 global iter = 0;
 
+#dStamp = "20240410"#"20240402"
+#tStamp = "205742"#"200923"
+dStamp = "20240419" #2 um data combined
+tStamp = "190010"
+#dStamp = "20240503" #2.3 um data
+#tStamp = "132113"
+#dStamp = "20240501" #2.6 um data
+#tStamp = "10534"
+#dStamp = "000000" #Davids simulated data with astigmatism = 0.2 and alpha =1
+#tStamp = "000000"
+
+
 #dataPath = "C:/nilab-projects/nacs_simulation/JuliaSim/experimentalData/20240225_115611"
-dataPath = "C:/nilab-projects/nacs_simulation/JuliaSim/experimentalData/20240303_181845"
+dataPath = "C:/projects/nacs_simulation/JuliaSim/experimentalData/"*dStamp*"_"*tStamp
 
-(_, stirap00, stirapErrLower00, stirapErrUpper00,
-    testt, survival00, errLower00, errUpper00) = load_and_extract_data(dataPath*"/chain_1_measurement_1_data.csv")
-(_, _, _, _,
-    _, survival01, errLower01, errUpper01) = load_and_extract_data(dataPath*"/chain_1_measurement_2_data.csv")
-(_, _, _, _,
-    _, survival10, errLower10, errUpper10) = load_and_extract_data(dataPath*"/chain_1_measurement_3_data.csv")
-(_, _, _, _,
-    _, survival11, errLower11, errUpper11) = load_and_extract_data(dataPath*"/chain_1_measurement_4_data.csv")
+xScale = 1e-3;
 
-testt = testt.*2;
+(testt, survival00, errLower00, errUpper00) = load_and_extract_data(dataPath*"/00_data"*dStamp*"_"*tStamp*".csv")
+(_,survival01, errLower01, errUpper01) = load_and_extract_data(dataPath*"/01_data"*dStamp*"_"*tStamp*".csv")
+(_,survival10, errLower10, errUpper10) = load_and_extract_data(dataPath*"/10_data"*dStamp*"_"*tStamp*".csv")
+(_,survival11, errLower11, errUpper11) = load_and_extract_data(dataPath*"/11_data"*dStamp*"_"*tStamp*".csv")
 
+testt = testt*xScale .+ 1e-6;
+
+#=
 survival00, errLower00, errUpper00 = stirapNorm(stirap00,stirapErrLower00,stirapErrUpper00,survival00,errLower00,errUpper00);
 survival01, errLower01, errUpper01 = stirapNorm(stirap00, stirapErrLower00,stirapErrUpper00, survival01, errLower01, errUpper01)
 survival10, errLower10, errUpper10 = stirapNorm(stirap00, stirapErrLower00,stirapErrUpper00, survival10, errLower10, errUpper10)
 survival11, errLower11, errUpper11 = stirapNorm(stirap00, stirapErrLower00,stirapErrUpper00, survival11, errLower11, errUpper11)
+=#
 
-allSurvival = hcat(survival00, survival01, survival10, survival11)'
-allErrLower = hcat(errLower00, errLower01, errLower10, errLower11)'
-allErrUpper = hcat(errUpper00, errUpper01, errUpper10, errUpper11)'
+allSurvival = hcat(survival00, survival01, survival10, survival11)';
+allErrLower = hcat(errLower00, errLower01, errLower10, errLower11)' .+ 5e-3;
+allErrUpper = hcat(errUpper00, errUpper01, errUpper10, errUpper11)' .+ 5e-3;
 
-params = Dict();
+#=params = Dict();
 params["tPi"] = 20e-6;#32.2e-6; #Microwave pi pulse time at zero detuning
 params["θ"] = 0/180*pi;
 params["R"] = 2e-6;
 params["d"] = 4.6*3.33564e-30
-params["inter_t"] = 2e-3; #Interaction pi time
-Delta = 2*pi*500; #Site-by-site detuning in 2*pi*Hz
+params["inter_t"] = 2e-3; #Interaction pi time=#
+Delta = 2*pi*50; #Site-by-site detuning in 2*pi*Hz
 
-tPlot = range(1e-6,maximum(testt),60);
+params = (Vector{Any}(undef,9))
+params[1] = 13.4e-6;##Microwave pi pulse time at zero detuning
+params[2] = 0/180*pi; #θ
+params[3] = 2e-6; #Spacing R
+params[4] = 4.6*3.33564e-30 #dipole moment d
+params[5] = 2e-3; #Interaction pi time
+Delta = 2*pi*50; #Site-by-site detuning in 2*pi*Hz
 
-guess = [1.75e-3,Delta,2*pi*10,2*pi*50]; #interaction time, detuning, detuning noise, interaction noise
+tPlot = range(1e-6,maximum(testt),1000);
+
+guess = [1.4e-3, 0, 0, 0,50]; #interaction time, detuning, COM detuning noise, Relative detuning noise, interaction noise
+
 
 #testt = [1e-6,1.5e-3,3e-3,7.5e-3,9e-3]
 #testData = [0.06 0.015 0.045 0.05 0.02;0 0.01 0.002 0.002 0.005;0 0.01 0.002 0.002 0.005;0 0.025 0.005 0.005 0.02;]./0.06;
 #testErrLower = [0.01 0.005 0.01 0.01 0.01;0 0.005 0.002 0.002 0.005;0 0.005 0.002 0.002 0.005;0 0.005 0.002 0.002 0.005]./0.06;
 #testErrUpper = [0.01 0.005 0.01 0.01 0.01;0.002 0.005 0.002 0.002 0.005;0.002 0.005 0.002 0.002 0.005;0.002 0.005 0.002 0.002 0.005]./0.06;
 
-params["tData"] = testt;
+#=params["tData"] = testt;
 params["yData"] = allSurvival;
 params["errLower"] = allErrLower;
-params["errUpper"] = allErrUpper;
-prob = OptimizationProblem(masterResid, guess,params, lb = [0.5e-3,0,0,0], ub = [3e-3,2*pi*1e3,2*pi*1e3,2*pi*1e3])
-sol = solve(prob, BBO_adaptive_de_rand_1_bin_radiuslimited(); callback = callback_function, local_reltol = 1e-3,local_abstol = 1e-3,maxiters = 10000)
-#sol = solve(prob, ParticleSwarm(); callback = callback_function,x_tol = 1e-5, f_tol = 1e-3);
+params["errUpper"] = allErrUpper;=#
+params[6] = testt;
+params[7] = allSurvival;
+params[8] = allErrLower;
+params[9] = allErrUpper;
+
+paramTuple = Tuple(x for x in params)
+
+#prob = OptimizationProblem(masterResid, guess,paramTuple, lb = [1e-3,0,0,0,0], ub = [2e-3,2*pi*100,2*pi*100,2*pi*100,2*pi*100])
+prob = OptimizationProblem(masterResid, guess,paramTuple)
+
+
+#sol = solve(prob, BBO_adaptive_de_rand_1_bin_radiuslimited(); callback = callback_function, local_reltol = 1e-3,local_abstol = 1e-3,maxiters = 10)
+#sol = solve(prob, ParticleSwarm(); callback = callback_function,x_tol = 1e-5, f_tol = 1e-3,maxiters = 5000);
 #sol = solve(prob, SAMIN(rt = 0.75); callback = callback_function, x_tol = 1e-6, f_tol = 1e-3)
+#sol = solve(prob, NelderMead(lower = [1e-3,-2*pi*1000,0,0,0],upper=[4e-3,2*pi*1000,2*pi*100,2*pi*100,2*pi*100]); callback = callback_function, x_tol = 1e-7, f_tol = 1e-7,maxiters = 5000)
+
+#sol = [0.0013978817736142034, 9.317074755089422, 12.676602503515985, 25.378517840797727, 107.76006188798979];
+#sol = [0.0020976971854996303, 1342.9569680806408, 3.442248482645424e-8, 2.527575947444138e-7, 124.73733193362969];
+#sol = [0.0031876863677936782, 765.0800300954555, 8.700029667603038, 32.2190491240238, 113.92452448148222];
+
+#sol = [0.0013978817736142034, 9.317074755089422, 200.676602503515985, 25.378517840797727, 107.76006188798979]; #2um use fixed site by site
+
+
+sol =  [0.0013978817736142034, 9, 12, 25, 0]
+#sol =  [0.0013978817736142034, 9.317074755089422, 30, 25,100]
+#sol = [-0.0014860421492542861, -1.605345097153748, 2.5780030491576933, -1.0178837205490623, 48.60987409757473] #for David simu;ated data
 
 print(sol)
 
 #resid = masterResid(guess,params)
 #print(resid);
 
-out = masterSurvivals(sol,tPlot,params);
+out = masterSurvivals(sol,tPlot,paramTuple);
 
+edgeColors = [[0,113/255,187/255],[49,163,84]/255,[117,107,177]/255,[220,20,20]/255,[0,109,44]/255];
+faceColors = [[177,224,255]/255,[161,217,155]/255,[188,189,220]/255,[255,142,142]/255,[44,162,95]/255];
+
+iSorted = sortperm(testt)
+xPlotScale = 1e3;
+
+rc("font",family="sans",size = 7)
 figure(3);
-plot(tPlot,out[1,:],label="|00⟩",color="C0");
-errorbar(testt,allSurvival[1,:],yerr=hcat(allErrLower[1,:],allErrUpper[1,:])',color="C0",linestyle="none",marker="o")
-plot(tPlot,out[2,:],label="|01⟩",color="C1");
-errorbar(testt,allSurvival[2,:],yerr=hcat(allErrLower[2,:],allErrUpper[2,:])',color="C1",linestyle="none",marker="o")
-plot(tPlot,out[3,:],label="|10⟩",color="C2");
-errorbar(testt,allSurvival[3,:],yerr=hcat(allErrLower[3,:],allErrUpper[3,:])',color="C2",linestyle="none",marker="o")
-plot(tPlot,out[4,:],label="|11⟩",color="C3");
-errorbar(testt,allSurvival[4,:],yerr=hcat(allErrLower[4,:],allErrUpper[4,:])',color="C3",linestyle="none",marker="o")
+plot(tPlot*xPlotScale,out[1,:],label="|00⟩",color=edgeColors[1],lineWidth = 2);
+#errorbar(testt,allSurvival[1,:],yerr=hcat(allErrLower[1,:],allErrUpper[1,:])',color = edgeColors[1],mec=edgeColors[1],mfc=faceColors[1],linestyle="none",marker="o",capsize = 3)
+plot(testt*xPlotScale,allSurvival[1,:],color = edgeColors[1],mec=edgeColors[1],mfc=faceColors[1],linestyle="none",marker="o",markerSize = 5)
+fill_between(testt[iSorted]*xPlotScale,allSurvival[1,iSorted] - allErrLower[1,iSorted],allSurvival[1,iSorted] + allErrUpper[1,iSorted],color = faceColors[1],alpha = 0.3)
 
-legend();
-xlabel("Spin echo wait time");
-ylabel("Popn");
+plot(tPlot*xPlotScale,out[2,:],label="|0e⟩",color=edgeColors[2],lineWidth = 2);
+#errorbar(testt,allSurvival[2,:],yerr=hcat(allErrLower[2,:],allErrUpper[2,:])',color = edgeColors[2],mec=edgeColors[2],mfc=faceColors[2],linestyle="none",marker="o",capsize = 3)
+plot(testt*xPlotScale,allSurvival[2,:],color = edgeColors[2],mec=edgeColors[2],mfc=faceColors[2],linestyle="none",marker="o",markerSize = 5)
+fill_between(testt[iSorted]*xPlotScale,allSurvival[2,iSorted] - allErrLower[2,iSorted],allSurvival[2,iSorted] + allErrUpper[2,iSorted],color = faceColors[2],alpha = 0.3)
+
+plot(tPlot*xPlotScale,out[3,:],label="|e0⟩",color=edgeColors[3],lineWidth = 2);
+#errorbar(testt,allSurvival[3,:],yerr=hcat(allErrLower[3,:],allErrUpper[3,:])',color = edgeColors[3],mec=edgeColors[3],mfc=faceColors[3],linestyle="none",marker="o",capsize = 3)
+plot(testt*xPlotScale,allSurvival[3,:],color = edgeColors[3],mec=edgeColors[3],mfc=faceColors[3],linestyle="none",marker="o",markerSize = 5)
+fill_between(testt[iSorted]*xPlotScale,allSurvival[3,iSorted] - allErrLower[3,iSorted],allSurvival[3,iSorted] + allErrUpper[3,iSorted],color = faceColors[3],alpha = 0.3)
+
+plot(tPlot*xPlotScale,out[4,:],label="|ee⟩",color=edgeColors[4],lineWidth = 2);
+#errorbar(testt,allSurvival[4,:],yerr=hcat(allErrLower[4,:],allErrUpper[4,:])',color = edgeColors[4],mec=edgeColors[4],mfc=faceColors[4],linestyle="none",marker="o",capsize = 3)
+plot(testt*xPlotScale,allSurvival[4,:],color = edgeColors[4],mec=edgeColors[4],mfc=faceColors[4],linestyle="none",marker="o",markerSize = 5)
+fill_between(testt[iSorted]*xPlotScale,allSurvival[4,iSorted] - allErrLower[4,iSorted],allSurvival[4,iSorted] + allErrUpper[4,iSorted],color = faceColors[4],alpha = 0.3)
+
+legend(fontsize=7);
+xlabel("Interaction time (ms)");
+ylabel("Population");
 ylim([0,1.01]);
+xlim([0,tPlot[end]*xPlotScale])
+
+#=#Error estimation
+jb = FiniteDiff.finite_difference_jacobian(masterResidGlob,sol)
+weights = 1.0./(allErrLower.^2.0 + allErrUpper.^2.0 .+ 1e-9);
+ww = reshape(weights,(1,116));
+W = diagm(vec(ww));
+cv = masterResid(sol,params)'*inv(jb'*W*jb)/(length(testt) - length(sol));
+solErrs = sqrt.(diag(cv));=#

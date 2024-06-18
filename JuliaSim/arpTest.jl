@@ -15,20 +15,21 @@ tPi = tPi_HF/193; #Microwave pi pulse time at zero detuning
 
 Ωs = 2*pi*(1/(4*tPi))*[1,1,0.86];
 
-Δs = [-Δg,0,-Δe,0,Δe]
+Δs = 2*pi*[-Δg,0,-Δe,0,Δe]
 
 
 
-if false #ARP
+if true #ARP
 
-    df = 25e3;
-rampRate = 0.1e9;
+    df = 2*pi*35e3;
+rampRate = 2*pi*0.0059;
+dfOffs = 2*pi*(-20e3);
 
 params = Dict();
 params["frac"] = 0.3;
 params["len"] = df/rampRate;
-shapeName = "square";
-#shapeName = "truncGaussPulse";
+#shapeName = "square";
+shapeName = "truncGaussPulse";
 #shapeName = "truncGaussDiscrete";
 
 
@@ -40,7 +41,7 @@ psi0 = nlevelstate(b,2);
 Ωt = DynamicalDecoupling.loadPulseShape(shapeName,1 .*Ωs,params);
 ΩHFt = DynamicalDecoupling.loadPulseShape(shapeName,Ωs./193,params);
 
-    Δt = (t) -> Δs .+  (-df/2 .+ df*t/params["len"]).*[0,0,1,1,1];
+    Δt = (t) -> Δs .+  (df/2 .- df*t/params["len"] + dfOffs).*[0,0,1,1,1];
 
 XRot  = (t,psi) -> begin
     return sum([Ω * (transition(b, 1, i+2) + dagger(transition(b, 1, i+2))) for (i, Ω) in enumerate(Ωt(t))]) + sum([Ω *(transition(b, 2, i+2) + dagger(transition(b, 2, i+2))) for (i, Ω) in enumerate(ΩHFt(t))])
@@ -60,7 +61,7 @@ tTots = []
     
 
     amps = [1];
-    times =range(1e-6,params["len"],10);
+    times =range(1e-6,params["len"],20);
     phases = [0];
     tEnd = 0;
 
@@ -95,21 +96,21 @@ legend()
 
 end
 
-if true #Rabi det
+if false #Rabi det
 
 
 params = Dict();
 params["frac"] = 0.3;
 params["len"] = tPi_HF;
-shapeName = "square";
-#shapeName = "truncGaussPulse";
+#shapeName = "square";
+shapeName = "truncGaussPulse";
 #shapeName = "truncGaussDiscrete";
 
 
 
 b = NLevelBasis(N);
 
-psi0 = nlevelstate(b,2);
+psi0 = nlevelstate(b,4);
 
 Ωt = DynamicalDecoupling.loadPulseShape(shapeName,1 .*Ωs,params);
 ΩHFt = DynamicalDecoupling.loadPulseShape(shapeName,Ωs./193,params);
@@ -131,7 +132,7 @@ tTots = []
     
 
     amps = [1];
-    dets = 2*pi*range(-60e3,-50e3,15);
+    dets = 2*pi*range(-20e3,-10e3,10);
     phases = [0];
     tEnd = 0;
 

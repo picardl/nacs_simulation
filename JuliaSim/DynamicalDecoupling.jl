@@ -170,25 +170,25 @@ function generalTwoBodyPulseSeq(ψ0,amps,times,phases,XRot,YRot, FreeEv)
 
 end
 
-function loadPulseShape(name,Omega,params)
+function loadPulseShape(name,Omegas,params)
     if name == "square"
-        Ωt = (t) -> Omega
+        Ωt = (t) -> [Omega for (i,Omega) in enumerate(Omegas)]
     elseif name == "truncGaussPulse"
         frac = params["frac"];
         len = params["len"];
         tau = frac*len;
         intPulse = sqrt(pi)*tau*erf(len/(2*tau));
-        intRect = len*Omega;
-        ampMax = intRect/intPulse;
-        Ωt = (t) -> ampMax*exp(-(t-len/2).^2/tau.^2);
+        intRect = len.*Omegas;
+        ampsMax = intRect./intPulse;
+        Ωt = (t) -> [ampMax*exp(-(t-len/2).^2/tau.^2) for (i,ampMax) in enumerate(ampsMax)];
     elseif name == "truncGaussDiscrete"
         frac = params["frac"];
         len = params["len"];
         tau = frac*len;
         intPulse = sqrt(pi)*tau*erf(len/(2*tau));
-        intRect = len*Omega;
-        ampMax = intRect/intPulse;
-        Ωt = (t) -> ampMax*exp(-(ceil(t/2e-6)*2e-6-len/2).^2/tau.^2);
+        intRect = len.*Omegas;
+        ampsMax = intRect./Omegas;
+        Ωt = (t) -> [ampMax*exp(-(ceil(t/2e-6)*2e-6-len/2).^2/tau.^2) for (i,ampMax) in enumerate(ampsMax)];
     end
     return Ωt
 end
@@ -502,6 +502,7 @@ function genNLevelOperators(N, Ωs, Δs)
     return XRot, YRot, FreeEv, Ps, b
 end
 
+#=
 function genNLevelOperatorsTimeDep(N, Ωt, Δt)
     """
     genNLevelOperators(N, Ωs, Δs)
@@ -544,7 +545,46 @@ function genNLevelOperatorsTimeDep(N, Ωt, Δt)
     end
 
     return XRot, YRot,FreeEv, Ps, b
-end
+end =#
+
+function genNLevelOperatorsTimeDep(N, Ωt, Δt)
+    """
+    genNLevelOperators(N, Ωs, Δs)
+    Generate rotation, free evolution, and projection operators for N level basis.
+    Assumed that rotation is between level 1 and each of the other levels, with no rotations between higher levels.
+
+    Arguments:
+    - N::Integer: Number of levels
+    - Ωs::Function: Function of t, returning vector of length N-1, Rabi frequency of rotation from level 1 to each other level
+    - Δs::Function: Function of t, returning vector of length N-1, detunings of each level in microwave rotating frame
+
+    Returns:
+    - XRot::Function: Rotation operator about X axis for all levels as a function of t and psi (unused argument)
+    - YRot::Function: Rotation operator about Y axis for all levels as a function of t and psi (unused argument)
+    - FreeEv::Function: Sum of free evolution operators for all levels as a function of t and psi (unused argument)
+    - Ps::Vector: Array of projection operators onto each of the N levels
+    - b::NLevel: N level basis object
+    """
+    b = NLevelBasis(N);
+    
+    X = LazySum([0.0 for i in 1:N-1],[(transition(b, 1, i+1) + dagger(transition(b, 1, i+1))) for i in 1:N-1]);
+    Y = LazySum([0.0 for  i in 1:N-1],[(-im*transition(b, 1, i+1) + im*dagger(transition(b, 1, i+1))) for  i in 1:N-1]);
+
+    XRot  = (t,psi) -> begin
+        return sum([Ω * (transition(b, 1, i+1) + dagger(transition(b, 1, i+1))) for (i, Ω) in enumerate(Ωt(t))])
+    end
+    YRot  = (t,psi) -> begin
+        sum([Ω * (-im*transition(b, 1, i+1) + im*dagger(transition(b, 1, i+1))) for (i, Ω) in enumerate(Ωt(t))])
+    end
+    
+    Ps = [tensor(nlevelstate(b, i), dagger(nlevelstate(b, i))) for i in 1:N];
+
+    FreeEv  = (t,psi) -> begin
+        return sum([Δ * Ps[i+1] for (i, Δ) in enumerate(Δt(t))])
+    end
+
+    return XRot, YRot,FreeEv, Ps, b
+end 
 
 tFracSpinEcho = [1/2,1];
 waitFracSpinEcho = [1,1];

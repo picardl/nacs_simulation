@@ -441,29 +441,36 @@ function CollectiveRamseyPhaseTimeDep(probePhases,tPi,ts,tWaits,phases,XRot,YRot
     return avgPf, allRes
 end
 
-function genXY8(tPi,tau,nGroups)
+function genXY8(tPi,tTau,nGroups)
     """
     genXY8(nGroups)
     Generate XY8 sequence parameters for a given number of groups
 
     Arguments:
     - tPi::Float64: Pi pulse time
-    - tPi::tau: tau time between pi pulses
+    - tTau::Float64: tau time between pi pulses
     - nGroups::Integer: number of groups of XY8 pulses
 
     
     Returns:
-    - tsXY::Vector: List of pulse times
-    - tWaitsXY::Vector: List of wait times
-    - phasesXY::Vector: List of pulses phases
+    - amps::Vector: List of pulse amps
+    - times::Vector: List of pulse times
+    - phases::Vector: List of pulses phases
     """
 
-    tsXY = tPi.*vcat([1/2],ones(nGroups*8));
-    tWaitsXY = ones(size(tsXY))*tau*2;
-    tWaitsXY[1] = tau;
-    tWaitsXY[length(tWaitsXY)] = tau;
-    phasesXY = vcat([0],repeat([0,pi/2,0,pi/2,pi/2,0,pi/2,0],nGroups));
-    return tsXY,tWaitsXY,phasesXY
+
+    amps_outer = [1,1];
+    times_outer = tPi*[1/2,1/2];
+    phases_outer::Vector{Float64} = [0,0];
+    
+    amps_xy8_core = [0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0];
+    times_xy8_core= [tTau,tPi,2*tTau,tPi,2*tTau,tPi,2*tTau,tPi,2*tTau,tPi,2*tTau,tPi,2*tTau,tPi,2*tTau,tPi,tTau]
+    phases_xy8_core = pi*[0,0,0,0.5,0,0,0,0.5,0,0.5,0,0,0,0.5,0,0,0];
+    
+    amps = vcat(amps_outer[1],repeat(amps_xy8_core,nGroups),amps_outer[2]);
+    times = vcat(times_outer[1],repeat(times_xy8_core,nGroups),times_outer[2]);
+    phases = vcat(phases_outer[1],repeat(phases_xy8_core,nGroups),phases_outer[2]);
+    return amps, times, phases
 end
 
 function genNLevelOperators(N, Ωs, Δs)

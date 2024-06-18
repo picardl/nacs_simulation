@@ -22,6 +22,11 @@ amu = const.physical_constants["atomic mass constant"][0]
 m_cs = 133*amu
 m_nacs = 155.8952*amu
 kb = 1.381*(10**-23) #Boltzmann constant in J/K
+mass = m_cs
+
+# trap_depth_Hz = 1.46e6 #For nacs at pow of 0.1
+trap_depth_Hz = 1.81e6 #For Cs at pow of 0.1
+trap_depth = trap_depth_Hz*h/kB #Convert from trap depth in Hz to mK
 
 def get_nbar(f_trap,T):
     # f_trap: trapping freq in Hz
@@ -159,55 +164,69 @@ if __name__ == '__main__':
     survival_Rearr_rr = np.array([1.0000,    0.8393,    1.0282,    1.0333,    0.7286,    0.6602,    0.3243,    0.1649,    0.1636])
     survival_Rearr_rr_err = np.array([0.0815,    0.0764,    0.0827,    0.0846,    0.0727,    0.0684,    0.0492,    0.0350,    0.0347])
     params_rr = 1e-6*np.array([1,   4,    7,    10,    50,    100,    200,    400,    500])
-    
-    trap_depth_Hz = 1.3867e6
-    trap_depth = trap_depth_Hz*h/kB #Convert from trap depth in Hz to mK
+
+    #
+    survival_Cs_20231012_163520 = np.array([0.9300,    0.8723,    0.8627,    0.7903,    0.5365,    0.2852 ,   0.2194,    0.0407])/0.9300
+    survivalErr_Cs_20231012_163520 = np.array([0.0206,    0.0284,    0.0288,    0.0326,    0.0426,    0.0388,    0.0350,    0.0167])/0.9300
+    times_Cs_20231012_163520 = np.array([0.0501,    0.0600,    0.0750,    0.1000,    0.1500,    0.2000,    0.2500,   0.6000])*1e-3
+
+    survival_NaCs_noRearr_20231013_115756 = np.array([1.0000,    0.8841,    0.7184,    0.6831,   0.3900,    0.3529,    0.2091,    0.1801,  0.1553,    0.1754,    0.1097])
+    survivalErr_NaCs_noRearr_20231013_115756 = np.array([0.0627,    0.0592,    0.0535,    0.0522,    0.0397,    0.0378,    0.0292,    0.0271,   0.0252,    0.0267,    0.0212])
+    survival_NaCs_Rearr_20231013_115756 = np.array([0.8919,    1.0000,    0.9709,    0.8124,    0.5606,    0.4142,    0.3764,    0.2258,    0.2632,    0.1991,    0.1762])
+    survivalErr_NaCs_Rearr_20231013_115756 = np.array([0.0625,    0.0661,    0.0650,    0.0598,    0.0500,    0.0431,    0.0410,   0.0319,     0.0344,    0.0300,    0.0282])
+    times_NaCs_20231013_115756 = np.array([0.0501,    0.0600,    0.0750,    0.1000,    0.1500,    0.2000,    0.2500, 0.3,0.4,0.5,  0.6000])*1e-3
+
     trap_waist = 1.19e-6 #Use our previously calibrated value
     lambda_trap = 1064e-9
     rFreq = np.sqrt(4*trap_depth_Hz*h/m_nacs/trap_waist**2)/2/np.pi
     axFreq = np.sqrt(2*trap_depth_Hz*h/m_nacs/(np.pi*trap_waist**2/lambda_trap)**2)/2/np.pi
     trap_freqs = [axFreq, rFreq,rFreq] 
+    print(trap_freqs)
 
     reps = 200
     #times = np.linspace(0,500*(10**-6),20)
-    times  = params_rr
+    times  = times_NaCs_20231013_115756#times_Cs_20231012_163520
     temps = np.linspace(2e-9,200e-9,5)
 
-    nbRad = 0.15
-    #nbAx = 0.15
-    nbArr = np.linspace(0.1,6,10)
+    #nbRad = 0.15
+    nbAx = 0.1
+    nbArr = [0.02,0.1,0.25,0.5,0.75,1,1.25,1.5,2]
 
-    mse_Rearr = []
+    mse = []
     mse_noRearr = []
 
     i=0
-    for nbAx in nbArr:
-        print('Testing axial nb ', nbAx)
-        outcomes = []
-        for t_rr in times:
-            outcomes.append(montecarlo(trap_freqs, [nbAx,nbRad,nbRad] , m_nacs, t_rr, trap_depth, lambda_trap, reps)) 
-        plt.plot(1e6*times, outcomes, label=['Axial nBar = ',nbAx], linestyle='--')
-        mse_Rearr.append(np.sum((np.array(outcomes) - survival_Rearr_rr)**2))
-        mse_noRearr.append(np.sum((np.array(outcomes) - survival_noRearr_rr)**2))
-        i += 1
-    # for nbRad in nbArr:
-    #     print('Testing radial nb ', nbRad)
+    # for nbAx in nbArr:
+    #     print('Testing axial nb ', nbAx)
     #     outcomes = []
     #     for t_rr in times:
     #         outcomes.append(montecarlo(trap_freqs, [nbAx,nbRad,nbRad] , m_nacs, t_rr, trap_depth, lambda_trap, reps)) 
-    #     plt.plot(1e6*times, outcomes, label=['Radial nBar = ',nbRad], linestyle='--')
+    #     plt.plot(1e6*times, outcomes, label=['Axial nBar = ',nbAx], linestyle='--')
     #     mse_Rearr.append(np.sum((np.array(outcomes) - survival_Rearr_rr)**2))
     #     mse_noRearr.append(np.sum((np.array(outcomes) - survival_noRearr_rr)**2))
     #     i += 1
-    plt.errorbar(1e6*params_rr, survival_noRearr_rr,survival_noRearr_rr_err, label='data no rearr')
-    plt.errorbar(1e6*params_rr, survival_Rearr_rr,survival_Rearr_rr_err, label='data rearr')
+    plt.errorbar(1e6*times, survival_NaCs_Rearr_20231013_115756,survivalErr_NaCs_Rearr_20231013_115756, label='NaCs Rearr')
+    plt.errorbar(1e6*times, survival_NaCs_noRearr_20231013_115756,survivalErr_NaCs_noRearr_20231013_115756, label='NaCs no Rearr')
+    for nbRad in nbArr:
+        print('Testing radial nb ', nbRad)
+        outcomes = []
+        for t_rr in times:
+            outcomes.append(montecarlo(trap_freqs, [nbAx,nbRad,nbRad] , mass, t_rr, trap_depth, lambda_trap, reps)) 
+        plt.plot(1e6*times, outcomes, label=['Radial nBar = ',nbRad], linestyle='--')
+        #mse.append(np.sum((np.array(outcomes) - survival_Cs_20231012_163520)**2))
+        mse.append(np.sum((np.array(outcomes) - survival_NaCs_Rearr_20231013_115756)**2))
+        mse_noRearr.append(np.sum((np.array(outcomes) - survival_NaCs_noRearr_20231013_115756)**2))
+        i += 1
+    # plt.errorbar(1e6*params_rr, survival_noRearr_rr,survival_noRearr_rr_err, label='data no rearr')
+    # plt.errorbar(1e6*params_rr, survival_Rearr_rr,survival_Rearr_rr_err, label='data rearr')
+    #plt.errorbar(1e6*times, survival_Cs_20231012_163520,survivalErr_Cs_20231012_163520, label='Cs after RSC')
     plt.xlabel('Release time (us)')
     plt.ylabel('Recapture probability')
     leg = plt.legend()
 
     plt.figure()
-    plt.plot(nbArr,mse_noRearr, label='no Rearr')
-    plt.plot(nbArr,mse_Rearr, label='Rearr')
+    plt.plot(nbArr,mse, label='Rearr')
+    plt.plot(nbArr,mse_noRearr, label='No Rearr')
     plt.xlabel('nBar')
     plt.ylabel('MSE')
     plt.legend()   

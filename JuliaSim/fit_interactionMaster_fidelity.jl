@@ -63,14 +63,14 @@ function masterFidelity(x,tData,params)
     psi00 = nlevelstate(b1,1) ⊗ nlevelstate(b2,1)
 
     amps = [1,0,1,0,1];
-    phases::Vector{Float64} = [0,0,0,0,0];
+    phases::Vector{Float64} = [0,0,pi/2,0,0];
 
     tsSpinEcho = tPi.*DynamicalDecoupling.tFracSpinEcho
     probePhases = 0
 
     rhof = Array{Any, 1}(undef, length(tData));
 
-    psitarget = 1/sqrt(2)*(nlevelstate(b1,1) ⊗ nlevelstate(b2,1) + im*nlevelstate(b1,2) ⊗ nlevelstate(b2,2))
+    psitarget = 1/sqrt(2)*(nlevelstate(b1,1) ⊗ nlevelstate(b2,1) - im*nlevelstate(b1,2) ⊗ nlevelstate(b2,2))
     rhotarget = psitarget⊗dagger(psitarget)
     for i = 1:1:length(tData)
         ts = [tPi/2,tData[i]/2,tPi,tData[i]/2,tPi/2]
@@ -216,6 +216,8 @@ print(vmax);
 print("\nAt time: ");
 print(tPlot[imax]);
 print("\n");
+
+print(rho[imax])
 
 
 figure(4);

@@ -6,7 +6,7 @@ using LsqFit
 #using Zygote
 using ForwardDiff
 using Optimization
-using OptimizationOptimJL
+#using OptimizationOptimJL
 using Distributions
 using HypothesisTests
 import Plots
@@ -77,13 +77,18 @@ if true
 # beta_arr = [0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75] # T = 0.56 from fitting Gabriel's code; extra heating from other processes
 # gam_deph_motion_arr = 1 ./ [5e-3:5e-3:40e-3;]
 
-aberration_type_arr = [106.4, 117.04, 127.68, 138.32,148.96, 159.6, 170.24, 180.88, 191.52, 202.16, 212.8]; # errors for dr40, rmax500, num_lvls5 ~ 10^-3
-beta_arr = [0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75] # T = 0.56 from fitting Gabriel's code; extra heating from other processes
-gam_deph_motion_arr = sort(vcat(1 ./ [5e-3:5e-3:40e-3;],[60,70,80,90,110,120]))
+# aberration_type_arr = [106.4, 117.04, 127.68, 138.32,148.96, 159.6, 170.24, 180.88, 191.52, 202.16, 212.8]; # errors for dr40, rmax500, num_lvls5 ~ 10^-3
+# beta_arr = [0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75] # T = 0.56 from fitting Gabriel's code; extra heating from other processes
+# gam_deph_motion_arr = sort(vcat(1 ./ [5e-3:5e-3:40e-3;],[60,70,80,90,110,120]))
 
 # aberration_type_arr = [117.04, 127.68, 138.32,148.96, 159.6, 170.24, 180.88, 191.52]; # errors for dr40, rmax500, num_lvls5 ~ 10^-3
 # beta_arr = [0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75] # T = 0.56 from fitting Gabriel's code; extra heating from other processes
 # gam_deph_motion_arr = 1 ./ [10e-3:5e-3:35e-3;]
+
+#New corrected dataset
+aberration_type_arr = [106.4, 117.04, 127.68, 138.32,148.96, 159.6, 170.24, 180.88, 191.52]; # errors for dr40, rmax500, num_lvls5 ~ 10^-3
+beta_arr = [0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75] # T = 0.56 from fitting Gabriel's code; extra heating from other processes
+gam_deph_motion_arr = Float64[30,50,70,90,110,130]
 
 ab3 = Array{Float64}(undef, length(beta_arr), length(aberration_type_arr), length(gam_deph_motion_arr))
 beta3 = Array{Float64}(undef, length(beta_arr), length(aberration_type_arr), length(gam_deph_motion_arr))
@@ -99,7 +104,7 @@ xPlotScale = 1e6;
 
 dStampSpinEcho = "20240526"
 tStampSpinEcho = "220507"
-dataPathSpinEcho = "C:/nilab-projects/nacs_simulation/JuliaSim/experimentalData/"*dStampSpinEcho*"_"*tStampSpinEcho
+dataPathSpinEcho = "C:/nilab_projects/nacs_simulation/JuliaSim/experimentalData/"*dStampSpinEcho*"_"*tStampSpinEcho
 (tSpinEcho, survivalSpinEcho, errLowerSpinEcho, errUpperSpinEcho) = load_and_extract_data(dataPathSpinEcho*"/0_data"*dStampSpinEcho*"_"*tStampSpinEcho*".csv")
 tSpinEcho = tSpinEcho.*xScale[1];
 
@@ -108,7 +113,7 @@ tSpinEcho = tSpinEcho.*xScale[1];
 
 dStampXY8 = "20240526"
 tStampXY8  = "115643"
-dataPathXY8  = "C:/nilab-projects/nacs_simulation/JuliaSim/experimentalData/"*dStampXY8*"_"*tStampXY8
+dataPathXY8  = "C:/nilab_projects/nacs_simulation/JuliaSim/experimentalData/"*dStampXY8*"_"*tStampXY8
 (tXY8 , survivalXY8 , errLowerXY8 , errUpperXY8 ) = load_and_extract_data(dataPathXY8*"/0_data"*dStampXY8*"_"*tStampXY8*".csv")
 tXY8 = tXY8.*xScale[2];
 df = CSV.File(dataPathXY8*"/rawTrials_data"*dStampXY8*"_"*tStampXY8*".csv") |> DataFrame
@@ -116,7 +121,7 @@ trialsXY8 = df.trials;
 
 dStampDrive = "20240530"
 tStampDrive  = "202419"
-dataPathDrive  = "C:/nilab-projects/nacs_simulation/JuliaSim/experimentalData/"*dStampDrive*"_"*tStampDrive
+dataPathDrive  = "C:/nilab_projects/nacs_simulation/JuliaSim/experimentalData/"*dStampDrive*"_"*tStampDrive
 (tDrive, survivalDrive , errLowerDrive , errUpperDrive ) = load_and_extract_data(dataPathDrive*"/0_data"*dStampDrive*"_"*tStampDrive*".csv")
 tDrive = tDrive.*xScale[3];
 df = CSV.File(dataPathDrive*"/rawTrials_data"*dStampDrive*"_"*tStampDrive*".csv") |> DataFrame
@@ -127,7 +132,7 @@ trialsDrive = df.trials;
 # s1 = df."1";
 # trials = df.trials;
 
-theoryDir = "C:/nilab-projects/nacs_simulation/JuliaSim/20240618-theory-for-fits2/"
+theoryDir = "C:/nilab_projects/nacs_simulation/JuliaSim/20240622-theory-for-fits-2/"
 
 # Initialize vectors to store DataFrames and corresponding numbers
 dataDrive = Array{DataFrame}(undef, length(beta_arr), length(aberration_type_arr), length(gam_deph_motion_arr))
@@ -143,20 +148,29 @@ for (i, beta) in enumerate(beta_arr)
             beta3[i, j, k] = beta;
             gam3[i, j, k] = gam_deph_motion;
 
+            if beta>0.6
+                nlvl = 20
+            elseif beta > 0.4
+                nlvl = 30
+            else
+                nlvl = 40
+            end
+
             # Construct filename based on current parameters
-            filenameSpinEcho = "echo-depth2.448-nlvl20-phi_echo1.5707963267948966-beta$beta-dr50.-rmax400.-astig$aberration_type-dchi0.-gam_motion$gam_deph_motion.csv"
+            filenameSpinEcho = "echo-depth2.446-nlvl$nlvl-phi_echo1.5707963267948966-beta$beta-dr50.-rmax400.-astig$aberration_type-dchi0.-gam_motion$gam_deph_motion.csv"
             file_path = joinpath(theoryDir, filenameSpinEcho)
             dataSpinEcho[i, j, k] = CSV.File(file_path) |> DataFrame
             residsSpinEcho[i, j, k] = resid(tSpinEcho,survivalSpinEcho,errLowerSpinEcho,errUpperSpinEcho,dataSpinEcho[i, j, k].p0)
-            
-            # Construct filename based on current parameters
-            filenameXY8 = "xy8-depth2.448-nlvl20-phi_echo1.5707963267948966-beta$beta-dr50.-rmax400.-astig$aberration_type-dchi0.-gam_motion$gam_deph_motion.csv"
+
+                       
+# Construct filename based on current parameters
+            filenameXY8 = "xy8-depth2.446-nlvl$nlvl-phi_echo1.5707963267948966-beta$beta-dr50.-rmax400.-astig$aberration_type-dchi0.-gam_motion$gam_deph_motion.csv"
             file_path = joinpath(theoryDir, filenameXY8)
             dataXY8[i, j, k] = CSV.File(file_path) |> DataFrame
             residsXY8[i, j, k] = resid(tXY8,survivalXY8,errLowerXY8,errUpperXY8,dataXY8[i, j, k].p0)
 
             # Construct filename based on current parameters
-            filenameDrive = "drive-depth2.448-nlvl20-phi_echo1.5707963267948966-beta$beta-dr50.-rmax400.-astig$aberration_type-dchi0.-gam_motion$gam_deph_motion.csv"
+            filenameDrive = "drive-depth2.446-nlvl$nlvl-phi_echo1.5707963267948966-beta$beta-dr50.-rmax400.-astig$aberration_type-dchi0.-gam_motion$gam_deph_motion.csv"
             file_path = joinpath(theoryDir, filenameDrive)
             dataDrive[i, j, k] = CSV.File(file_path) |> DataFrame
             residsDrive[i, j, k] = resid(tDrive,survivalDrive,errLowerDrive,errUpperDrive,dataDrive[i, j, k].p0)

@@ -6,7 +6,7 @@ using LsqFit
 #using Zygote
 using ForwardDiff
 using Optimization
-#using OptimizationOptimJL
+using OptimizationOptimJL
 using Distributions
 using HypothesisTests
 import Plots
@@ -104,7 +104,7 @@ xPlotScale = 1e6;
 
 dStampSpinEcho = "20240526"
 tStampSpinEcho = "220507"
-dataPathSpinEcho = "C:/nilab_projects/nacs_simulation/JuliaSim/experimentalData/"*dStampSpinEcho*"_"*tStampSpinEcho
+dataPathSpinEcho = "C:/nilab-projects/nacs_simulation/JuliaSim/experimentalData/"*dStampSpinEcho*"_"*tStampSpinEcho
 (tSpinEcho, survivalSpinEcho, errLowerSpinEcho, errUpperSpinEcho) = load_and_extract_data(dataPathSpinEcho*"/0_data"*dStampSpinEcho*"_"*tStampSpinEcho*".csv")
 tSpinEcho = tSpinEcho.*xScale[1];
 
@@ -113,7 +113,7 @@ tSpinEcho = tSpinEcho.*xScale[1];
 
 dStampXY8 = "20240526"
 tStampXY8  = "115643"
-dataPathXY8  = "C:/nilab_projects/nacs_simulation/JuliaSim/experimentalData/"*dStampXY8*"_"*tStampXY8
+dataPathXY8  = "C:/nilab-projects/nacs_simulation/JuliaSim/experimentalData/"*dStampXY8*"_"*tStampXY8
 (tXY8 , survivalXY8 , errLowerXY8 , errUpperXY8 ) = load_and_extract_data(dataPathXY8*"/0_data"*dStampXY8*"_"*tStampXY8*".csv")
 tXY8 = tXY8.*xScale[2];
 df = CSV.File(dataPathXY8*"/rawTrials_data"*dStampXY8*"_"*tStampXY8*".csv") |> DataFrame
@@ -121,7 +121,7 @@ trialsXY8 = df.trials;
 
 dStampDrive = "20240530"
 tStampDrive  = "202419"
-dataPathDrive  = "C:/nilab_projects/nacs_simulation/JuliaSim/experimentalData/"*dStampDrive*"_"*tStampDrive
+dataPathDrive  = "C:/nilab-projects/nacs_simulation/JuliaSim/experimentalData/"*dStampDrive*"_"*tStampDrive
 (tDrive, survivalDrive , errLowerDrive , errUpperDrive ) = load_and_extract_data(dataPathDrive*"/0_data"*dStampDrive*"_"*tStampDrive*".csv")
 tDrive = tDrive.*xScale[3];
 df = CSV.File(dataPathDrive*"/rawTrials_data"*dStampDrive*"_"*tStampDrive*".csv") |> DataFrame
@@ -132,7 +132,7 @@ trialsDrive = df.trials;
 # s1 = df."1";
 # trials = df.trials;
 
-theoryDir = "C:/nilab_projects/nacs_simulation/JuliaSim/20240622-theory-for-fits-2/"
+theoryDir = "C:/nilab-projects/nacs_simulation/JuliaSim/20240622-theory-for-fits-2/"
 
 # Initialize vectors to store DataFrames and corresponding numbers
 dataDrive = Array{DataFrame}(undef, length(beta_arr), length(aberration_type_arr), length(gam_deph_motion_arr))
@@ -148,12 +148,21 @@ for (i, beta) in enumerate(beta_arr)
             beta3[i, j, k] = beta;
             gam3[i, j, k] = gam_deph_motion;
 
-            if beta>0.6
-                nlvl = 20
-            elseif beta > 0.4
+            # if beta>0.6
+            #     nlvl = 20
+            # elseif beta > 0.4
+            #     nlvl = 30
+            # else
+            #     nlvl = 40
+            # end
+
+            
+            if beta>0.59
                 nlvl = 30
-            else
+            elseif beta > 0.39
                 nlvl = 40
+            else
+                nlvl = 50
             end
 
             # Construct filename based on current parameters

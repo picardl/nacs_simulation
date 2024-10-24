@@ -372,6 +372,7 @@ ylabel("|0⟩ population")
 figure(14)
 errorbar(tXY8*1e6, 2*abs.(0.5.-survivalXY8), (2 .*errLowerXY8, 2 .*errUpperXY8),color = edgeColors[1],mec=edgeColors[1],mfc=faceColors[1],linestyle="none",marker="o",capsize = 3)
 plot(tXY8*1e6,2*abs.(0.5.-dataXY8[betaInd, abInd, gamInd].p0),color = edgeColors[1])
+ylim([0,1])
 xlabel("XY-8 pulse separation (μs)")
 ylabel("Ramsey coherence")
 
